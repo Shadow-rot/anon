@@ -2,7 +2,7 @@ from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
 from config import BOTADDLOGS as BOTADDLOGS
 from AnonXMusic import app
-from AnonMusic.utils.database import (
+from AnonXMusic.utils.database import (
     add_served_chat,
     add_served_user,
     blacklisted_chats,
