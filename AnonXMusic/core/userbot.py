@@ -115,7 +115,7 @@ class Userbot(Client):
             await self.four.start()
             try:
                 await self.four.join_chat("PhoenixXsupport")
-                await self.four.join_chat("FallenAssociation")
+                await self.four.join_chat("where_lucy")
             except:
                 pass
             assistants.append(4)
