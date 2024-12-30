@@ -1,7 +1,8 @@
-from motor.motor_asyncio import AsyncIOMotorClient
-
+from typing import Dict, Union
+from motor.motor_asyncio import AsyncIOMotorClient as MongoCli
 from config import MONGO_DB_URI
-
+mongo = MongoCli(MONGO_DB_URI)
+db = AnonXMusic
 from ..logging import LOGGER
 
 LOGGER(__name__).info("Connecting to your Mongo Database...")
@@ -12,3 +13,6 @@ try:
 except:
     LOGGER(__name__).error("Failed to connect to your Mongo Database.")
     exit()
+
+afkdb = db.afk
+
