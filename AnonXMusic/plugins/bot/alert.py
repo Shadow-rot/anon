@@ -35,7 +35,7 @@ async def active_afk(_, message: Message):
                 if str(reasonafk) == "None":
                     send = await message.reply_animation(
                         data,
-                        caption=f"<b>{message.from_user.first_name</b>} ɪs ʙᴀᴄᴋ ᴏɴʟɪɴᴇ ᴀɴᴅ ᴡᴀs ᴀᴡᴀʏ ғᴏʀ {seenago}",
+                        caption=f"<b>{message.from_user.first_name}</b> ɪs ʙᴀᴄᴋ ᴏɴʟɪɴᴇ ᴀɴᴅ ᴡᴀs ᴀᴡᴀʏ ғᴏʀ {seenago}",
                     )
                 else:
                     send = await message.reply_animation(
