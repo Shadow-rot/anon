@@ -5,7 +5,9 @@
 .youtube.com        TRUE        /        TRUE        1730783492        GPS        1
 .youtube.com        TRUE        /        FALSE        1730781869        ST-1fg9m6h        csn=N1l5e2ft2fF0_HA5&itct=CGUQ_FoiEwje7KbtsMSJAxXNQA8CHRUUPWEyCmctaGlnaC1yZWNaD0ZFd2hhdF90b193YXRjaJoBBhCOHhieAQ%3D%3D
 .youtube.com        TRUE        /        FALSE        1730781914        ST-9k2d8g        csn=_-y_LcwIJiWr6PI9&itct=CF0Q_FoiEwjjpcqDscSJAxUmWZ0JHbAbFmsyCmctaGlnaC1yZWNaD0ZFd2hhdF90b193YXRjaJoBBhCOHhieAQ%3D%3D
+.youtube.com        TRUE        /        FALSE        1730781916        ST-fmyxfl        csn=j4h3sBUYi2tCdzOB&itct=CFQQh_YEGAEiEwjjpcqDscSJAxUmWZ0JHbAbFmtaD0ZFd2hhdF90b193YXRjaJoBBQgkEI4e
 .youtube.com        TRUE        /        FALSE        1730781919        ST-19wtm9f        csn=j4h3sBUYi2tCdzOB&itct=CIsBEPxaGAAiEwiio-SBscSJAxWMo2MGHXvhKZwyB3JlbGF0ZWRI2ca5oYiM2cgnmgEFCAEQ-B0%3D
+.youtube.com        TRUE        /        FALSE        1731732969        ST-15uyurk        csn=wc9oOha7-McTozuf&itct=CIABEIf2BBgAIhMIvbzc_ofgiQMVD5tLBR2awTpmWg9GRXdoYXRfdG9fd2F0Y2iaAQUIJBCOHg%3D%3D
 .youtube.com        TRUE        /        FALSE        1731732973        ST-h5fzdh        csn=wc9oOha7-McTozuf&itct=CCwQ_FoiEwi9vNz-h-CJAxUPm0sFHZrBOmYyBmctaGlnaFoPRkV3aGF0X3RvX3dhdGNomgEGEI4eGIAK
 .youtube.com        TRUE        /        FALSE        1731766794        ST-1r76r9e        csn=p36KWcMLl3zVWkAj&itct=CIUBEPxaIhMI26bn84XhiQMV6PY4Bh1cVxkkMgpnLWhpZ2gtcmVjWg9GRXdoYXRfdG9fd2F0Y2iaAQYQjh4YngE%3D
 .youtube.com        TRUE        /        FALSE        1732928991        ST-vr6a1i        csn=kvMkMssew5wu1wCn&itct=CHwQ_FoiEwjZ0-u-74KKAxWzYPUFHUVNByEyCmctaGlnaC1yZWNaD0ZFd2hhdF90b193YXRjaJoBBhCOHhieAQ%3D%3D
@@ -52,11 +54,13 @@
 .youtube.com        TRUE        /        FALSE        1734424096        ST-x8xh1c        csn=ed-TSqYo9mup3SnS&itct=CAEQ_FoYDCITCKqvuZixrooDFRag2AUdzpg4yjIHcmVsYXRlZEilqLGn1JyAkV-aAQUIARD4HQ%3D%3D
 .youtube.com        TRUE        /        FALSE        1734424147        ST-av0z9b        csn=dRpD5cyQGp06I7I4&itct=CGYQh_YEGAMiEwiYpo2nsa6KAxUXY50JHctjFMtaD0ZFd2hhdF90b193YXRjaJoBBQgkEI4e
 .youtube.com        TRUE        /        FALSE        1734424208        ST-130dqt0        csn=dRpD5cyQGp06I7I4&itct=CG4Qh_YEGAEiEwiYpo2nsa6KAxUXY50JHctjFMtaD0ZFd2hhdF90b193YXRjaJoBBQgkEI4e
+.youtube.com        TRUE        /        TRUE        0        YSC        18sLQZecmC8
 .youtube.com        TRUE        /        FALSE        1735456538        ST-a6l89        
 .youtube.com        TRUE        /        FALSE        1735456545        ST-1womg9o        csn=WYUV94nWAp0Ol3-m&itct=CCYQnaQHGAEiEwiXrvywt8yKAxUO-qACHT2mFABaCUZFbGlicmFyeZoBBwi4ARDv8AU%3D
 .youtube.com        TRUE        /        FALSE        1735456546        ST-143rz7l        csn=WYUV94nWAp0Ol3-m&itct=CBgQ08wBGAEiEwiXrvywt8yKAxUO-qACHT2mFAAyBmctaGlnaA%3D%3D
 .youtube.com        TRUE        /        TRUE        1766992663        __Secure-1PSIDTS        sidts-CjIB7wV3sYzqpdnXxEdwlYc1pJBfNsr6cMKWKKS9fjsND2swUZQ1Oq6IjdpTDdxHSDH85RAA
 .youtube.com        TRUE        /        TRUE        1766992663        __Secure-3PSIDTS        sidts-CjIB7wV3sYzqpdnXxEdwlYc1pJBfNsr6cMKWKKS9fjsND2swUZQ1Oq6IjdpTDdxHSDH85RAA
+.youtube.com        TRUE        /        TRUE        1798528668        LOGIN_INFO        AFmmF2swRQIgF2gtIXPNiazE1JxHTT80GHTuiviXZR4uJsru4mObjPkCIQCXXG8Ac5yZQd-bMfHzqVS5aL3ghPz5VOtvYpSJ5a8hsg:QUQ3MjNmd0VZUEpoZkpTaVVaSFJSRWhZUHZCQnV2ZVJpUzYxYlBsQnRvdjZiZVlsa1Z2TnJfVWJCQnMxXzRxdjMwT28yMWZWU2d5SXRMVTI2Y0RtOF9uVFhVZWtYWm5LQ0UyMFIzNjBlMllIVVlkazJmQ0I3ampTUE10ZF9xVlZEYjZFLWs0cXhweFhpbFprY0lOX0tPV2pKYzhpdFYydnZR
 .youtube.com        TRUE        /        TRUE        1735456788        YTSESSION-jnufdw        ANPz9KguqAr2x5sY5ZZPfNfaiMs6nNsR75WtDPlzzo5CWVkEnnoeSc34rPPiQxndSzIItRxsVlIC0O++UuI6iJKGpp8dFJNThcnk3W0=
 .youtube.com        TRUE        /        FALSE        1798528668        HSID        AV6ZO_ev410ec3nOp
 .youtube.com        TRUE        /        TRUE        1798528668        SSID        AZDA2lEmfAVMjhD8c
@@ -64,6 +68,8 @@
 .youtube.com        TRUE        /        TRUE        1798528668        SAPISID        SiRtffZ7UTGAKvlU/AXDN-lSPpZwotDu5H
 .youtube.com        TRUE        /        TRUE        1798528668        __Secure-1PAPISID        SiRtffZ7UTGAKvlU/AXDN-lSPpZwotDu5H
 .youtube.com        TRUE        /        TRUE        1798528668        __Secure-3PAPISID        SiRtffZ7UTGAKvlU/AXDN-lSPpZwotDu5H
+.youtube.com        TRUE        /        TRUE        1751008668        VISITOR_INFO1_LIVE        DRvTVGEuBT8
+.youtube.com        TRUE        /        TRUE        1751008668        VISITOR_PRIVACY_METADATA        CgJJThIEGgAgbQ%3D%3D
 .youtube.com        TRUE        /        FALSE        1798528668        SID        g.a000rwgsQAM_YgsK3BCHcbmFPk1YoM2oIUN3dID8hjz7IgmWsiigFSumJ8VINktTkf6Oq4godAACgYKAd0SARESFQHGX2Mit1hS4I2iI5jD9wBZDAqk3hoVAUF8yKqSeglcR7Njy7STbm2ra3fS0076
 .youtube.com        TRUE        /        TRUE        1798528668        __Secure-1PSID        g.a000rwgsQAM_YgsK3BCHcbmFPk1YoM2oIUN3dID8hjz7IgmWsiigeSbycDM9aExZD_K4oW2zpgACgYKAXoSARESFQHGX2MiOmwgneQltf1GKiqR5JPFMhoVAUF8yKozF2IRVmMpOTlRTSVaocJx0076
 .youtube.com        TRUE        /        TRUE        1798528668        __Secure-3PSID        g.a000rwgsQAM_YgsK3BCHcbmFPk1YoM2oIUN3dID8hjz7IgmWsiigC5ypTlkkmvvsL1TjPlm7RQACgYKAeQSARESFQHGX2MiWOdCWPGLakfN6oLryJ3BDxoVAUF8yKpYupze2T2AcZTkkqA7G2tH0076
@@ -71,17 +77,7 @@
 .youtube.com        TRUE        /        FALSE        1735456705        ST-12o9dgx        csn=wF2cLWOvUuOoPP0X&itct=CEMQ_FoYBCITCLT85Pu3zIoDFeNRnQkdQQUJ-zIGc2VhcmNoUgN5ZXmaAQMQ9CQ%3D
 .youtube.com        TRUE        /        FALSE        1735456706        ST-3we7vy        csn=wF2cLWOvUuOoPP0X&itct=CCgQ_FoYByITCLT85Pu3zIoDFeNRnQkdQQUJ-zIGc2VhcmNoUgN5ZXmaAQMQ9CQ%3D
 .youtube.com        TRUE        /        FALSE        1735456708        ST-80ybvb        csn=wF2cLWOvUuOoPP0X&itct=CEIQ_FoYBSITCLT85Pu3zIoDFeNRnQkdQQUJ-zIGc2VhcmNoUgN5ZXmaAQMQ9CQ%3D
-.youtube.com        TRUE        /        FALSE        1735477187        ST-fmyxfl        csn=CEiB7K71lkyoEsVY&itct=CI4BEIf2BBgAIhMIl960ooTNigMVzPagAh0cLz38Wg9GRXdoYXRfdG9fd2F0Y2iaAQUIJBCOHg%3D%3D
-.youtube.com        TRUE        /        FALSE        1735477199        ST-sl6vl8        csn=bqH3RN4yh8gizQ-L&itct=CIUBEPxaIhMIyrnwp4TNigMVxFKdCR2RSQYQMgpnLWhpZ2gtcmVjWg9GRXdoYXRfdG9fd2F0Y2iaAQYQjh4YngE%3D
-.youtube.com        TRUE        /        TRUE        0        YSC        CPAxZ7migRw
-.youtube.com        TRUE        /        FALSE        1736828868        ST-dmedim        csn=fODAlxW3SHLoy59a&itct=CIwBEPxaIhMIisDH06_0igMVgUGdCR2IUhV1MgpnLWhpZ2gtcmVjWg9GRXdoYXRfdG9fd2F0Y2iaAQYQjh4YngE%3D
-.youtube.com        TRUE        /        FALSE        1736828869        ST-15uyurk        csn=fODAlxW3SHLoy59a&itct=CIMBEIf2BBgBIhMIisDH06_0igMVgUGdCR2IUhV1Wg9GRXdoYXRfdG9fd2F0Y2iaAQUIJBCOHg%3D%3D
-.youtube.com        TRUE        /        FALSE        1736828870        ST-1r6hrvr        csn=fODAlxW3SHLoy59a&itct=CCsQ_FoiEwiKwMfTr_SKAxWBQZ0JHYhSFXUyCmctaGlnaC1yZWNaD0ZFd2hhdF90b193YXRjaJoBBhCOHhieAQ%3D%3D
-.youtube.com        TRUE        /        FALSE        1736828877        ST-jsi2f1        csn=fODAlxW3SHLoy59a&itct=CEcQh_YEGAMiEwiKwMfTr_SKAxWBQZ0JHYhSFXVaD0ZFd2hhdF90b193YXRjaJoBBQgkEI4e
-.youtube.com        TRUE        /        TRUE        1799900945        LOGIN_INFO        AFmmF2swRQIhAJYA6Wo9m_qQysOst9IFO7mw1i5seHPVV-tzAvIO4lbnAiBmkx3rW5iGCxlvVqgVf-fcHE5UDM40sdAh2Pgk-ZFkCQ:QUQ3MjNmd2ZUWmtzVHZja2dkSnU4czNGNjhfNGozeE9IVXRKOWc0RXJFd09pcHF4bGpTdDVka2h4Z192Y2h6WWNsN043Y0JCcVB5ei1scGpNdm1kY2tHVGtSN0NIQkwtclZfaG14Z2hRVWQzODEtYW90SU5INDdJWTRHQ3Y3a05IMUdHeGlFcWJSNVBXbzgwUFhiS1N6V3N1eklPYTFBNVZ3
-.youtube.com        TRUE        /        TRUE        1752380945        VISITOR_INFO1_LIVE        DRvTVGEuBT8
-.youtube.com        TRUE        /        TRUE        1752380945        VISITOR_PRIVACY_METADATA        CgJJThIEGgAgbQ%3D%3D
-.youtube.com        TRUE        /        TRUE        1799900949        PREF        tz=Asia.Kolkata&f7=100&f5=30000&f6=40000000
-.youtube.com        TRUE        /        FALSE        1768365026        SIDCC        AKEyXzXsAazt9vznYvVfj-KXEGu_978fRQ9zIyJ0YE0D2Cyw5VIYOpYhohjLLd_USQnkJ-ITtQ
-.youtube.com        TRUE        /        TRUE        1768365026        __Secure-1PSIDCC        AKEyXzUbkHhIembDL3loZgXAeHTzBXFD99FU1VpoPjRmtIo35Ou13x1Z3rAPLY9TZ6H_X0vkFeE
-.youtube.com        TRUE        /        TRUE        1768365026        __Secure-3PSIDCC        AKEyXzUJGyKLJ_uKL5l3Z6DABt5n9Dbj0ZfZ8CSLrEhnr3AsX4gjknUFk_t1qAwRgJgfLM4B6t4
+.youtube.com        TRUE        /        TRUE        1798528703        PREF        tz=Asia.Kolkata&f7=100&f5=30000&f6=40000000
+.youtube.com        TRUE        /        FALSE        1766992761        SIDCC        AKEyXzWY6sou2uDcYugL4yQtAYcTmzAf7t0Iekw-d77XwbLkNXQPNcP_clKXgUQJM0WAXGYP_g
+.youtube.com        TRUE        /        TRUE        1766992761        __Secure-1PSIDCC        AKEyXzXzEy9iMldyLRxtLJQE5NpTRUeuZZzIewQldxBiaR8GXg_MiNd_UUEknp5Kt22orpKVduk
+.youtube.com        TRUE        /        TRUE        1766992761        __Secure-3PSIDCC        AKEyXzW_Ts9m9R223Js-Xkll-aU5bw781OqfNvIuzHn0LePXaoVlE4x2szITILy446NMeQ6ZSWI
