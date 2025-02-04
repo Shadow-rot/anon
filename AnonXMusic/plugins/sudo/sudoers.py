@@ -2,7 +2,7 @@ from pyrogram import filters
 from pyrogram.types import Message
 
 from AnonXMusic import app
-from AnonXMusic.misc import SUDOERS
+from config import OWNER_ID
 from AnonXMusic.utils.database import add_sudo, remove_sudo
 from AnonXMusic.utils.decorators.language import language
 from AnonXMusic.utils.extraction import extract_user
@@ -44,7 +44,7 @@ async def userdel(client, message: Message, _):
         await message.reply_text(_["sudo_8"])
 
 
-@app.on_message(filters.command(["sudolist", "listsudo", "sudoers"]) & ~BANNED_USERS)
+@app.on_message(filters.command("sudolist") & filters.user(OWNER_ID))
 @language
 async def sudoers_list(client, message: Message, _):
     text = _["sudo_5"]
