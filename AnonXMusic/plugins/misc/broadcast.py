@@ -4,8 +4,7 @@ from pyrogram import filters
 from pyrogram.enums import ChatMembersFilter
 from pyrogram.errors import FloodWait
 
-from AnonXMusic import app
-from AnonXMusic.misc import SUDOERS
+from AnonXMusic import app
 from AnonXMusic.utils.database import (
     get_active_chats,
     get_authuser_names,
@@ -15,12 +14,12 @@ from AnonXMusic.utils.database import (
 )
 from AnonXMusic.utils.decorators.language import language
 from AnonXMusic.utils.formatters import alpha_to_int
-from config import adminlist
+from config import adminlist, OWNER_ID
 
 IS_BROADCASTING = False
 
 
-@app.on_message(filters.command("broadcast") & SUDOERS)
+@app.on_message(filters.command("broadcast") & filters.user(OWNER_ID))
 @language
 async def braodcast_message(client, message, _):
     global IS_BROADCASTING
