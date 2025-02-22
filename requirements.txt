@@ -56,3 +56,4 @@ cloudscraper
 pycryptodome
 opencv-python
 git+https://github.com/Vivekkumar-IN/TheApi@main
+nekos.py
