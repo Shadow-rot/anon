@@ -17,6 +17,7 @@ gpytranslate
 gtts
 pydub
 pycountry
+googletrans==4.0.0-rc1
 heroku3
 apscheduler
 motor 
