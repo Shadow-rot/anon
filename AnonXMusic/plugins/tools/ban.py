@@ -32,7 +32,7 @@ warnsdb = mongodb.warns
 
 __MODULE__ = "Bᴀɴ"
 __HELP__ = """
-/ban - Ban A User
+"""/ban - Ban A User
 /banall - Ban All Users
 /sban - Delete all messages of user that sended in group and ban the user
 /tban - Ban A User For Specific Time
@@ -56,7 +56,7 @@ __HELP__ = """
 /tmute - Mute A User For Specific Time
 /unmute - Unmute A User
 /zombies - Ban Deleted Accounts
-/report | @admins | @admin - Report A Message To Admins."""
+/report | @admins | @admin - Report A Message To Admins.""""""
 
 
 async def int_to_alpha(user_id: int) -> str:
