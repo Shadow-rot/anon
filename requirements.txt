@@ -13,6 +13,8 @@ ffmpeg-python
 gitpython
 hachoir
 Faker
+gpytranslate
+gtts
 pydub
 pycountry
 heroku3
