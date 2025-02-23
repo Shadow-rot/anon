@@ -1,4 +1,4 @@
-import os
+"""import os
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from AnonXMusic import app
@@ -65,4 +65,4 @@ async def get_link_group(client, message):
                 pass
             return
     except Exception:
-        pass
+        pass"""
