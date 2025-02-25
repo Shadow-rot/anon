@@ -1,4 +1,4 @@
-import asyncio
+"""import asyncio
 from contextlib import suppress
 
 from pyrogram import filters
@@ -558,4 +558,4 @@ async def pin(_, message: Message):
 
 @app.on_message(filters.command(["mute", "tmute"]) & ~filters.private & ~BANNED_USERS)
 @adminsOnly("can_restrict_members")
-async def mute(_, message: 
+async def mute(_, message: """
