@@ -1,4 +1,4 @@
-"""from pyrogram import filters
+from pyrogram import filters
 from AnonXMusic.utils.admin_check import admin_check
 
 
@@ -48,4 +48,4 @@ async def admin_filter_f(filt, client, message):
     )
 
 
-admin_filter = filters.create(func=admin_filter_f, name="AdminFilter")"""
+admin_filter = filters.create(func=admin_filter_f, name="AdminFilter")
