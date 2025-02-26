@@ -1,4 +1,4 @@
-import os
+"""import os
 import asyncio
 import re
 from pykeyboard import InlineKeyboard
@@ -298,4 +298,4 @@ async def song_download_cb(client, CallbackQuery, _):
         except Exception as e:
             print(e)
             return await mystic.edit_text(_["song_10"])
-        os.remove(filename)
+        os.remove(filename)"""
