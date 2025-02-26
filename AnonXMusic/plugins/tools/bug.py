@@ -1,4 +1,4 @@
-from datetime import datetime
+"""from datetime import datetime
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
 from config import OWNER_ID as owner_id
@@ -60,4 +60,4 @@ async def close_bug_report(_, query: CallbackQuery):
     if not is_admin.privileges.can_delete_messages:
         await query.answer("You don't have the rights to close this.", show_alert=True)
     else:
-        await query.message.delete()
+        await query.message.delete()"""
