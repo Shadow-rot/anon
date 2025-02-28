@@ -1,4 +1,4 @@
-"""from pyrogram import filters
+from pyrogram import filters
 from pyrogram.types import *
 from ANNIEMUSIC import app
 from gpytranslate import Translator
@@ -35,4 +35,4 @@ async def translate(_, message) -> None:
         f"ᴛʀᴀɴsʟᴀᴛᴇᴅ ғʀᴏᴍ {source} to {dest}:\n"
         f"{translation.text}"
     )
-    await message.reply_text(reply)"""
+    await message.reply_text(reply)
