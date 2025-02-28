@@ -41,7 +41,6 @@ async def download_instagram_video(client, message):
 
     if not result["error"]:
         video_url = data["url"]
-        duration = data["duration"]
         caption = (
             f" Powered by: @lovely_xu_bot"
         )
