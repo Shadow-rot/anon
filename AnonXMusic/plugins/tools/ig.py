@@ -24,7 +24,7 @@ async def download_instagram_video(client, message):
     if not re.match(INSTAGRAM_REGEX, url):
         return await message.reply_text("❌ The provided URL is not a valid Instagram reel link.")
 
-    a = await message.reply_text("⏳ Processing...")
+    a = await message.reply_text(" Processing...")
     api_url = f"https://insta-dl.hazex.workers.dev/?url={url}"
 
     response = requests.get(api_url)
@@ -42,15 +42,10 @@ async def download_instagram_video(client, message):
     if not result["error"]:
         video_url = data["url"]
         duration = data["duration"]
-        quality = data["quality"]
-        file_type = data["extension"]
-        size = data["formattedSize"]
         caption = (
-            f"**📹 Instagram Reel Downloaded**\n\n"
-            f"🎞 **Duration:** {duration}\n"
-            f"🎥 **Quality:** {quality}\n"
-            f"📂 **Type:** {file_type}\n"
-            f"📦 **Size:** {size}"
+            f" Instagram Reel Downloaded Successfully!\n\n"
+            f" Duration: {duration}\n\n"
+            f" Powered by: @lovely_xu_bot"
         )
 
         await a.delete()
