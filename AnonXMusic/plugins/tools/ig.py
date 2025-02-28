@@ -15,14 +15,14 @@ COMMANDS = ["ig", "instagram", "reel"]
 async def download_instagram_video(client, message):
     if message.command:
         if len(message.command) < 2:
-            return await message.reply_text("Pʟᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴀ ᴠᴀʟɪᴅ Iɴsᴛᴀɢʀᴀᴍ ʀᴇᴇʟ URL.")
+            return await message.reply_text("ᴘʟᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴀ ᴠᴀʟɪᴅ ɪɴsᴛᴀɢʀᴀᴍ ʀᴇᴇʟ URL.")
         url = message.text.split()[1]
     else:
         url = message.text.strip()
 
     # Validate URL
     if not re.match(INSTAGRAM_REGEX, url):
-        return await message.reply_text("❌ The provided URL is not a valid Instagram reel link.")
+        return await message.reply_text(" ᴛʜɪs ɪs ɴᴏᴛ ᴀ ᴠᴀʟɪᴅ ʟɪɴᴋ.")
 
     a = await message.reply_text(" Processing...")
     api_url = f"https://insta-dl.hazex.workers.dev/?url={url}"
@@ -32,7 +32,7 @@ async def download_instagram_video(client, message):
         result = response.json()
         data = result["result"]
     except Exception as e:
-        f = f"❌ Error:\n{e}"
+        f = f"❌ ᴇʀʀᴏʀ:\n{e}"
         try:
             await a.edit(f)
         except Exception:
@@ -52,9 +52,9 @@ async def download_instagram_video(client, message):
         await message.reply_video(video_url, caption=caption)
     else:
         try:
-            return await a.edit("❌ Failed to download reel.")
+            return await a.edit("❌ ғᴀɪʟᴇᴅ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ ʀᴇᴇʟ.")
         except Exception:
-            return await message.reply_text("❌ Failed to download reel.")
+            return await message.reply_text("❌ ғᴀɪʟᴇᴅ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ ʟɪɴᴋ.")
 
 
 __MODULE__ = "Rᴇᴇʟ"
