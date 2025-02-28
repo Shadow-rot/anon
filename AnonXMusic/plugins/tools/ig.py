@@ -43,8 +43,6 @@ async def download_instagram_video(client, message):
         video_url = data["url"]
         duration = data["duration"]
         caption = (
-            f" Instagram Reel Downloaded Successfully!\n\n"
-            f" Duration: {duration}\n\n"
             f" Powered by: @lovely_xu_bot"
         )
 
