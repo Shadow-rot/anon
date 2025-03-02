@@ -1,3 +1,4 @@
+from AnonXMusic import app
 from pyrogram import Client, enums, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, ChatPermissions, Message
 from AnonXMusic import app
