@@ -1,4 +1,4 @@
-"""import asyncio
+import asyncio
 import random
 from pyrogram import Client, filters
 from pyrogram.enums import ChatType, ChatMemberStatus
@@ -23,7 +23,7 @@ async def tag_all_users(_,message):
             if message.chat.id not in spam_chats:
                 break       
             usernum += 5
-            usertxt += f"\n⊚ [{m.user.first_name}](tg://user?id={m.user.id})\n"
+            usertxt += f"\n⊚ {m.user.first_name}\n"
             if usernum == 1:
                 await replied.reply_text(usertxt)
                 await asyncio.sleep(3)
@@ -43,4 +43,37 @@ async def tag_all_users(_,message):
             if message.chat.id not in spam_chats:
                 break 
             usernum += 1
-            usertxt += f"\n⊚…"""
+            usertxt += f"\n⊚ {m.user.first_name}\n"
+            if usernum == 5:
+                await app.send_message(message.chat.id,f'{text}\n{usertxt}')
+                await asyncio.sleep(3)
+                usernum = 0
+                usertxt = ""                          
+        try :
+            spam_chats.remove(message.chat.id)
+        except Exception:
+            pass        
+
+@app.on_message(filters.command(["cancel", "ustop"]))
+async def cancel_spam(client, message):
+    if not message.chat.id in spam_chats:
+        return await message.reply("𝐂𝐮𝐫𝐫𝐞𝐧𝐭𝐥𝐲 𝐈'𝐦 𝐍𝐨𝐭 ..")
+    is_admin = False
+    try:
+        participant = await client.get_chat_member(message.chat.id, message.from_user.id)
+    except UserNotParticipant:
+        is_admin = False
+    else:
+        if participant.status in (
+            ChatMemberStatus.ADMINISTRATOR,
+            ChatMemberStatus.OWNER
+        ):
+            is_admin = True
+    if not is_admin:
+        return await message.reply("𝐘𝐨𝐮 𝐀𝐫𝐞 𝐍𝐨𝐭 𝐀𝐝𝐦𝐢𝐧 𝐁𝐚𝐛𝐲")
+    else:
+        try:
+            spam_chats.remove(message.chat.id)
+        except:
+            pass
+        return await message.reply("🦋ᴛᴀɢ ʀᴏᴋɴᴇ ᴡᴀʟᴇ ᴋɪ ᴍᴀᴀ ᴋᴀ ʙʜᴀʀᴏsᴀ ᴊᴇᴇᴛᴜ.....🫠")
