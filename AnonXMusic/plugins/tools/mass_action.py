@@ -1,4 +1,4 @@
-from pyrogram import Client, enums, filters
+"""from pyrogram import Client, enums, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, ChatPermissions, Message
 from AnonXMusic import app
 from AnonXMusic.misc import SUDOERS
@@ -405,4 +405,4 @@ async def handle_unpinall_callback(client: Client, callback_query: CallbackQuery
             print(f"Failed to unpin message: {e}")
             await callback_query.message.edit("An error occurred while trying to unpin the message.")
     elif callback_query.data == "unpinall_no":
-        await callback_query.message.edit("Unpinning process canceled.")
+        await callback_query.message.edit("Unpinning process canceled.")"""
