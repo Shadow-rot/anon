@@ -20,7 +20,7 @@ from logging import getLogger
 from AnonXMusic.utils.shadwo_ban import admin_filter
 from PIL import ImageChops
 
-LOGGER = getLogger(__name__)
+LOGGER_ID = getLogger(__name__)
 
 class WelDatabase:
     def __init__(self):
