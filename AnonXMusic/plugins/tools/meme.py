@@ -1,4 +1,4 @@
-from pyrogram import Client, filters
+"""from pyrogram import Client, filters
 import requests
 from AnonXMusic import app 
 
@@ -28,4 +28,4 @@ def meme_command(client, message):
 
     except Exception as e:
         print(f"Error fetching meme: {e}")
-        message.reply_text("Sorry, I couldn't fetch a meme at the moment.")
+        message.reply_text("Sorry, I couldn't fetch a meme at the moment.")"""
