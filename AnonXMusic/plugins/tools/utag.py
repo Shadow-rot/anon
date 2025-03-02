@@ -1,4 +1,4 @@
-import asyncio
+""'import asyncio
 import random
 from pyrogram import Client, filters
 from pyrogram.enums import ChatType, ChatMemberStatus
@@ -43,4 +43,4 @@ async def tag_all_users(_,message):
             if message.chat.id not in spam_chats:
                 break 
             usernum += 1
-            usertxt += f"\n⊚…
+            usertxt += f"\n⊚…"""
