@@ -1,4 +1,4 @@
-from pyrogram import  filters
+"""from pyrogram import  filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from AnonXMusic.utils.shadwo_font import Fonts
@@ -191,4 +191,4 @@ async def style(c, m):
     try:
         await m.message.edit_text(new_text, reply_markup=m.message.reply_markup)
     except:
-        pass
+        pass"""
