@@ -59,4 +59,4 @@ cloudscraper
 pycryptodome
 opencv-python
 nekos.py
-
+gpytranslate
