@@ -1,4 +1,4 @@
-from AnonXMusic import app
+"""from AnonXMusic import app
 from pyrogram import filters
 from pyrogram.errors import RPCError
 from pyrogram.types import ChatMemberUpdated, InlineKeyboardMarkup, InlineKeyboardButton
@@ -154,4 +154,4 @@ async def greet_new_member(_, member: ChatMemberUpdated):
                 ])
             )
         except Exception as e:
-            LOGGER.error(e)
+            LOGGER.error(e)"""
