@@ -150,7 +150,7 @@ async def ban_all(client: Client, message: Message):
 
     await message.reply(f"Banned {banned_count} members successfully.")
 
-"""
+
 @app.on_message(filters.command("unbanall"))
 async def unbanall(client: Client, message: Message):
     chat_id = message.chat.id
@@ -199,7 +199,7 @@ async def handle_unbanall_callback(client: Client, callback_query: CallbackQuery
     elif callback_query.data == "unbanall_no":
         await callback_query.message.edit("Unbanall process canceled.")
 
-"""
+
 @app.on_message(filters.command("unmuteall"))
 async def unmuteall(client: Client, message: Message):
     chat_id = message.chat.id
