@@ -8,8 +8,8 @@ from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageFont
 from pyrogram import enums, filters
 from pyrogram.types import ChatMemberUpdated
 import config
-from VIPMUSIC import app
-from VIPMUSIC.utils.database import get_assistant
+from AnonXMusic import app
+from AnonXMusic.utils.database import get_assistant
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance, ImageChops
 from pyrogram import filters
 from pyrogram.types import ChatMemberUpdated, InlineKeyboardMarkup, InlineKeyboardButton
