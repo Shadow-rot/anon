@@ -1,4 +1,4 @@
-import random
+"""import random
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from AnonXMusic import app
@@ -189,4 +189,4 @@ async def cock(_, message):
         caption=BAT,
         reply_markup=InlineKeyboardMarkup(BUTTON),
         reply_to_message_id=message.reply_to_message.message_id if message.reply_to_message else None,
-)
+)"""
