@@ -32,7 +32,7 @@ warnsdb = mongodb.warns
 
 __MODULE__ = "Bᴀɴ"
 __HELP__ = """
-"""/ban - Ban A User
+/ban - Ban A User
 /banall - Ban All Users
 /sban - Delete all messages of user that sended in group and ban the user
 /tban - Ban A User For Specific Time
