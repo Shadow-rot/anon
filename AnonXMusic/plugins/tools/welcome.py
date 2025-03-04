@@ -1,4 +1,4 @@
-import asyncio
+"""import asyncio
 import re
 import time
 from logging import getLogger
@@ -237,7 +237,7 @@ async def greet_new_members(_, member: ChatMemberUpdated):
         return
 
 __MODULE__ = "Wᴇᴄᴏᴍᴇ"
-__HELP__ = """
+__HELP__ = """ """
 ## Aᴜᴛᴏ-Wᴇᴄᴏᴍᴇ Mᴏᴅᴜᴇ Cᴏᴍᴍᴀɴᴅs
 
 ### Cᴏᴍᴍᴀɴᴅ: /ᴀᴡᴇᴄᴏᴍᴇ
