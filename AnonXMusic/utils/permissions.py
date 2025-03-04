@@ -1,4 +1,4 @@
-import logging
+"""import logging
 from functools import wraps
 from traceback import format_exc as err
 
@@ -113,4 +113,4 @@ def adminsOnly(permission):
 
         return subFunc2
 
-    return subFunc
+    return subFunc"""
