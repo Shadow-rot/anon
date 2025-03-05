@@ -106,8 +106,8 @@ async def promote_command_handler(client, message):
             except Exception as e:
                 await message.reply_text(f"Failed to set title: {e}")
 
-        user_mention = mention(user_id, first_name)
-        admin_mention = mention(message.from_user.id, message.from_user.first_name)
+        user_mention = mention(user_id, .mention)
+        admin_mention = mention(message.from_user.id, message.from_user.mention)
         chat_name = message.chat.title
         msg = format_promotion_message(chat_name, user_mention, admin_mention, action="promote")
         await message.reply_text(msg)
@@ -150,8 +150,8 @@ async def fullpromote_command_handler(client, message):
             except Exception as e:
                 await message.reply_text(f"Failed to set title: {e}")
 
-        user_mention = mention(user_id, first_name)
-        admin_mention = mention(message.from_user.id, message.from_user.first_name)
+        user_mention = mention(user_id, .mention)
+        admin_mention = mention(message.from_user.id, message.from_user.mention)
         chat_name = message.chat.title
         msg = format_promotion_message(chat_name, user_mention, admin_mention, action="promote")
         await message.reply_text(msg)
@@ -188,8 +188,8 @@ async def demote_command_handler(client, message):
             )
         )
 
-        user_mention = mention(user_id, first_name)
-        admin_mention = mention(message.from_user.id, message.from_user.first_name)
+        user_mention = mention(user_id, .mention)
+        admin_mention = mention(message.from_user.id, message.from_user.mention)
         chat_name = message.chat.title
         msg = format_promotion_message(chat_name, user_mention, admin_mention, action="demote")
         await message.reply_text(msg)
