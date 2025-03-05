@@ -1,4 +1,4 @@
-import os 
+"""import os 
 import random
 from datetime import datetime 
 from telegraph import upload_file
@@ -116,3 +116,4 @@ async def ctest(_, message):
       os.remove(f"test_{cid}.png")
     except Exception:
        pass
+"""
