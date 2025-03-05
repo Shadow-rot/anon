@@ -1,12 +1,11 @@
-"""from pyrogram import Client, filters, enums
+from pyrogram import Client, filters, enums
 from pyrogram.types import ChatPrivileges
 from pyrogram.errors import ChatAdminRequired
 from functools import wraps
 from AnonXMusic import app
 
-
 def mention(user_id, name):
-    return f"{name.mention}{user_id}"
+    return f"{.mention}"
 
 def admin_required(*privileges):
     def decorator(func):
@@ -200,4 +199,4 @@ async def demote_command_handler(client, message):
         if "CHAT_ADMIN_REQUIRED" in str(e):
             await message.reply_text("I don't have permission to demote this user.")
         else:
-            await message.reply_text(f"An error occurred: {e}")"""
+            await message.reply_text(f"An error occurred: {e}")
