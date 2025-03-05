@@ -4,7 +4,8 @@ from pyrogram.errors import ChatAdminRequired
 from functools import wraps
 from AnonXMusic import app
 
-def mention(user_id.mention):
+
+def mention(user_id, name):
     return f"{name.mention}{user_id}"
 
 def admin_required(*privileges):
