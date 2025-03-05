@@ -5,7 +5,7 @@ from functools import wraps
 from AnonXMusic import app
 
 def mention(user, name):
-    return user.mention
+    return f"{user.mention}"
 
 def admin_required(*privileges):
     def decorator(func):
