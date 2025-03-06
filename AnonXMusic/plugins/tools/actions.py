@@ -1,4 +1,4 @@
-from pyrogram import Client, filters, enums
+"""from pyrogram import Client, filters, enums
 from pyrogram.types import ChatPermissions
 from pyrogram.errors import ChatAdminRequired, UserAdminInvalid
 import asyncio
@@ -176,4 +176,4 @@ async def kick_command_handler(client, message):
     except UserAdminInvalid:
         await message.reply_text("I cannot kick an admin.")
     except Exception as e:
-        await message.reply_text(f"An error occurred: {e}")
+        await message.reply_text(f"An error occurred: {e}")"""
