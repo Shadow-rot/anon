@@ -1,3 +1,5 @@
+Sнαdσω 影:
+/eval 
 import os
 import textwrap
 from PIL import Image, ImageDraw, ImageFont
@@ -11,10 +13,10 @@ async def mmf(_, message: Message):
     reply_message = message.reply_to_message
 
     if len(message.text.split()) < 2:
-        await message.reply_text("**Give me text after /mmf to memify.**")
+        await message.reply_text("Give me text after /mmf to memify.")
         return
 
-    msg = await message.reply_text("🎐")
+    msg = await message.reply_text("❄️")
     text = message.text.split(None, 1)[1]
     file = await app.download_media(reply_message)
 
@@ -36,7 +38,7 @@ async def drawText(image_path, text):
     if os.name == "nt":
         fnt = "arial.ttf"
     else:
-        fnt = "./ANNIEMUSIC/assets/default.ttf"
+        fnt = "./AnonXMusic/assets/default.ttf"
 
     m_font = ImageFont.truetype(fnt, int((70 / 640) * i_width))
 
@@ -136,26 +138,3 @@ async def drawText(image_path, text):
                 font=m_font,
                 fill=(0, 0, 0),
             )
-
-            draw.text(
-                xy=(
-                    (i_width - u_width) / 2,
-                    i_height - u_height - int((20 / 640) * i_width),
-                ),
-                text=l_text,
-                font=m_font,
-                fill=(255, 255, 255),
-            )
-
-            current_h += u_height + pad
-
-    image_name = "memify.webp"
-
-    webp_file = os.path.join(image_name)
-
-    img.save(webp_file, "webp")
-
-    return webp_file
-
-
-__mod_name__ = "mmf"
