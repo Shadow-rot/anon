@@ -1,4 +1,4 @@
-import os
+"""import os
 import tempfile
 import shutil
 import subprocess
@@ -430,4 +430,4 @@ async def create_sticker_pack(client, user_id, pack_name, pack_title, uploaded_d
             animated=is_animated,
             videos=is_video,
         )
-    )
+    )"""
