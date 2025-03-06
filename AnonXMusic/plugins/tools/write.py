@@ -14,11 +14,11 @@ async def handwrite(_, message: Message):
     m =await message.reply_text( "Please wait...,\n\nWriting your text...")
     write = requests.get(f"https://apis.xditya.me/write?text={text}").url
 
-    caption = f"""
+    """caption = f"""
 sᴜᴄᴇssғᴜʟʟʏ ᴡʀɪᴛᴛᴇɴ ᴛᴇxᴛ 💘
 ✨ ᴡʀɪᴛᴛᴇɴ ʙʏ : ("BOT_USERNAME")
 🥀 ʀᴇǫᴜᴇsᴛᴇᴅ ʙʏ : {message.from_user.mention}
-"""
+""""""
     await m.delete()
     await message.reply_photo(photo=write,caption=caption)
 
