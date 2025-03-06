@@ -1,4 +1,4 @@
-import asyncio
+"""import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import (
     InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery,
@@ -197,4 +197,4 @@ async def perform_unpin_all(client: Client, chat_id):
         await client.unpin_all_chat_messages(chat_id)
         await client.send_message(chat_id, "All messages unpinned successfully.")
     except Exception as e:
-        await client.send_message(chat_id, "An error occurred while trying to unpin the messages.")
+        await client.send_message(chat_id, "An error occurred while trying to unpin the messages.")"""
