@@ -5,7 +5,7 @@ from AnonXMusic import app
 
 
  
-@app.on_message(filters.command(["m","goodmorning"], prefixes=["g","G","morning"]))
+@app.on_message(filters.command(["m","goodmorning","gm"], prefixes=["g","G","morning"]))
 def goodnight_command_handler(_, message):
     sender = message.from_user.mention
     send_video = random.choice([True, False])
