@@ -1,5 +1,3 @@
-Sнαdσω 影:
-/eval 
 import os
 import textwrap
 from PIL import Image, ImageDraw, ImageFont
