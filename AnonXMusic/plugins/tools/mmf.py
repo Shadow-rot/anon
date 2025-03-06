@@ -1,4 +1,4 @@
-import os
+"""import os
 import textwrap
 from PIL import Image, ImageDraw, ImageFont
 from pyrogram import filters
@@ -135,4 +135,4 @@ async def drawText(image_path, text):
                 text=l_text,
                 font=m_font,
                 fill=(0, 0, 0),
-            )
+            )"""
