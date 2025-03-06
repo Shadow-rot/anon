@@ -1,4 +1,4 @@
-import logging
+"""import logging
 import asyncio
 from pyrogram import Client, filters, idle
 from pyrogram.types import (
@@ -201,4 +201,4 @@ async def handle_deleteall_callback(client: Client, callback_query: CallbackQuer
             await callback_query.message.edit(f"An error occurred: {str(e)}")
 
     elif callback_query.data == "deleteall_no":
-        await callback_query.message.edit("Delete all process canceled.")
+        await callback_query.message.edit("Delete all process canceled.")"""
