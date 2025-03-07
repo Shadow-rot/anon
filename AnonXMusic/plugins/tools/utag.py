@@ -7,7 +7,7 @@ from AnonXMusic.utils.shadwo_ban import admin_filter
 
 spam_chats = set()  # Using a set for better performance
 
-@app.on_message(filters.command(["utag", "all", "mention"]) & filters.group & admin_filter)
+@app.on_message(filters.command(["utag", "all", "mention", "tagall"]) & filters.group & admin_filter)
 async def tag_all_users(client, message): 
     replied = message.reply_to_message  
     if len(message.command) < 2 and not replied:
