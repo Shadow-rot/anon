@@ -5,19 +5,27 @@ from pyrogram.errors import UserNotParticipant
 from AnonXMusic import app
 from AnonXMusic.utils.shadwo_ban import admin_filter
 
-spam_chats = set()  # Using a set for better performance
+spam_chats = set()  # Set for better performance
 
 @app.on_message(filters.command(["utag", "all", "mention", "tagall"]) & filters.group & admin_filter)
 async def tag_all_users(client, message): 
     replied = message.reply_to_message  
-    if len(message.command) < 2 and not replied:
-        return await message.reply_text("ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴇssᴀɢᴇ ᴏʀ ɢɪᴠᴇ sᴏᴍᴇ ᴛᴇxᴛ ᴛᴏ ᴛᴀɢ ᴀʟʟ") 
-
     chat_id = message.chat.id
+
+    if len(message.command) < 2 and not replied:
+        return await message.reply_text("ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴇssᴀɢᴇ ᴏʀ ᴘʀᴏᴠɪᴅᴇ ᴛᴇxᴛ ᴛᴏ ᴛᴀɢ ᴀʟʟ.") 
+
     if chat_id in spam_chats:
         return await message.reply_text("ᴛᴀɢɢɪɴɢ ɪs ᴀʟʀᴇᴀᴅʏ ɪɴ ᴘʀᴏɢʀᴇss.") 
 
     spam_chats.add(chat_id)
+
+    # Get the message text (replied text + command text)
+    msg_text = ""
+    if replied:
+        msg_text += f"{replied.text}\n\n"
+    if len(message.command) > 1:
+        msg_text += message.text.split(None, 1)[1]
 
     user_list = []
     async for m in client.get_chat_members(chat_id): 
@@ -26,8 +34,7 @@ async def tag_all_users(client, message):
         user_list.append(f"{m.user.mention}")
 
         if len(user_list) == 10:
-            msg_text = replied.text if replied else message.text.split(None, 1)[1]
-            formatted_mentions = " | ".join(user_list)  # Single-line format
+            formatted_mentions = " | ".join(user_list)  
             await message.reply_text(f"{msg_text}\n\n{formatted_mentions}")
             user_list.clear()
             await asyncio.sleep(3)  # Prevent API flood
