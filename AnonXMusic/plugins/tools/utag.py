@@ -17,16 +17,8 @@ async def tag_all_users(client, message):
 
     spam_chats.add(chat_id)
 
-    # If replying to a message, use that message's text (if media, keep it)
-    if replied:
-        if replied.text:
-            tag_text = replied.text  # Use replied text
-        else:
-            tag_text = "tagging users below:"  # If it's media with no text
-    else:
-        if len(message.command) < 2:
-            return await message.reply_text("reply to a message or provide text to tag all.") 
-        tag_text = message.text.split(None, 1)[1]  # Use command text
+    # Get the tagging text (only use replied text/media, no extra messages)
+    tag_text = replied.text if replied and replied.text else message.text.split(None, 1)[1] if len(message.command) > 1 else ""
 
     user_list = []
     tagged_count = 0  # Count total tagged users
@@ -39,12 +31,12 @@ async def tag_all_users(client, message):
             continue
 
         user_list.append(f"{m.user.mention}")
-        tagged_count += 1  # Increase count
+        tagged_count += 1  
 
         if len(user_list) == 5:  # Send in batches of 5
             formatted_mentions = ", ".join(user_list)  
             if replied:
-                await replied.reply(f"{tag_text}\n\n{formatted_mentions}\n\ntotal tagged: {tagged_count}")  # Replying under media/text
+                await replied.reply(f"{formatted_mentions}\n\ntotal tagged: {tagged_count}")  
             else:
                 await message.reply_text(f"{tag_text}\n\n{formatted_mentions}\n\ntotal tagged: {tagged_count}")
             user_list.clear()
@@ -53,7 +45,7 @@ async def tag_all_users(client, message):
     if user_list:
         formatted_mentions = ", ".join(user_list)  
         if replied:
-            await replied.reply(f"{tag_text}\n\n{formatted_mentions}\n\ntotal tagged: {tagged_count}")  # Replying under media/text
+            await replied.reply(f"{formatted_mentions}\n\ntotal tagged: {tagged_count}")  
         else:
             await message.reply_text(f"{tag_text}\n\n{formatted_mentions}\n\ntotal tagged: {tagged_count}")
 
