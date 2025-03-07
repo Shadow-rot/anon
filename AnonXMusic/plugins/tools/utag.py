@@ -64,23 +64,23 @@ async def tag_all_users(client, message):
         else:
             await message.reply_text(full_tag_msg)
 
-    spam_chats.discard(chat_id)
+    spam_chats.discard(chat_id)  
 
-    # ✅ Completion Message with User Count
-    await message.reply_text(f"tagging completed! total users tagged: {tagged_count}")
+    # ✅ Final Completion Message with User Count
+    await message.reply_text(f"✅ tagging completed! total users tagged: {tagged_count}")
 
 @app.on_message(filters.command(["cancel", "ustop"]) & filters.group)
 async def cancel_spam(client, message):
     chat_id = message.chat.id
     if chat_id not in spam_chats:
-        return await message.reply("ᴄᴜʀʀᴇɴᴛʟʏ I ᴀᴍ ɴᴏᴛ ᴛᴀɢɢɪɴɢ ᴀɴʏᴏɴᴇ.")
+        return await message.reply("currently not tagging anyone.")
 
     try:
         member = await client.get_chat_member(chat_id, message.from_user.id)
         if member.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
-            return await message.reply("ᴏɴʟʏ ᴀᴅᴍɪɴ ᴄᴀɴ sᴛᴏᴘ ᴛʜᴇ ᴛᴀɢɢɪɴɢ.")
+            return await message.reply("only admins can stop tagging.")
     except UserNotParticipant:
-        return await message.reply("ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴍᴇᴍʙᴇʀ ᴏғ ᴛʜɪs ɢʀᴏᴜᴘ.")
+        return await message.reply("you are not a member of this group.")
 
     spam_chats.discard(chat_id)
-    return await message.reply("ᴛᴀɢɢɪɴɢ sᴛᴏᴘᴘᴇᴅ.")
+    return await message.reply("tagging stopped.")
