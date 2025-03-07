@@ -17,8 +17,18 @@ async def tag_all_users(client, message):
 
     spam_chats.add(chat_id)
 
-    # Get the tagging text (only use replied text/media, no extra messages)
-    tag_text = replied.text if replied and replied.text else message.text.split(None, 1)[1] if len(message.command) > 1 else ""
+    # Get the tagging text
+    tag_text = ""
+    if replied:
+        if replied.caption:  
+            tag_text = replied.caption  # If it's a media file with a caption, use it
+        elif replied.text:
+            tag_text = replied.text  # If it's a text message, use its text
+    else:
+        tag_text = message.text.split(None, 1)[1] if len(message.command) > 1 else ""
+
+    if not tag_text:
+        return await message.reply_text("reply to a message or provide a text to tag all.")
 
     user_list = []
     tagged_count = 0  # Count total tagged users
@@ -35,21 +45,29 @@ async def tag_all_users(client, message):
 
         if len(user_list) == 5:  # Send in batches of 5
             formatted_mentions = ", ".join(user_list)  
+            full_tag_msg = f"{tag_text}\n\n{formatted_mentions}"
+            
             if replied:
-                await replied.reply(f"{formatted_mentions}\n\ntotal tagged: {tagged_count}")  
+                await replied.reply(full_tag_msg)  
             else:
-                await message.reply_text(f"{tag_text}\n\n{formatted_mentions}\n\ntotal tagged: {tagged_count}")
+                await message.reply_text(full_tag_msg)
+
             user_list.clear()
             await asyncio.sleep(2)  
 
     if user_list:
         formatted_mentions = ", ".join(user_list)  
+        full_tag_msg = f"{tag_text}\n\n{formatted_mentions}"
+        
         if replied:
-            await replied.reply(f"{formatted_mentions}\n\ntotal tagged: {tagged_count}")  
+            await replied.reply(full_tag_msg)  
         else:
-            await message.reply_text(f"{tag_text}\n\n{formatted_mentions}\n\ntotal tagged: {tagged_count}")
+            await message.reply_text(full_tag_msg)
 
-    spam_chats.discard(chat_id)  
+    spam_chats.discard(chat_id)
+
+    # ✅ Completion Message with User Count
+    await message.reply_text(f"tagging completed! total users tagged: {tagged_count}")
 
 @app.on_message(filters.command(["cancel", "ustop"]) & filters.group)
 async def cancel_spam(client, message):
