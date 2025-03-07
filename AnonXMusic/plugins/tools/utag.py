@@ -20,12 +20,9 @@ async def tag_all_users(client, message):
 
     spam_chats.add(chat_id)
 
-    # Get the message text (replied text + command text)
-    msg_text = ""
-    if replied:
-        msg_text += f"{replied.text}\n\n"
-    if len(message.command) > 1:
-        msg_text += message.text.split(None, 1)[1]
+    # Prepare the text message
+    replied_text = f"{replied.text}\n\n" if replied else ""
+    command_text = message.text.split(None, 1)[1] if len(message.command) > 1 else ""
 
     user_list = []
     async for m in client.get_chat_members(chat_id): 
@@ -35,7 +32,7 @@ async def tag_all_users(client, message):
 
         if len(user_list) == 10:
             formatted_mentions = " | ".join(user_list)  
-            await message.reply_text(f"{msg_text}\n\n{formatted_mentions}")
+            await message.reply_text(f"{replied_text}{command_text}\n\n{formatted_mentions}")
             user_list.clear()
             await asyncio.sleep(3)  # Prevent API flood
 
