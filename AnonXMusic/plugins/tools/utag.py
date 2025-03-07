@@ -5,51 +5,73 @@ from pyrogram.errors import UserNotParticipant
 from AnonXMusic import app
 from AnonXMusic.utils.shadwo_ban import admin_filter
 
-spam_chats = set()  # Set for better performance
+spam_chats = set()  # Track ongoing tagging sessions
+
+def to_small_caps(text):
+    """Convert text to small caps."""
+    normal = "abcdefghijklmnopqrstuvwxyz"
+    small_caps = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ"
+    translation_table = str.maketrans(normal, small_caps)
+    return text.translate(translation_table)
 
 @app.on_message(filters.command(["utag", "all", "mention", "tagall"]) & filters.group & admin_filter)
 async def tag_all_users(client, message): 
     replied = message.reply_to_message  
     chat_id = message.chat.id
 
-    if len(message.command) < 2 and not replied:
-        return await message.reply_text("ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴇssᴀɢᴇ ᴏʀ ᴘʀᴏᴠɪᴅᴇ ᴛᴇxᴛ ᴛᴏ ᴛᴀɢ ᴀʟʟ.") 
-
+    # Check if tagging is already in progress
     if chat_id in spam_chats:
-        return await message.reply_text("ᴛᴀɢɢɪɴɢ ɪs ᴀʟʀᴇᴀᴅʏ ɪɴ ᴘʀᴏɢʀᴇss.") 
+        return await message.reply_text("tagging is already in progress.") 
 
-    spam_chats.add(chat_id)
+    # Ensure a replied message exists
+    if not replied or not replied.text:
+        return await message.reply_text("reply to a message to tag all users on that message.") 
 
-    # Prepare the text message
-    replied_text = f"{replied.text}\n\n" if replied else ""
-    command_text = message.text.split(None, 1)[1] if len(message.command) > 1 else ""
+    spam_chats.add(chat_id)  # Mark chat as currently tagging
+
+    # Convert replied message text to small caps
+    replied_text = to_small_caps(replied.text)
 
     user_list = []
+    total_users = 0
+
     async for m in client.get_chat_members(chat_id): 
         if chat_id not in spam_chats:
             break  
+        
+        # Skip deleted accounts
+        if not m.user or m.user.is_deleted:
+            continue
+
         user_list.append(f"{m.user.mention}")
+        total_users += 1
 
-        if len(user_list) == 10:
+        if len(user_list) == 5:  # Send in batches of 5
             formatted_mentions = " | ".join(user_list)  
-            await message.reply_text(f"{replied_text}{command_text}\n\n{formatted_mentions}")
+            await replied.reply_text(f"{replied_text}\n\n{formatted_mentions}")
             user_list.clear()
-            await asyncio.sleep(3)  # Prevent API flood
+            await asyncio.sleep(2)  # Prevent API flood
 
-    spam_chats.discard(chat_id)
+    # Send remaining users (if any)
+    if user_list:
+        formatted_mentions = " | ".join(user_list)  
+        await replied.reply_text(f"{replied_text}\n\n{formatted_mentions}")
+
+    spam_chats.discard(chat_id)  # Remove from active tagging list
+    await message.reply_text(f"finished tagging {total_users} users.")
 
 @app.on_message(filters.command(["cancel", "ustop"]) & filters.group)
 async def cancel_spam(client, message):
     chat_id = message.chat.id
     if chat_id not in spam_chats:
-        return await message.reply("𝐂𝐮𝐫𝐫𝐞𝐧𝐭𝐥𝐲 𝐈'𝐦 𝐍𝐨𝐭 𝐓𝐚𝐠𝐠𝐢𝐧𝐠.")
+        return await message.reply("currently not tagging anyone.")
 
     try:
         member = await client.get_chat_member(chat_id, message.from_user.id)
         if member.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
-            return await message.reply("ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀɴ ᴀᴅᴍɪɴ.")
+            return await message.reply("only admins can stop tagging.")
     except UserNotParticipant:
-        return await message.reply("ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴘᴀʀᴛ ᴏғ ᴛʜᴇ ɢʀᴏᴜᴘ.")
+        return await message.reply("you are not a member of this group.")
 
     spam_chats.discard(chat_id)
-    return await message.reply("🦋 ᴛᴀɢɢɪɴɢ sᴛᴏᴘᴘᴇᴅ.")
+    return await message.reply("tagging stopped successfully.")
