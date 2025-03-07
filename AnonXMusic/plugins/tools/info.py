@@ -15,8 +15,8 @@ shadwophoto = [
     "https://telegra.ph/file/3c4de59511e179018f902.jpg"
 ]
 
-bg_path = "AnonXMusic/assets/AnnieNinfo.png"
-font_path = "AnonXMusic/assets/shadowinf.ttf"
+bg_path = "AnonXMusic/assets/AnnieNinfo_fixed.png"
+font_path = "AnonXMusic/assets/jarvisinf.ttf"
 
 INFO_TEXT = """**
 ❅─────✧❅✦❅✧─────❅
