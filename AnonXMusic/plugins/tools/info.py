@@ -16,8 +16,8 @@ shadwophoto = [
 ]
 
 
-bg_path = "ANNIEMUSIC/assets/AnnieNinfo.png"
-font_path = "ANNIEMUSIC/assets/shadowinf.ttf"
+bg_path = "AnonXMusic/assets/AnnieNinfo.png"
+font_path = "AnonXMusic/assets/shadowinf.ttf"
 
 
 INFO_TEXT = """**
