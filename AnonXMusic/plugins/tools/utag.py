@@ -5,7 +5,7 @@ from pyrogram.errors import UserNotParticipant
 from AnonXMusic import app
 from AnonXMusic.utils.shadwo_ban import admin_filter
 
-spam_chats = set()  # Track ongoing tagging sessions
+spam_chats = set()  # Track active tagging sessions
 
 @app.on_message(filters.command(["utag", "all", "mention", "tagall"]) & filters.group & admin_filter)
 async def tag_all_users(client, message): 
@@ -15,16 +15,20 @@ async def tag_all_users(client, message):
     if chat_id in spam_chats:
         return await message.reply_text("tagging is already in progress.") 
 
-    if not replied:
-        return await message.reply_text("reply to any message to tag all users on it.") 
-
     spam_chats.add(chat_id)
 
-    # Get message caption or default text if available
-    replied_text = replied.caption if replied.caption else "tagging users below:"
-    user_list = []
-    total_users = 0
+    # If replying to a message, use that message's text (without captions if media)
+    if replied:
+        if replied.text:
+            tag_text = replied.text  # Use replied text
+        else:
+            tag_text = "tagging users below:"  # If it's media with no text
+    else:
+        if len(message.command) < 2:
+            return await message.reply_text("reply to a message or provide text to tag all.") 
+        tag_text = message.text.split(None, 1)[1]  # Use command text
 
+    user_list = []
     async for m in client.get_chat_members(chat_id): 
         if chat_id not in spam_chats:
             break  
@@ -33,17 +37,22 @@ async def tag_all_users(client, message):
             continue
 
         user_list.append(f"{m.user.mention}")
-        total_users += 1
 
         if len(user_list) == 5:  # Send in batches of 5
             formatted_mentions = ", ".join(user_list)  
-            await replied.reply_text(f"{replied_text}\n\n{formatted_mentions}")
+            if replied:
+                await replied.reply_text(f"{tag_text}\n\n{formatted_mentions}")
+            else:
+                await message.reply_text(f"{tag_text}\n\n{formatted_mentions}")
             user_list.clear()
             await asyncio.sleep(2)  
 
     if user_list:
         formatted_mentions = ", ".join(user_list)  
-        await replied.reply_text(f"{replied_text}\n\n{formatted_mentions}")
+        if replied:
+            await replied.reply_text(f"{tag_text}\n\n{formatted_mentions}")
+        else:
+            await message.reply_text(f"{tag_text}\n\n{formatted_mentions}")
 
     spam_chats.discard(chat_id)  
 
