@@ -64,10 +64,10 @@ async def tag_all_users(client, message):
         else:
             await message.reply_text(full_tag_msg)
 
-    spam_chats.discard(chat_id)  
+    spam_chats.discard(chat_id)
 
-    # ✅ Final Completion Message with User Count
-    await message.reply_text(f"✅ tagging completed! total users tagged: {tagged_count}")
+    # ✅ Completion Message with User Count
+    await message.reply_text(f"tagging completed! total users tagged: {tagged_count}")
 
 @app.on_message(filters.command(["cancel", "ustop"]) & filters.group)
 async def cancel_spam(client, message):
