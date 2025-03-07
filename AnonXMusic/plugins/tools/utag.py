@@ -17,7 +17,7 @@ async def tag_all_users(client, message):
 
     spam_chats.add(chat_id)
 
-    # If replying to a message, use that message's text (without captions if media)
+    # If replying to a message, use that message's text (if media, keep it)
     if replied:
         if replied.text:
             tag_text = replied.text  # Use replied text
@@ -29,6 +29,8 @@ async def tag_all_users(client, message):
         tag_text = message.text.split(None, 1)[1]  # Use command text
 
     user_list = []
+    tagged_count = 0  # Count total tagged users
+
     async for m in client.get_chat_members(chat_id): 
         if chat_id not in spam_chats:
             break  
@@ -37,22 +39,23 @@ async def tag_all_users(client, message):
             continue
 
         user_list.append(f"{m.user.mention}")
+        tagged_count += 1  # Increase count
 
         if len(user_list) == 5:  # Send in batches of 5
             formatted_mentions = ", ".join(user_list)  
             if replied:
-                await replied.reply_text(f"{tag_text}\n\n{formatted_mentions}")
+                await replied.reply(f"{tag_text}\n\n{formatted_mentions}\n\ntotal tagged: {tagged_count}")  # Replying under media/text
             else:
-                await message.reply_text(f"{tag_text}\n\n{formatted_mentions}")
+                await message.reply_text(f"{tag_text}\n\n{formatted_mentions}\n\ntotal tagged: {tagged_count}")
             user_list.clear()
             await asyncio.sleep(2)  
 
     if user_list:
         formatted_mentions = ", ".join(user_list)  
         if replied:
-            await replied.reply_text(f"{tag_text}\n\n{formatted_mentions}")
+            await replied.reply(f"{tag_text}\n\n{formatted_mentions}\n\ntotal tagged: {tagged_count}")  # Replying under media/text
         else:
-            await message.reply_text(f"{tag_text}\n\n{formatted_mentions}")
+            await message.reply_text(f"{tag_text}\n\n{formatted_mentions}\n\ntotal tagged: {tagged_count}")
 
     spam_chats.discard(chat_id)  
 
