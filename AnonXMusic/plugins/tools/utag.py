@@ -13,7 +13,7 @@ async def tag_all_users(client, message):
     chat_id = message.chat.id
 
     if chat_id in spam_chats:
-        return await message.reply_text("tagging is already in progress.") 
+        return await message.reply_text("ᴛᴀɢɢɪɴɢ ɪs ᴀʟʀᴇᴀᴅʏ ɢᴏɪɴɢ ᴏɴ......") 
 
     spam_chats.add(chat_id)
 
@@ -28,7 +28,7 @@ async def tag_all_users(client, message):
         tag_text = message.text.split(None, 1)[1] if len(message.command) > 1 else ""
 
     if not tag_text:
-        return await message.reply_text("reply to a message or provide a text to tag all.")
+        return await message.reply_text("ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴀssᴀɢᴇ ᴏʀ ᴘʀᴏᴠɪᴅᴇ ᴀ ᴛᴇxᴛ ᴛᴏ ᴛᴀɢ ᴀʟʟ....")
 
     user_list = []
     tagged_count = 0  # Count total tagged users
@@ -67,7 +67,7 @@ async def tag_all_users(client, message):
     spam_chats.discard(chat_id)
 
     # ✅ Completion Message with User Count
-    await message.reply_text(f"tagging completed! total users tagged: {tagged_count}")
+    await message.reply_text(f"ᴛᴀɢɢɪɴɢ ᴄᴏᴍᴘʟᴇᴛᴇᴅ! total ᴜsᴇʀ's ᴛᴀɢɢᴇᴅ: {tagged_count}")
 
 @app.on_message(filters.command(["cancel", "ustop"]) & filters.group)
 async def cancel_spam(client, message):
@@ -78,9 +78,9 @@ async def cancel_spam(client, message):
     try:
         member = await client.get_chat_member(chat_id, message.from_user.id)
         if member.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
-            return await message.reply("only admins can stop tagging.")
+            return await message.reply("ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ sᴛᴏᴘ ᴛᴀɢɢɪɴɢ.")
     except UserNotParticipant:
-        return await message.reply("you are not a member of this group.")
+        return await message.reply("ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀ ᴍᴇᴍʙᴇʀ ᴏғ ᴛʜɪs ɢʀᴏᴜᴘ....")
 
     spam_chats.discard(chat_id)
-    return await message.reply("tagging stopped.")
+    return await message.reply("ᴛᴀɢɢɪɴɢ sᴛᴏᴘᴘᴇᴅ....")
