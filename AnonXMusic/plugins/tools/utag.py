@@ -12,22 +12,23 @@ async def tag_all_users(client, message):
     replied = message.reply_to_message  
     if len(message.command) < 2 and not replied:
         return await message.reply_text("ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴇssᴀɢᴇ ᴏʀ ɢɪᴠᴇ sᴏᴍᴇ ᴛᴇxᴛ ᴛᴏ ᴛᴀɢ ᴀʟʟ") 
-    
+
     chat_id = message.chat.id
     if chat_id in spam_chats:
         return await message.reply_text("ᴛᴀɢɢɪɴɢ ɪs ᴀʟʀᴇᴀᴅʏ ɪɴ ᴘʀᴏɢʀᴇss.") 
 
     spam_chats.add(chat_id)
-    
+
     user_list = []
     async for m in client.get_chat_members(chat_id): 
         if chat_id not in spam_chats:
             break  
-        user_list.append(f"⊚ {m.user.mention}")
-        
-        if len(user_list) == 5:
+        user_list.append(f"{m.user.mention}")
+
+        if len(user_list) == 10:
             msg_text = replied.text if replied else message.text.split(None, 1)[1]
-            await message.reply_text(f"{msg_text}\n\n" + "\n".join(user_list))
+            formatted_mentions = " | ".join(user_list)  # Single-line format
+            await message.reply_text(f"{msg_text}\n\n{formatted_mentions}")
             user_list.clear()
             await asyncio.sleep(3)  # Prevent API flood
 
