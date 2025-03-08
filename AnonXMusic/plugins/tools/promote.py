@@ -67,7 +67,13 @@ async def extract_user_and_title(message, client):
     return user, title
 
 def format_promotion_message(chat_name, user_mention, admin_mention, action):
-    action_text = "ᴩʀᴏᴍᴏᴛɪɴɢ" if action == "promote" else "ᴅᴇᴍᴏᴛɪɴɢ"
+    action_text = {
+        "promote": "ᴩʀᴏᴍᴏᴛɪɴɢ",
+        "fullpromote": "ғᴜʟʟ-ᴘʀᴏᴍᴏᴛɪᴏɴ",
+        "lowpromote": "ʟᴏᴡ-ᴘʀᴏᴍᴏᴛɪᴏɴ",
+        "demote": "ᴅᴇᴍᴏᴛɪɴɢ"
+    }.get(action, "ᴜɴᴋɴᴏᴡɴ ᴀᴄᴛɪᴏɴ")
+
     return (
         f"» {action_text} ᴀ ᴜsᴇʀ ɪɴ {chat_name}\n"
         f"ᴜsᴇʀ : {user_mention}\n"
@@ -79,13 +85,13 @@ async def selfpromote_command_handler(client, message):
     if message.from_user.id != BOT_OWNER_ID:
         await message.reply_text("Only the bot owner can use this command.")
         return
-    
+
     try:
         member = await client.get_chat_member(message.chat.id, message.from_user.id)
         if member.status == enums.ChatMemberStatus.ADMINISTRATOR:
             await message.reply_text("You are already an admin.")
             return
-        
+
         await client.promote_chat_member(
             chat_id=message.chat.id,
             user_id=message.from_user.id,
@@ -118,21 +124,12 @@ async def promote_command_handler(client, message):
     if not user:
         return
     try:
-        member = await client.get_chat_member(message.chat.id, user.id)
-        if member.status == enums.ChatMemberStatus.ADMINISTRATOR:
-            await message.reply_text("This user is already an admin.")
-            return
-
         await client.promote_chat_member(
-            chat_id=message.chat.id,
-            user_id=user.id,
-            privileges=ChatPrivileges(
-                can_change_info=False,
+            message.chat.id, user.id,
+            ChatPrivileges(
                 can_delete_messages=True,
                 can_invite_users=True,
                 can_pin_messages=True,
-                can_restrict_members=False,
-                can_promote_members=False,
                 can_manage_chat=True,
                 can_manage_video_chats=True,
                 is_anonymous=False,
@@ -140,17 +137,68 @@ async def promote_command_handler(client, message):
         )
 
         if title:
-            try:
-                await client.set_administrator_title(message.chat.id, user.id, title)
-            except Exception as e:
-                await message.reply_text(f"Failed to set title: {e}")
+            await client.set_administrator_title(message.chat.id, user.id, title)
 
-        user_mention = mention(user)
-        admin_mention = mention(message.from_user)
-        chat_name = message.chat.title
-        msg = format_promotion_message(chat_name, user_mention, admin_mention, action="promote")
-        await message.reply_text(msg)
-    except ChatAdminRequired:
-        await message.reply_text("I need to be an admin with promote permissions.")
+        await message.reply_text(format_promotion_message(message.chat.title, mention(user), mention(message.from_user), "promote"))
+    except Exception as e:
+        await message.reply_text(f"An error occurred: {e}")
+
+@app.on_message(filters.command("fullpromote"))
+@admin_required("can_promote_members")
+async def fullpromote_command_handler(client, message):
+    user, _ = await extract_user_and_title(message, client)
+    if not user:
+        return
+    try:
+        await client.promote_chat_member(
+            message.chat.id, user.id,
+            ChatPrivileges(
+                can_manage_chat=True,
+                can_change_info=True,
+                can_delete_messages=True,
+                can_invite_users=True,
+                can_restrict_members=True,
+                can_pin_messages=True,
+                can_promote_members=True,
+                is_anonymous=False,
+                can_manage_video_chats=True,
+            )
+        )
+
+        await message.reply_text(format_promotion_message(message.chat.title, mention(user), mention(message.from_user), "fullpromote"))
+    except Exception as e:
+        await message.reply_text(f"An error occurred: {e}")
+
+@app.on_message(filters.command("lowpromote"))
+@admin_required("can_promote_members")
+async def lowpromote_command_handler(client, message):
+    user, _ = await extract_user_and_title(message, client)
+    if not user:
+        return
+    try:
+        await client.promote_chat_member(
+            message.chat.id, user.id,
+            ChatPrivileges(
+                can_delete_messages=True,
+                can_invite_users=True,
+                can_pin_messages=True,
+                can_manage_chat=True,
+                is_anonymous=False,
+            )
+        )
+
+        await message.reply_text(format_promotion_message(message.chat.title, mention(user), mention(message.from_user), "lowpromote"))
+    except Exception as e:
+        await message.reply_text(f"An error occurred: {e}")
+
+@app.on_message(filters.command("demote"))
+@admin_required("can_promote_members")
+async def demote_command_handler(client, message):
+    user, _ = await extract_user_and_title(message, client)
+    if not user:
+        return
+    try:
+        await client.promote_chat_member(message.chat.id, user.id, ChatPrivileges())
+        await message.reply_text(format_promotion_message(message.chat.title, mention(user), mention(message.from_user), "demote"))
     except Exception as e:
         await message.reply_text(f"An error occurred: {e}")
