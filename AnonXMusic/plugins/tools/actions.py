@@ -8,7 +8,9 @@ from AnonXMusic import app
 BOT_OWNER_ID = 5147822244  # Replace with your actual bot owner ID
 
 def mention(user):
-    return user.mention if user else "Unknown User"
+    if user.username:
+        return f"@{user.username}"
+    return f"[{user.first_name}](tg://user?id={user.id})"
 
 def admin_required(func):
     @wraps(func)
@@ -28,7 +30,7 @@ async def extract_user_and_reason(message, client):
     args = message.text.split()
     reason = None
     user = None
-    
+
     if message.reply_to_message:
         user = message.reply_to_message.from_user
         if len(args) > 1:
@@ -37,7 +39,10 @@ async def extract_user_and_reason(message, client):
         user_arg = args[1]
         reason = message.text.partition(args[1])[2].strip() or None
         try:
-            user = await client.get_users(int(user_arg) if user_arg.isdigit() else user_arg)
+            if user_arg.isdigit():
+                user = await client.get_users(int(user_arg))
+            else:
+                user = await client.get_users(user_arg)
         except Exception:
             await message.reply_text("I can't find that user.")
             return None, None
