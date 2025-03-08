@@ -1,6 +1,6 @@
 from pyrogram import Client, filters, enums
 from pyrogram.types import ChatPrivileges
-from pyrogram.errors import ChatAdminRequired
+from pyrogram.errors import ChatAdminRequired, UserNotParticipant
 from functools import wraps
 from AnonXMusic import app
 
@@ -38,7 +38,6 @@ def admin_required(*privileges):
 async def extract_user_and_title(message, client):
     user = None
     title = None
-
     cmd = message.text.strip().split()[0]
     text = message.text[len(cmd):].strip()
 
@@ -49,19 +48,25 @@ async def extract_user_and_title(message, client):
             return None, None
         title = text if text else None
     else:
-        args = text.strip().split(maxsplit=1)
+        args = text.split(maxsplit=1)
         if not args:
             await message.reply_text("Please specify a user or reply to a user's message.")
             return None, None
+
         user_arg = args[0]
+
         try:
-            user = await client.get_users(user_arg)
-            if not user:
-                await message.reply_text("I can't find that user.")
-                return None, None
+            if user_arg.isdigit():
+                user = await client.get_users(int(user_arg))  # User ID
+            else:
+                user = await client.get_users(user_arg)  # Username or Mention
+        except UserNotParticipant:
+            await message.reply_text("The user is not in this chat.")
+            return None, None
         except Exception:
             await message.reply_text("I can't find that user.")
             return None, None
+
         title = args[1] if len(args) > 1 else None
 
     return user, title
@@ -79,43 +84,6 @@ def format_promotion_message(chat_name, user_mention, admin_mention, action):
         f"ᴜsᴇʀ : {user_mention}\n"
         f"ᴀᴅᴍɪɴ : {admin_mention}"
     )
-
-@app.on_message(filters.command("selfpromote"))
-async def selfpromote_command_handler(client, message):
-    if message.from_user.id != BOT_OWNER_ID:
-        await message.reply_text("Only the bot owner can use this command.")
-        return
-
-    try:
-        member = await client.get_chat_member(message.chat.id, message.from_user.id)
-        if member.status == enums.ChatMemberStatus.ADMINISTRATOR:
-            await message.reply_text("You are already an admin.")
-            return
-
-        await client.promote_chat_member(
-            chat_id=message.chat.id,
-            user_id=message.from_user.id,
-            privileges=ChatPrivileges(
-                can_manage_chat=True,
-                can_change_info=True,
-                can_delete_messages=True,
-                can_invite_users=True,
-                can_restrict_members=True,
-                can_pin_messages=True,
-                can_promote_members=True,
-                is_anonymous=False,
-                can_manage_video_chats=True,
-            )
-        )
-
-        user_mention = mention(message.from_user)
-        chat_name = message.chat.title
-        msg = f"» sᴇʟғ-ᴘʀᴏᴍᴏᴛɪᴏɴ ɪɴ {chat_name}\nᴜsᴇʀ : {user_mention}\nᴘᴏᴡᴇʀ ɢʀᴀɴᴛᴇᴅ ✅"
-        await message.reply_text(msg)
-    except ChatAdminRequired:
-        await message.reply_text("I need to be an admin with promote permissions to do this.")
-    except Exception as e:
-        await message.reply_text(f"An error occurred: {e}")
 
 @app.on_message(filters.command("promote"))
 @admin_required("can_promote_members")
@@ -198,7 +166,18 @@ async def demote_command_handler(client, message):
     if not user:
         return
     try:
-        await client.promote_chat_member(message.chat.id, user.id, ChatPrivileges())
+        await client.promote_chat_member(message.chat.id, user.id, ChatPrivileges(
+            can_change_info=False,
+            can_delete_messages=False,
+            can_invite_users=False,
+            can_restrict_members=False,
+            can_pin_messages=False,
+            can_promote_members=False,
+            can_manage_chat=False,
+            can_manage_video_chats=False,
+            is_anonymous=False,
+        ))
+
         await message.reply_text(format_promotion_message(message.chat.title, mention(user), mention(message.from_user), "demote"))
     except Exception as e:
         await message.reply_text(f"An error occurred: {e}")
