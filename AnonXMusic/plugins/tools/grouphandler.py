@@ -1,4 +1,4 @@
-from pyrogram import enums
+"""from pyrogram import enums
 from pyrogram.enums import ChatType
 from pyrogram import filters, Client
 from ANNIEMUSIC import app
@@ -189,4 +189,4 @@ async def bot_leave(_, message):
     await app.leave_chat(chat_id=chat_id, delete=True)
 
 
-# --------------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------------- # """
