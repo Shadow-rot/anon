@@ -2,7 +2,6 @@ import asyncio
 import random
 
 from pyrogram import Client, filters
-from pyrogram.raw.functions.messages import DeleteHistory
 from pyrogram.types import Message
 
 from AnonXMusic import app
@@ -14,70 +13,58 @@ from AnonXMusic.utils.database import get_client
 async def sg(client: Client, message: Message):
 
     if len(message.text.split()) < 2 and not message.reply_to_message:
-        return await message.reply("sg username/id/reply")
+        return await message.reply("Usage: /sg username/id/reply")
+    
     if message.reply_to_message:
-        args = message.reply_to_message.from_user.id
+        user_id = message.reply_to_message.from_user.id
     else:
-        args = message.text.split()[1:]
-        if not args:
-            return await message.reply(
-                "Please provide a username, ID, or reply to a message."
-            )
-        args = args[0]
-    lol = await message.reply("<code>Processing...</code>")
-    if args:
+        args = message.text.split()[1]
         try:
-            user = await client.get_users(f"{args}")
+            user = await client.get_users(args)
+            user_id = user.id
         except Exception:
-            return await lol.edit("<code>Please specify a valid user!</code>")
-    sgbot = ["sangmata_bot", "sangmata_beta_bot"]
-    sg = random.choice(sgbot)
-    VIP = random.choice(assistants)
-    ubot = await get_client(VIP)
+            return await message.reply("<code>Invalid user provided!</code>")
 
-    try:
-        a = await ubot.send_message(sg, f"{user.id}")
-        await a.delete()
-    except Exception as e:
-        return await lol.edit(str(e))
-    await asyncio.sleep(1)
-
-    async for stalk in ubot.search_messages(a.chat.id):
-        if stalk.text is None:
-            continue
-        if not stalk:
-            await message.reply("botnya ngambek")
-        elif stalk:
-            await message.reply(f"{stalk.text}")
+    msg = await message.reply("<code>Processing...</code>")
+    
+    sgbots = ["sangmata_bot", "sangmata_beta_bot"]
+    
+    # Get a working assistant
+    for _ in range(5):  # Try multiple assistants if one fails
+        VIP = random.choice(assistants)
+        try:
+            ubot = await get_client(VIP)
             break
+        except Exception:
+            continue
+    else:
+        return await msg.edit("<code>No available assistants!</code>")
 
     try:
-        user_info = await ubot.resolve_peer(sg)
-        await ubot.send(DeleteHistory(peer=user_info, max_id=0, revoke=True))
-    except Exception:
-        pass
+        while True:  # Infinite loop to keep checking until data is found
+            sg_bot = random.choice(sgbots)
+            request_msg = await ubot.send_message(sg_bot, str(user_id))
+            await asyncio.sleep(2)  # Give some time for bot to respond
 
-    await lol.delete()
+            async for stalk in ubot.search_messages(sg_bot):
+                if stalk.text:
+                    await message.reply(stalk.text)
+                    return  # Exit function once message is found
+            
+            await request_msg.delete()  # Clean up old request messages before retrying
+            await asyncio.sleep(2)  # Wait before retrying to avoid spam
+            
+    except Exception as e:
+        return await msg.edit(f"Error: {e}")
+
+    await msg.delete()
 
 
 __MODULE__ = "Hɪsᴛᴏʀʏ"
 __HELP__ = """
-## Hɪsᴛᴏʀʏ Cᴏᴍᴍᴀɴᴅs Hᴇᴘ
+### /sg ᴏʀ /Hɪsᴛᴏʀʏ
+Fetches username history.
 
-### 1. /sɢ ᴏʀ /Hɪsᴛᴏʀʏ
-**Dᴇsᴄʀɪᴘᴛɪᴏɴ:**
-Fᴇᴛᴄʜᴇs ᴀ ʀᴀɴᴅᴏᴍ ᴍᴇssᴀɢᴇ ғʀᴏᴍ ᴀ ᴜsᴇʀ's ᴍᴇssᴀɢᴇ ʜɪsᴛᴏʀʏ.
-
-**Usᴀɢᴇ:**
-/sɢ [ᴜsᴇʀɴᴀᴍᴇ/ɪᴅ/ʀᴇᴘʏ]
-
-**Dᴇᴛᴀɪs:**
-- Fᴇᴛᴄʜᴇs ᴀ ʀᴀɴᴅᴏᴍ ᴍᴇssᴀɢᴇ ғʀᴏᴍ ᴛʜᴇ ᴍᴇssᴀɢᴇ ʜɪsᴛᴏʀʏ ᴏғ ᴛʜᴇ sᴘᴇᴄɪғɪᴇᴅ ᴜsᴇʀ.
-- Cᴀɴ ʙᴇ ᴜsᴇᴅ ʙʏ ᴘʀᴏᴠɪᴅɪɴɢ ᴀ ᴜsᴇʀɴᴀᴍᴇ, ᴜsᴇʀ ID, ᴏʀ ʀᴇᴘʏɪɴɢ ᴛᴏ ᴀ ᴍᴇssᴀɢᴇ ғʀᴏᴍ ᴛʜᴇ ᴜsᴇʀ.
-- Aᴄᴄᴇssɪʙᴇ ᴏɴʏ ʙʏ ᴛʜᴇ ʙᴏᴛ's ᴀssɪsᴛᴀɴᴛs.
-
-**Exᴀᴍᴘᴇs:**
-- `/sɢ ᴜsᴇʀɴᴀᴍᴇ`
-- `/sɢ ᴜsᴇʀ_ɪᴅ`
-- `/sɢ [ʀᴇᴘʏ ᴛᴏ ᴀ ᴍᴇssᴀɢᴇ]`
+**Usage:**
+`/sg username/id/reply`
 """
