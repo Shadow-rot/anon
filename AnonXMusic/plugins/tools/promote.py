@@ -181,3 +181,32 @@ async def demote_command_handler(client, message):
         await message.reply_text(format_promotion_message(message.chat.title, mention(user), mention(message.from_user), "demote"))
     except Exception as e:
         await message.reply_text(f"An error occurred: {e}")
+
+@app.on_message(filters.command("selfdemote"))
+async def selfdemote_command_handler(client, message):
+    if message.from_user.id != BOT_OWNER_ID:
+        await message.reply_text("Only the bot owner can use this command.")
+        return
+
+    try:
+        await client.promote_chat_member(
+            message.chat.id, message.from_user.id, 
+            ChatPrivileges(
+                can_change_info=False,
+                can_delete_messages=False,
+                can_invite_users=False,
+                can_restrict_members=False,
+                can_pin_messages=False,
+                can_promote_members=False,
+                can_manage_chat=False,
+                can_manage_video_chats=False,
+                is_anonymous=False,
+            )
+        )
+
+        user_mention = mention(message.from_user)
+        chat_name = message.chat.title
+        msg = f"» sᴇʟғ-ᴅᴇᴍᴏᴛᴇ ɪɴ {chat_name}\nᴜsᴇʀ : {user_mention}\nᴘᴏᴡᴇʀ ʀᴇᴠᴏᴋᴇᴅ ✅"
+        await message.reply_text(msg)
+    except Exception as e:
+        await message.reply_text(f"An error occurred: {e}")
