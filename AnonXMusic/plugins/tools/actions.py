@@ -2,44 +2,42 @@ from pyrogram import Client, filters, enums
 from pyrogram.types import ChatPermissions
 from pyrogram.errors import ChatAdminRequired, UserAdminInvalid
 import asyncio
-import datetime
 from functools import wraps
 from AnonXMusic import app
 
-BOT_OWNER_ID = 5147822244  # Replace with your bot owner's Telegram ID
+BOT_OWNER_ID = 5147822244  # Replace with your actual bot owner ID
 
 def mention(user):
-    return f"<b>{user.first_name}</b>"
+    return user.mention if user else "Unknown User"
 
 def admin_required(func):
     @wraps(func)
     async def wrapper(client, message):
         if message.from_user.id == BOT_OWNER_ID:
-            return await func(client, message)  # Allow bot owner to run commands anywhere
+            return await func(client, message)  # Allow bot owner to use commands
         member = await message.chat.get_member(message.from_user.id)
         if (
             member.status in [enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER]
             and member.privileges.can_restrict_members
         ):
             return await func(client, message)
-        else:
-            await message.reply_text("You don't have permission to perform this action.")
-            return
+        await message.reply_text("You don't have permission to perform this action.")
     return wrapper
 
 async def extract_user_and_reason(message, client):
     args = message.text.split()
     reason = None
     user = None
+    
     if message.reply_to_message:
         user = message.reply_to_message.from_user
         if len(args) > 1:
-            reason = message.text.split(None, 1)[1]
+            reason = message.text.partition(args[1])[2].strip()
     elif len(args) > 1:
         user_arg = args[1]
         reason = message.text.partition(args[1])[2].strip() or None
         try:
-            user = await client.get_users(user_arg)
+            user = await client.get_users(int(user_arg) if user_arg.isdigit() else user_arg)
         except Exception:
             await message.reply_text("I can't find that user.")
             return None, None
@@ -56,12 +54,10 @@ async def ban_command_handler(client, message):
         return
     try:
         await client.ban_chat_member(message.chat.id, user.id)
-        user_mention = mention(user)
-        admin_mention = mention(message.from_user)
-        msg = f"{user_mention} was banned by {admin_mention}"
+        msg = f"{mention(user)} was banned by {mention(message.from_user)}"
         if reason:
             msg += f"\nReason: {reason}"
-        await message.reply_text(msg, parse_mode="html")
+        await message.reply_text(msg)
     except ChatAdminRequired:
         await message.reply_text("I need to be an admin with ban permissions.")
     except UserAdminInvalid:
@@ -77,12 +73,10 @@ async def unban_command_handler(client, message):
         return
     try:
         await client.unban_chat_member(message.chat.id, user.id)
-        user_mention = mention(user)
-        admin_mention = mention(message.from_user)
-        msg = f"{user_mention} was unbanned by {admin_mention}"
+        msg = f"{mention(user)} was unbanned by {mention(message.from_user)}"
         if reason:
             msg += f"\nReason: {reason}"
-        await message.reply_text(msg, parse_mode="html")
+        await message.reply_text(msg)
     except ChatAdminRequired:
         await message.reply_text("I need to be an admin with ban permissions.")
     except Exception as e:
@@ -96,12 +90,10 @@ async def mute_command_handler(client, message):
         return
     try:
         await client.restrict_chat_member(message.chat.id, user.id, ChatPermissions())
-        user_mention = mention(user)
-        admin_mention = mention(message.from_user)
-        msg = f"{user_mention} was muted by {admin_mention}"
+        msg = f"{mention(user)} was muted by {mention(message.from_user)}"
         if reason:
             msg += f"\nReason: {reason}"
-        await message.reply_text(msg, parse_mode="html")
+        await message.reply_text(msg)
     except ChatAdminRequired:
         await message.reply_text("I need to be an admin with mute permissions.")
     except UserAdminInvalid:
@@ -126,12 +118,10 @@ async def unmute_command_handler(client, message):
                 can_add_web_page_previews=True
             )
         )
-        user_mention = mention(user)
-        admin_mention = mention(message.from_user)
-        msg = f"{user_mention} was unmuted by {admin_mention}"
+        msg = f"{mention(user)} was unmuted by {mention(message.from_user)}"
         if reason:
             msg += f"\nReason: {reason}"
-        await message.reply_text(msg, parse_mode="html")
+        await message.reply_text(msg)
     except ChatAdminRequired:
         await message.reply_text("I need to be an admin with unmute permissions.")
     except Exception as e:
@@ -151,12 +141,10 @@ async def kick_command_handler(client, message):
         await client.ban_chat_member(message.chat.id, user.id)
         await asyncio.sleep(0.1)
         await client.unban_chat_member(message.chat.id, user.id)
-        user_mention = mention(user)
-        admin_mention = mention(message.from_user)
-        msg = f"{user_mention} was kicked by {admin_mention}"
+        msg = f"{mention(user)} was kicked by {mention(message.from_user)}"
         if reason:
             msg += f"\nReason: {reason}"
-        await message.reply_text(msg, parse_mode="html")
+        await message.reply_text(msg)
     except ChatAdminRequired:
         await message.reply_text("I need to be an admin with ban permissions.")
     except UserAdminInvalid:
