@@ -5,7 +5,7 @@ import subprocess
 import traceback
 from pyrogram import Client, filters, raw
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from pyrogram.errors import StickersetInvalid, StickersTooMuch, FloodWait, RPCError
+from pyrogram.errors import StickersetInvalid, StickersTooMuch, FloodWait, RPCError, PeerIdInvalid
 from PIL import Image
 
 from AnonXMusic import app
@@ -40,18 +40,23 @@ async def upload_sticker(client, user_id, file_path, mime_type, sticker_type):
     return uploaded_media.document
 
 async def create_sticker_pack(client, user_id, pack_name, pack_title, uploaded_document, emoji, sticker_type):
-    await client.invoke(raw.functions.stickers.CreateStickerSet(
-        user_id=await client.resolve_peer(user_id),
-        title=pack_title,
-        short_name=pack_name,
-        stickers=[raw.types.InputStickerSetItem(
-            document=raw.types.InputDocument(
-                id=uploaded_document.id, access_hash=uploaded_document.access_hash, file_reference=uploaded_document.file_reference),
-            emoji=emoji
-        )],
-        animated=(sticker_type == "animated"),
-        videos=(sticker_type == "video")
-    ))
+    try:
+        await client.get_users(user_id)  # FIX: Ensure the bot has "met" the user
+        await client.invoke(raw.functions.stickers.CreateStickerSet(
+            user_id=await client.resolve_peer(user_id),
+            title=pack_title,
+            short_name=pack_name,
+            stickers=[raw.types.InputStickerSetItem(
+                document=raw.types.InputDocument(
+                    id=uploaded_document.id, access_hash=uploaded_document.access_hash, file_reference=uploaded_document.file_reference),
+                emoji=emoji
+            )],
+            animated=(sticker_type == "animated"),
+            videos=(sticker_type == "video")
+        ))
+    except PeerIdInvalid:
+        await client.send_message(user_id, "Hey! I need to interact with you first before creating a sticker pack.")
+        raise PeerIdInvalid("Bot has not interacted with this user before. User needs to send a message first.")
 
 async def send_pack_message(msg, is_new, sticker_type, pack_title, pack_name, sticker_count, emoji):
     text = f"**➣ {'Created a new' if is_new else 'Added to'} {sticker_type.capitalize()} Pack!**\n\n"
