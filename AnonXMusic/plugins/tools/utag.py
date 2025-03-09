@@ -5,7 +5,7 @@ from pyrogram.errors import UserNotParticipant
 from AnonXMusic import app
 from AnonXMusic.utils.shadwo_ban import admin_filter
 
-spam_chats = set()  # Track active tagging sessions
+spam_chats = set()
 
 @app.on_message(filters.command(["utag", "all", "mention", "tagall"]) & filters.group & admin_filter)
 async def tag_all_users(client, message): 
@@ -17,70 +17,63 @@ async def tag_all_users(client, message):
 
     spam_chats.add(chat_id)
 
-    # Get the tagging text
+    # Get tagging text
     tag_text = ""
     if replied:
-        if replied.caption:  
-            tag_text = replied.caption  # If it's a media file with a caption, use it
-        elif replied.text:
-            tag_text = replied.text  # If it's a text message, use its text
+        tag_text = replied.caption or replied.text or "➤"
     else:
-        tag_text = message.text.split(None, 1)[1] if len(message.command) > 1 else ""
-
-    if not tag_text:
-        return await message.reply_text("ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴀssᴀɢᴇ ᴏʀ ᴘʀᴏᴠɪᴅᴇ ᴀ ᴛᴇxᴛ ᴛᴏ ᴛᴀɢ ᴀʟʟ....")
+        tag_text = message.text.split(None, 1)[1] if len(message.command) > 1 else "➤"
 
     user_list = []
-    tagged_count = 0  # Count total tagged users
+    tagged_count = 0
 
     async for m in client.get_chat_members(chat_id): 
         if chat_id not in spam_chats:
-            break  
+            break  # Tagging was cancelled
 
-        if not m.user or m.user.is_deleted:
+        if not m.user or m.user.is_deleted or m.user.is_bot:
             continue
 
-        user_list.append(f"{m.user.mention}")
+        user_list.append(m.user.mention)
         tagged_count += 1  
 
-        if len(user_list) == 5:  # Send in batches of 5
-            formatted_mentions = ", ".join(user_list)  
-            full_tag_msg = f"{tag_text}\n\n{formatted_mentions}"
-            
+        if len(user_list) == 10:
+            full_tag_msg = f"{tag_text}\n\n{', '.join(user_list)}"
+            try:
+                if replied:
+                    await replied.reply(full_tag_msg)
+                else:
+                    await message.reply_text(full_tag_msg)
+            except:
+                pass
+            user_list.clear()
+            await asyncio.sleep(1.5)
+
+    if user_list and chat_id in spam_chats:
+        full_tag_msg = f"{tag_text}\n\n{', '.join(user_list)}"
+        try:
             if replied:
-                await replied.reply(full_tag_msg)  
+                await replied.reply(full_tag_msg)
             else:
                 await message.reply_text(full_tag_msg)
-
-            user_list.clear()
-            await asyncio.sleep(2)  
-
-    if user_list:
-        formatted_mentions = ", ".join(user_list)  
-        full_tag_msg = f"{tag_text}\n\n{formatted_mentions}"
-        
-        if replied:
-            await replied.reply(full_tag_msg)  
-        else:
-            await message.reply_text(full_tag_msg)
+        except:
+            pass
 
     spam_chats.discard(chat_id)
-
-    # ✅ Completion Message with User Count
-    await message.reply_text(f"ᴛᴀɢɢɪɴɢ ᴄᴏᴍᴘʟᴇᴛᴇᴅ! total ᴜsᴇʀ's ᴛᴀɢɢᴇᴅ: {tagged_count}")
+    await message.reply_text(f"✅ ᴛᴀɢɢɪɴɢ ᴄᴏᴍᴘʟᴇᴛᴇᴅ.\n👤 ᴛᴏᴛᴀʟ ᴜsᴇʀs ᴛᴀɢɢᴇᴅ: {tagged_count}")
 
 @app.on_message(filters.command(["cancel", "ustop"]) & filters.group)
 async def cancel_spam(client, message):
     chat_id = message.chat.id
     if chat_id not in spam_chats:
-        return await message.reply("currently not tagging anyone.")
+        return await message.reply("Currently not tagging anyone.")
 
     try:
         member = await client.get_chat_member(chat_id, message.from_user.id)
         if member.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
-            return await message.reply("ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ sᴛᴏᴘ ᴛᴀɢɢɪɴɢ.")
+            return await message.reply("Only admins can stop tagging.")
     except UserNotParticipant:
-        return await message.reply("ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀ ᴍᴇᴍʙᴇʀ ᴏғ ᴛʜɪs ɢʀᴏᴜᴘ....")
+        return await message.reply("You're not a member of this group.")
 
     spam_chats.discard(chat_id)
-    return await message.reply("ᴛᴀɢɢɪɴɢ sᴛᴏᴘᴘᴇᴅ....")
+    return await message.reply("✅ Tagging stopped.")
