@@ -7,9 +7,11 @@ from AnonXMusic import app
 BOT_OWNER_ID = 5147822244  # Replace with your actual Telegram user ID
 
 def mention(user):
-    return user.mention if user else "Unknown User"
+    """Generate a mention without exposing user ID."""
+    return f"[{user.first_name}](tg://user?id={user.id})" if user else "Unknown User"
 
 def admin_required(*privileges):
+    """Check if the user has the required admin privileges."""
     def decorator(func):
         @wraps(func)
         async def wrapper(client, message):
@@ -36,42 +38,30 @@ def admin_required(*privileges):
     return decorator
 
 async def extract_user_and_title(message, client):
+    """Extracts a user and title from a message (by ID, username, or reply)."""
     user = None
     title = None
-    cmd = message.text.strip().split()[0]
-    text = message.text[len(cmd):].strip()
+    text = message.text.strip().split(maxsplit=1)[1:] if len(message.text.split()) > 1 else []
 
     if message.reply_to_message:
         user = message.reply_to_message.from_user
-        if not user:
-            await message.reply_text("I can't find the user in the replied message.")
-            return None, None
-        title = text if text else None
-    else:
-        args = text.split(maxsplit=1)
-        if not args:
-            await message.reply_text("Please specify a user or reply to a user's message.")
-            return None, None
-
-        user_arg = args[0]
-
+        title = text[0] if text else None
+    elif text:
+        user_arg = text[0].strip()
+        title = text[1] if len(text) > 1 else None
         try:
-            if user_arg.isdigit():
-                user = await client.get_users(int(user_arg))  # User ID
-            else:
-                user = await client.get_users(user_arg)  # Username or Mention
-        except UserNotParticipant:
-            await message.reply_text("The user is not in this chat.")
-            return None, None
+            user = await client.get_users(int(user_arg) if user_arg.isdigit() else user_arg)
         except Exception:
             await message.reply_text("I can't find that user.")
             return None, None
 
-        title = args[1] if len(args) > 1 else None
-
+    if not user:
+        await message.reply_text("Please provide a valid user (ID, username, or reply).")
+    
     return user, title
 
 def format_promotion_message(chat_name, user_mention, admin_mention, action, title=None):
+    """Formats the message for admin actions."""
     action_text = {
         "promote": "ᴩʀᴏᴍᴏᴛɪɴɢ",
         "fullpromote": "ғᴜʟʟ-ᴘʀᴏᴍᴏᴛɪᴏɴ",
@@ -90,9 +80,10 @@ def format_promotion_message(chat_name, user_mention, admin_mention, action, tit
 @app.on_message(filters.command("promote"))
 @admin_required("can_promote_members")
 async def promote_command_handler(client, message):
-    user, title = await extract_user_and_title(message, client)
+    user, _ = await extract_user_and_title(message, client)
     if not user:
         return
+    
     try:
         await client.promote_chat_member(
             message.chat.id, user.id,
@@ -106,19 +97,16 @@ async def promote_command_handler(client, message):
             )
         )
 
-        if title:
-            await client.set_administrator_title(message.chat.id, user.id, title)
-
-        await message.reply_text(format_promotion_message(message.chat.title, mention(user), mention(message.from_user), "promote", title))
+        await message.reply_text(format_promotion_message(message.chat.title, mention(user), mention(message.from_user), "promote"))
     except Exception as e:
         await message.reply_text(f"An error occurred: {e}")
 
-@app.on_message(filters.command("settitle"))
+@app.on_message(filters.command("title"))
 @admin_required("can_promote_members")
 async def set_title_handler(client, message):
     user, title = await extract_user_and_title(message, client)
     if not user or not title:
-        return await message.reply_text("Usage: `/settitle @username NewTitle`")
+        return await message.reply_text("Usage: `/title @username NewTitle`")
 
     try:
         await client.set_administrator_title(message.chat.id, user.id, title)
@@ -135,18 +123,7 @@ async def demote_command_handler(client, message):
     if not user:
         return
     try:
-        await client.promote_chat_member(message.chat.id, user.id, ChatPrivileges(
-            can_change_info=False,
-            can_delete_messages=False,
-            can_invite_users=False,
-            can_restrict_members=False,
-            can_pin_messages=False,
-            can_promote_members=False,
-            can_manage_chat=False,
-            can_manage_video_chats=False,
-            is_anonymous=False,
-        ))
-
+        await client.promote_chat_member(message.chat.id, user.id, ChatPrivileges())
         await message.reply_text(format_promotion_message(message.chat.title, mention(user), mention(message.from_user), "demote"))
     except Exception as e:
         await message.reply_text(f"An error occurred: {e}")
@@ -184,10 +161,7 @@ async def selfdemote_command_handler(client, message):
         return
 
     try:
-        await client.promote_chat_member(
-            message.chat.id, message.from_user.id, ChatPrivileges()
-        )
-
+        await client.promote_chat_member(message.chat.id, message.from_user.id, ChatPrivileges())
         await message.reply_text(format_promotion_message(message.chat.title, mention(message.from_user), "Bot Owner", "selfdemote"))
     except Exception as e:
         await message.reply_text(f"An error occurred: {e}")
