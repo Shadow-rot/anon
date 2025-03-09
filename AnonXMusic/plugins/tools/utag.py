@@ -17,7 +17,6 @@ async def tag_all_users(client, message):
 
     spam_chats.add(chat_id)
 
-    # Get tagging text
     tag_text = ""
     if replied:
         tag_text = replied.caption or replied.text or "➤"
@@ -26,18 +25,20 @@ async def tag_all_users(client, message):
 
     user_list = []
     tagged_count = 0
+    batch_limit = 10
+    delay_between_batches = 1.5
 
-    async for m in client.get_chat_members(chat_id): 
+    async for m in client.get_chat_members(chat_id):
         if chat_id not in spam_chats:
-            break  # Tagging was cancelled
+            break
 
         if not m.user or m.user.is_deleted or m.user.is_bot:
             continue
 
         user_list.append(m.user.mention)
-        tagged_count += 1  
+        tagged_count += 1
 
-        if len(user_list) == 10:
+        if len(user_list) == batch_limit:
             full_tag_msg = f"{tag_text}\n\n{', '.join(user_list)}"
             try:
                 if replied:
@@ -47,7 +48,7 @@ async def tag_all_users(client, message):
             except:
                 pass
             user_list.clear()
-            await asyncio.sleep(1.5)
+            await asyncio.sleep(delay_between_batches)
 
     if user_list and chat_id in spam_chats:
         full_tag_msg = f"{tag_text}\n\n{', '.join(user_list)}"
