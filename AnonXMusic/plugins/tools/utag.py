@@ -3,7 +3,7 @@ from pyrogram import Client, filters
 from pyrogram.enums import ChatMemberStatus
 from pyrogram.errors import UserNotParticipant
 from AnonXMusic import app
-from AnonXMusic.utils.jarvis_ban import admin_filter
+from AnonXMusic.utils.shadwo_ban import admin_filter
 
 spam_chats = []
 
