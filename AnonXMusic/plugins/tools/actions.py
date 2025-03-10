@@ -7,16 +7,11 @@ from AnonXMusic import app
 
 BOT_OWNER_ID = 5147822244  # Replace with your actual bot owner ID
 
-def mention(user):
-    if user.username:
-        return f"@{user.username}"
-    return f"[{user.first_name}](tg://user?id={user.id})"
-
 def admin_required(func):
     @wraps(func)
     async def wrapper(client, message):
         if message.from_user.id == BOT_OWNER_ID:
-            return await func(client, message)  # Allow bot owner to use commands
+            return await func(client, message)
         member = await message.chat.get_member(message.from_user.id)
         if (
             member.status in [enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER]
@@ -59,7 +54,7 @@ async def ban_command_handler(client, message):
         return
     try:
         await client.ban_chat_member(message.chat.id, user.id)
-        msg = f"{mention(user)} was banned by {mention(message.from_user)}"
+        msg = f"{user.mention} was banned by {message.from_user.mention}"
         if reason:
             msg += f"\nReason: {reason}"
         await message.reply_text(msg)
@@ -78,7 +73,7 @@ async def unban_command_handler(client, message):
         return
     try:
         await client.unban_chat_member(message.chat.id, user.id)
-        msg = f"{mention(user)} was unbanned by {mention(message.from_user)}"
+        msg = f"{user.mention} was unbanned by {message.from_user.mention}"
         if reason:
             msg += f"\nReason: {reason}"
         await message.reply_text(msg)
@@ -95,7 +90,7 @@ async def mute_command_handler(client, message):
         return
     try:
         await client.restrict_chat_member(message.chat.id, user.id, ChatPermissions())
-        msg = f"{mention(user)} was muted by {mention(message.from_user)}"
+        msg = f"{user.mention} was muted by {message.from_user.mention}"
         if reason:
             msg += f"\nReason: {reason}"
         await message.reply_text(msg)
@@ -123,7 +118,7 @@ async def unmute_command_handler(client, message):
                 can_add_web_page_previews=True
             )
         )
-        msg = f"{mention(user)} was unmuted by {mention(message.from_user)}"
+        msg = f"{user.mention} was unmuted by {message.from_user.mention}"
         if reason:
             msg += f"\nReason: {reason}"
         await message.reply_text(msg)
@@ -146,7 +141,7 @@ async def kick_command_handler(client, message):
         await client.ban_chat_member(message.chat.id, user.id)
         await asyncio.sleep(0.1)
         await client.unban_chat_member(message.chat.id, user.id)
-        msg = f"{mention(user)} was kicked by {mention(message.from_user)}"
+        msg = f"{user.mention} was kicked by {message.from_user.mention}"
         if reason:
             msg += f"\nReason: {reason}"
         await message.reply_text(msg)
