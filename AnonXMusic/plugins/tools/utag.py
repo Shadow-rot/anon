@@ -15,7 +15,7 @@ async def tag_all_users(client, message):
 
     chat_id = message.chat.id
     if chat_id in spam_chats:
-        return await message.reply_text("**Tagging is already in progress...**")
+        return await message.reply_text("Tagging is already in progress...")
 
     spam_chats.append(chat_id)      
     text = message.text.split(None, 1)[1] if len(message.command) > 1 else ""
