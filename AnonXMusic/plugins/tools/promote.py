@@ -212,12 +212,12 @@ async def selfdemote_command_handler(client: Client, message: Message):
 async def admin_help_handler(client: Client, message: Message):
     text = (
         "**Admin Commands List:**\n\n"
-        "`/promote` - Promote user with medium rights\n"
-        "`/fullpromote` - Promote user with full rights\n"
-        "`/lowpromote` - Promote user with basic rights\n"
-        "`/demote` - Remove admin rights\n"
-        "`/title` - Set admin custom title\n"
-        "`/selfpromote` - Owner self-promotion\n"
-        "`/selfdemote` - Owner self-demotion\n"
+        "/promote - Promote user with medium rights\n"
+        "/fullpromote - Promote user with full rights\n"
+        "/lowpromote - Promote user with basic rights\n"
+        "/demote - Remove admin rights\n"
+        "/title - Set admin custom title\n"
+        "/selfpromote - Owner self-promotion\n"
+        "/selfdemote - Owner self-demotion\n"
     )
     await message.reply_text(text)
