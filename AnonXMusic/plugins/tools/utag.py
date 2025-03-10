@@ -18,28 +18,45 @@ async def tag_all_users(client, message):
         return await message.reply_text("**Tagging is already in progress...**")
 
     spam_chats.append(chat_id)      
-    usertxt = ""
     text = message.text.split(None, 1)[1] if len(message.command) > 1 else ""
 
-    async for member in client.get_chat_members(chat_id): 
+    batch = []
+    count = 0
+
+    async for member in client.get_chat_members(chat_id):
         if chat_id not in spam_chats:
             break
 
         user = member.user
         if user.is_bot:
-            continue  # Skip bots
+            continue  # Skip bots, tag everyone else
 
-        usertxt += f"\n⊚ {user.mention}"
+        batch.append(f"⊚ {user.mention}")
+        count += 1
 
-    # Send the full tag message
-    try:
-        if replied:
-            await replied.reply_text(f"{text}\n{usertxt}", quote=True, disable_web_page_preview=True)
-        else:
-            await client.send_message(chat_id, f"{text}\n{usertxt}", disable_web_page_preview=True)
-    except Exception as e:
-        await message.reply_text("**An error occurred while tagging.**")
-    
+        if count % 10 == 0:
+            try:
+                tag_text = f"{text}\n" + "\n".join(batch)
+                if replied:
+                    await replied.reply_text(tag_text, quote=True, disable_web_page_preview=True)
+                else:
+                    await message.reply_text(tag_text, disable_web_page_preview=True)
+            except Exception:
+                pass
+            await asyncio.sleep(1)  # Delay reduced to 1 second
+            batch = []
+
+    # Send any remaining users
+    if batch and chat_id in spam_chats:
+        try:
+            tag_text = f"{text}\n" + "\n".join(batch)
+            if replied:
+                await replied.reply_text(tag_text, quote=True, disable_web_page_preview=True)
+            else:
+                await message.reply_text(tag_text, disable_web_page_preview=True)
+        except Exception:
+            pass
+
     if chat_id in spam_chats:
         spam_chats.remove(chat_id)
 
