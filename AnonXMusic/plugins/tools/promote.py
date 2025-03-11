@@ -108,8 +108,7 @@ async def demote_command_handler(client: Client, message: Message):
         if member.status != enums.ChatMemberStatus.ADMINISTRATOR:
             return await message.reply_text(f"{user.mention} is already a normal member.")
 
-        # Fully remove admin rights and title
-        await client.promote_chat_member(message.chat.id, user.id, ChatPrivileges())
+        await client.promote_chat_member(message.chat.id, user.id, ChatPrivileges())  # Remove all admin rights
         await message.reply_text(
             format_promotion_message(message.chat.title, user, message.from_user, "demote")
         )
