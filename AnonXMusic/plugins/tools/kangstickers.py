@@ -59,7 +59,7 @@ async def create_sticker_pack(client, user_id, pack_name, pack_title, uploaded_d
         raise PeerIdInvalid("Bot has not interacted with this user before. User needs to send a message first.")
 
 async def send_pack_message(msg, is_new, sticker_type, pack_title, pack_name, sticker_count, emoji):
-    text = f"**➣ {'Created a new' if is_new else 'Added to'} {sticker_type.capitalize()} Pack!**\n\n"
+    text = f"➣ {'Created a new' if is_new else 'Added to'} {sticker_type.capitalize()} Pack!\n\n"
     text += f"Pack ➣ `{pack_title}`\nStickers ➣ `{sticker_count}`\nEmoji ➣ `{emoji}`"
     await msg.edit(stylize_text(text), reply_markup=InlineKeyboardMarkup([
         [InlineKeyboardButton("View Pack", url=f"https://t.me/addstickers/{pack_name}")]
