@@ -25,3 +25,4 @@ yt-dlp
 youtube-search
 youtube-search-python
 pillow==9.5.0
+gtts
