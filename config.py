@@ -17,7 +17,7 @@ BOT_TOKEN = getenv("BOT_TOKEN")
 BOT_USERNAME = getenv("BOT_USERNAME", "None")
 
 # Get your mongo url from cloud.mongodb.com
-MONGO_DB_URI = getenv(MONGO_DB_URI", None)
+MONGO_DB_URI = getenv("MONGO_DB_URI", None)
 
 DURATION_LIMIT_MIN = int(getenv("DURATION_LIMIT", 60000))
 # SONG_DOWNLOAD_DURATION = int(getenv("SONG_DOWNLOAD_DURATION", "9999999"))
