@@ -10,7 +10,7 @@ from PIL import Image
 
 from ANNIEMUSIC import app
 
-BOT_USERNAME = "Sahista_sexy_bot"
+BOT_USERNAME = "lovely_xu_bot"
 
 
 def stylize_text(text):
