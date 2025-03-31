@@ -8,9 +8,10 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import StickersetInvalid, StickersTooMuch, FloodWait, RPCError, PeerIdInvalid
 from PIL import Image
 
-from AnonXMusic import app
+from ANNIEMUSIC import app
 
-BOT_USERNAME = "lovely_xu_bot"
+BOT_USERNAME = "Sahista_sexy_bot"
+
 
 def stylize_text(text):
     return text.translate(str.maketrans(
@@ -18,11 +19,14 @@ def stylize_text(text):
         "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀꜱᴛᴜᴠᴡxʏᴢᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀꜱᴛᴜᴠᴡxʏᴢ"
     ))
 
+
 def get_pack_name(user_id, sticker_type, pack_num):
     return f"user{user_id}_{sticker_type}pack{pack_num}_by_{BOT_USERNAME.lower()}"
 
+
 def get_pack_title(user_first_name, sticker_type, pack_num):
     return f"{user_first_name}'s {sticker_type.capitalize()} Sticker Pack {pack_num}"
+
 
 async def upload_sticker(client, user_id, file_path, mime_type, sticker_type):
     attributes = [
@@ -39,31 +43,47 @@ async def upload_sticker(client, user_id, file_path, mime_type, sticker_type):
     ))
     return uploaded_media.document
 
+
 async def create_sticker_pack(client, user_id, pack_name, pack_title, uploaded_document, emoji, sticker_type):
     try:
-        await client.get_users(user_id)  # FIX: Ensure the bot has "met" the user
-        await client.invoke(raw.functions.stickers.CreateStickerSet(
+        await client.get_users(user_id)  # Ensure bot knows user
+
+        input_sticker = raw.types.InputStickerSetItem(
+            document=raw.types.InputDocument(
+                id=uploaded_document.id,
+                access_hash=uploaded_document.access_hash,
+                file_reference=uploaded_document.file_reference
+            ),
+            emoji=emoji
+        )
+
+        kwargs = dict(
             user_id=await client.resolve_peer(user_id),
             title=pack_title,
             short_name=pack_name,
-            stickers=[raw.types.InputStickerSetItem(
-                document=raw.types.InputDocument(
-                    id=uploaded_document.id, access_hash=uploaded_document.access_hash, file_reference=uploaded_document.file_reference),
-                emoji=emoji
-            )],
-            animated=(sticker_type == "animated"),
-            videos=(sticker_type == "video")
-        ))
+            stickers=[input_sticker],
+            masks=False
+        )
+
+        if sticker_type == "animated":
+            kwargs["animated"] = True
+        elif sticker_type == "video":
+            kwargs["videos"] = True
+
+        await client.invoke(raw.functions.stickers.CreateStickerSet(**kwargs))
+
     except PeerIdInvalid:
         await client.send_message(user_id, "Hey! I need to interact with you first before creating a sticker pack.")
-        raise PeerIdInvalid("Bot has not interacted with this user before. User needs to send a message first.")
+        raise
+
 
 async def send_pack_message(msg, is_new, sticker_type, pack_title, pack_name, sticker_count, emoji):
-    text = f"➣ {'Created a new' if is_new else 'Added to'} {sticker_type.capitalize()} Pack!\n\n"
+    text = f"**➣ {'Created a new' if is_new else 'Added to'} {sticker_type.capitalize()} Pack!**\n\n"
     text += f"Pack ➣ `{pack_title}`\nStickers ➣ `{sticker_count}`\nEmoji ➣ `{emoji}`"
     await msg.edit(stylize_text(text), reply_markup=InlineKeyboardMarkup([
         [InlineKeyboardButton("View Pack", url=f"https://t.me/addstickers/{pack_name}")]
     ]))
+
 
 @app.on_message(filters.command("kang") & filters.reply)
 async def kang(client, message):
@@ -106,7 +126,7 @@ async def kang(client, message):
             try:
                 sticker_set = await client.invoke(raw.functions.messages.GetStickerSet(
                     stickerset=raw.types.InputStickerSetShortName(short_name=pack_name), hash=0))
-                
+
                 if len(sticker_set.documents) >= max_stickers:
                     pack_num += 1
                     continue
