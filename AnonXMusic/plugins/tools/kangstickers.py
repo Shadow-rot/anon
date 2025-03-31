@@ -8,7 +8,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import StickersetInvalid, StickersTooMuch, FloodWait, RPCError, PeerIdInvalid
 from PIL import Image
 
-from ANNIEMUSIC import app
+from AnonXMusic import app
 
 BOT_USERNAME = "lovely_xu_bot"
 
