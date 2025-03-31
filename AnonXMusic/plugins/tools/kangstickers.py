@@ -1,4 +1,4 @@
-import os
+"""import os
 import tempfile
 import shutil
 import subprocess
@@ -91,4 +91,4 @@ async def kang(client, message):
     except Exception:
         await msg.edit(f"Error:\n`{traceback.format_exc()}`")
     finally:
-        shutil.rmtree(temp_dir, ignore_errors=True)
+        shutil.rmtree(temp_dir, ignore_errors=True)"""
