@@ -9,7 +9,7 @@ from pyrogram.errors import StickersetInvalid, StickersTooMuch, FloodWait, RPCEr
 from PIL import Image
 
 from config import BOT_USERNAME
-from utils.kang import stylize_text, get_pack_name, get_pack_title, upload_sticker, create_sticker_pack, send_pack_message
+from AnonXMusic.utils.kang_db import stylize_text, get_pack_name, get_pack_title, upload_sticker, create_sticker_pack, send_pack_message
 
 @app.on_message(filters.command("kang") & filters.reply)
 async def kang(client, message):
