@@ -1,4 +1,4 @@
-import os
+"""import os
 from pyrogram import raw
 
 def stylize_text(text):
@@ -62,4 +62,4 @@ async def send_pack_message(msg, is_new, sticker_type, pack_title, pack_name, st
     text += f"Pack ➣ `{pack_title}`\nStickers ➣ `{sticker_count}`\nEmoji ➣ `{emoji}`"
     await msg.edit(stylize_text(text), reply_markup=InlineKeyboardMarkup([
         [InlineKeyboardButton("View Pack", url=f"https://t.me/addstickers/{pack_name}")]
-    ]))
+    ]))"""
