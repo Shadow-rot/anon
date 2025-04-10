@@ -32,11 +32,13 @@ from AnonXMusic.utils.stickerset import (
 MAX_STICKERS = 120
 SUPPORTED_TYPES = ["jpeg", "png", "webp"]
 
+# Clean bot username for pack naming
+botname_clean = BOT_USERNAME.replace("@", "")
+
 @app.on_message(filters.command("get_sticker"))
 @capture_err
 async def sticker_image(_, message: Message):
     r = message.reply_to_message
-
     if not r or not r.sticker:
         return await message.reply("Reply to a sticker.")
 
@@ -111,8 +113,8 @@ async def kang(client, message: Message):
         return
 
     packnum = 0
-    username_clean = BOT_USERNAME.replace("@", "")
-    packname = f"f{message.from_user.id}_by_{username_clean}"
+    base_packname = f"f{message.from_user.id}_by_{botname_clean}"
+    packname = base_packname
     limit = 0
 
     try:
@@ -132,7 +134,7 @@ async def kang(client, message: Message):
                 )
             elif stickerset.set.count >= MAX_STICKERS:
                 packnum += 1
-                packname = f"f{packnum}{message.from_user.id}_by_{username_clean}"
+                packname = f"f{packnum}_{message.from_user.id}_by_{botname_clean}"
                 limit += 1
                 continue
             else:
@@ -151,7 +153,7 @@ async def kang(client, message: Message):
 
     except (PeerIdInvalid, UserIsBlocked):
         keyboard = InlineKeyboardMarkup([
-            [InlineKeyboardButton("Start", url=f"https://t.me/{username_clean}")]
+            [InlineKeyboardButton("Start", url=f"https://t.me/{botname_clean}")]
         ])
         await msg.edit(
             "You need to start a private chat with me.",
