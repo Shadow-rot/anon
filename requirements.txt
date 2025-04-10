@@ -27,4 +27,3 @@ youtube-search-python
 pillow==9.5.0
 gtts
 gpytranslate
-replicate
