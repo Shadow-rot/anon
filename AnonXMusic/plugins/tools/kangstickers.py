@@ -32,7 +32,6 @@ from AnonXMusic.utils.stickerset import (
 MAX_STICKERS = 120
 SUPPORTED_TYPES = ["jpeg", "png", "webp"]
 
-# /get_sticker command
 @app.on_message(filters.command("get_sticker"))
 @capture_err
 async def sticker_image(_, message: Message):
@@ -52,7 +51,7 @@ async def sticker_image(_, message: Message):
     await m.delete()
     os.remove(f)
 
-# /kang command
+
 @app.on_message(filters.command("kang"))
 @capture_err
 async def kang(client, message: Message):
@@ -72,6 +71,7 @@ async def kang(client, message: Message):
         sticker_emoji = "🤔"
 
     doc = message.reply_to_message.photo or message.reply_to_message.document
+
     try:
         if message.reply_to_message.sticker:
             sticker = await create_sticker(
@@ -79,7 +79,7 @@ async def kang(client, message: Message):
                 sticker_emoji,
             )
         elif doc:
-            if doc.file_size > 10000000:
+            if doc.file_size > 10_000_000:
                 return await msg.edit("File size too large.")
 
             temp_file_path = await app.download_media(doc)
@@ -111,7 +111,8 @@ async def kang(client, message: Message):
         return
 
     packnum = 0
-    packname = f"f{message.from_user.id}_by_{BOT_USERNAME}"
+    username_clean = BOT_USERNAME.replace("@", "")
+    packname = f"f{message.from_user.id}_by_{username_clean}"
     limit = 0
 
     try:
@@ -131,7 +132,7 @@ async def kang(client, message: Message):
                 )
             elif stickerset.set.count >= MAX_STICKERS:
                 packnum += 1
-                packname = f"f{packnum}_{message.from_user.id}_by_{BOT_USERNAME}"
+                packname = f"f{packnum}{message.from_user.id}_by_{username_clean}"
                 limit += 1
                 continue
             else:
@@ -150,7 +151,7 @@ async def kang(client, message: Message):
 
     except (PeerIdInvalid, UserIsBlocked):
         keyboard = InlineKeyboardMarkup([
-            [InlineKeyboardButton("Start", url=f"https://t.me/{BOT_USERNAME}")]
+            [InlineKeyboardButton("Start", url=f"https://t.me/{username_clean}")]
         ])
         await msg.edit(
             "You need to start a private chat with me.",
