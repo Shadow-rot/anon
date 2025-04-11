@@ -1,9 +1,10 @@
 from pyrogram import filters
 from pyrogram.types import Message
-from AnonXMusic import app  # Or use your own `Client(...)` instance
+from pyrogram.types.chat_reactions import AllReactions, SomeReactions
+from AnonXMusic import app
 
 
-# Keywords mapped to emoji reactions
+# Emoji reactions per keyword
 EMOJI_REACTIONS = {
     "hello": "👋",
     "bye": "👍",
@@ -18,16 +19,15 @@ EMOJI_REACTIONS = {
 @app.on_message(filters.text & filters.group)
 async def react_with_emoji(client, message: Message):
     text = message.text.lower()
-
-    # Get allowed reaction emojis for the group
     chat = await app.get_chat(message.chat.id)
-    allowed_reactions = chat.available_reactions or []
+    reactions = chat.available_reactions
 
-    # Loop through keywords
     for keyword, emoji in EMOJI_REACTIONS.items():
         if keyword in text:
-            # Only send the emoji if it's allowed
-            if emoji in allowed_reactions:
+            # If all reactions are allowed, send any
+            if isinstance(reactions, AllReactions) or (
+                isinstance(reactions, SomeReactions) and emoji in reactions.reactions
+            ):
                 await app.send_reaction(
                     chat_id=message.chat.id,
                     message_id=message.id,
