@@ -1,4 +1,4 @@
-from pyrogram import filters
+"""from pyrogram import filters
 from pyrogram.types import Message
 from AnonXMusic import app
 
@@ -44,4 +44,4 @@ async def react_with_emoji(client, message: Message):
 
             except Exception as e:
                 print(f"[Reaction Error] {e}")
-            break
+            break"""
