@@ -21,33 +21,33 @@ async def is_admin(client, chat_id, user_id):
 @app.on_message(filters.command("locktypes") & filters.group)
 async def show_locktypes(client, message: Message):
     types_list = "\n".join(f"• {lock_type}" for lock_type in ALL_LOCK_TYPES)
-    await message.reply(f"locks available:\n{types_list}")
+    await message.reply(f"ʟᴏᴄᴋs ᴀᴠᴀɪʟᴀʙʟᴇ:\n{types_list}")
 
 @app.on_message(filters.command("lock") & filters.group)
 async def lock_command(client, message: Message):
     if not await is_admin(client, message.chat.id, message.from_user.id):
-        return await message.reply("you must be admin to lock things.")
+        return await message.reply("ʏᴏᴜ ᴍᴜsᴛ ʙᴇ ᴀᴅᴍɪɴ ᴛᴏ ʟᴏᴄᴋ ᴛʜɪɴɢs.")
 
     if len(message.command) < 2:
-        return await message.reply("usage: /lock <type>\nsee /locktypes for all types.")
+        return await message.reply("usage: /lock <type>\nsee /locktypes ғᴏʀ ᴀʟʟ ᴛʏᴘᴇs.")
 
     lock_type = message.command[1].lower()
     chat_id = message.chat.id
 
     if lock_type == "all":
         locked_content[chat_id] = set(ALL_LOCK_TYPES) - {"all"}
-        return await message.reply("all content types have been locked.")
+        return await message.reply("ʟᴏᴄᴋᴇᴅ ᴀʟʟ.....")
 
     if lock_type not in ALL_LOCK_TYPES:
-        return await message.reply("invalid type. use /locktypes to see valid options.")
+        return await message.reply("ɪɴᴠᴀʟɪᴅ ᴛʏᴘᴇ. ᴜsᴇ /locktypes ᴛᴏ sᴇᴇ ᴠᴀʟɪᴅ ʟᴏᴄᴋ.")
 
     locked_content.setdefault(chat_id, set()).add(lock_type)
-    await message.reply(f"{lock_type} locked in this group.")
+    await message.reply(f"{lock_type} ʟᴏᴄᴋᴇᴅ ɪɴ ᴛʜɪs ɢʀᴏᴜᴘ.")
 
 @app.on_message(filters.command("unlock") & filters.group)
 async def unlock_command(client, message: Message):
     if not await is_admin(client, message.chat.id, message.from_user.id):
-        return await message.reply("you must be admin to unlock things.")
+        return await message.reply("ʏᴏᴜ ᴍᴜsᴛ ʙᴇ ᴀᴅᴍɪɴ ᴛᴏ ᴜɴʟᴏᴄᴋ ʟᴏᴄᴋs.")
 
     if len(message.command) < 2:
         return await message.reply("usage: /unlock <type>")
@@ -57,13 +57,14 @@ async def unlock_command(client, message: Message):
 
     if lock_type == "all":
         locked_content[chat_id] = set()
-        return await message.reply("all content types have been unlocked.")
+        return await message.reply("ᴜɴʟᴏᴋᴇᴅ ᴀʟʟ...
+.")
 
     if lock_type in locked_content.get(chat_id, set()):
         locked_content[chat_id].remove(lock_type)
         await message.reply(f"{lock_type} unlocked.")
     else:
-        await message.reply("this content is not locked.")
+        await message.reply("ᴛʜɪs ᴄᴏɴᴛᴇɴᴛ ɪs ɴᴏᴛ ʟᴏᴄᴋᴇᴅ.")
 
 @app.on_message(filters.command("locks") & filters.group)
 async def list_locks(client, message: Message):
@@ -71,10 +72,10 @@ async def list_locks(client, message: Message):
     locks = locked_content.get(chat_id, set())
 
     if not locks:
-        return await message.reply("no content is locked in this group.")
+        return await message.reply("ɴᴏᴛʜɪɴɢ ʟᴏᴄᴋᴇᴅ ɪɴ ᴛʜɪs ɢʀᴏᴜ ɴᴏᴡ.")
     
     locked_list = "\n".join(f"• {lock}" for lock in sorted(locks))
-    await message.reply(f"currently locked:\n{locked_list}")
+    await message.reply(f"ᴄᴜʀʀᴇɴᴛʟʏ ʟᴏᴄᴋᴇᴅ:\n{locked_list}")
 
 @app.on_message(filters.group, group=69)
 async def enforce_locks(client, message: Message):
