@@ -40,9 +40,9 @@ botname_clean = BOT_USERNAME.replace("@", "")
 async def sticker_image(_, message: Message):
     r = message.reply_to_message
     if not r or not r.sticker:
-        return await message.reply("Reply to a sticker.")
+        return await message.reply("ʀᴇᴘʟʏ ᴛᴏ ᴀ sᴛɪᴄᴋᴇʀ......")
 
-    m = await message.reply("Sending...")
+    m = await message.reply("sᴇɴᴅɪɴɢ.........ᴡᴀɪᴛ")
     f = await r.download(f"{r.sticker.file_unique_id}.png")
 
     await gather(
@@ -58,11 +58,11 @@ async def sticker_image(_, message: Message):
 @capture_err
 async def kang(client, message: Message):
     if not message.reply_to_message:
-        return await message.reply_text("Reply to a sticker/image to kang it.")
+        return await message.reply_text("ʀᴇᴘʟʏ ᴛᴏ ᴀ sᴛɪᴄᴋᴇʀ/ɪᴍᴀɢᴇ ᴛᴏ ᴋᴀɴɢ ᴛʜᴀᴛ...")
     if not message.from_user:
-        return await message.reply_text("You are anon admin, kang stickers in my PM.")
+        return await message.reply_text("ʏᴏᴜ ᴀʀᴇ ᴀɴᴏɴ ᴀᴅᴍɪɴ, ᴋᴀɴɢ sᴛɪᴄᴋᴇʀs ɪɴ ᴍʏ ᴘᴍ.....")
 
-    msg = await message.reply_text("Kanging sticker...")
+    msg = await message.reply_text("ᴋᴀɴɢɪɴɢ sᴛɪᴄᴋᴇʀ.....")
 
     args = message.text.split()
     if len(args) > 1:
@@ -82,19 +82,19 @@ async def kang(client, message: Message):
             )
         elif doc:
             if doc.file_size > 10_000_000:
-                return await msg.edit("File size too large.")
+                return await msg.edit("ғɪʟᴇ sɪᴢᴇs ᴛᴏᴏ ʟᴀʀɢᴇ.")
 
             temp_file_path = await app.download_media(doc)
             image_type = imghdr.what(temp_file_path)
 
             if image_type not in SUPPORTED_TYPES:
-                return await msg.edit(f"Format not supported! ({image_type})")
+                return await msg.edit(f"ғᴏʀᴍᴀᴛ ɴᴏᴛ sᴜᴘᴘᴏʀᴛᴇᴅ! ({image_type})")
 
             try:
                 temp_file_path = await resize_file_to_sticker_size(temp_file_path)
             except OSError as e:
                 await msg.edit("Something went wrong while resizing the image.")
-                raise Exception(f"Resize failed at {temp_file_path}; {e}")
+                raise Exception(f"ʀᴇsɪᴢᴇ ғᴀɪʟᴇᴅ ᴀᴛ {temp_file_path}; {e}")
 
             sticker = await create_sticker(
                 await upload_document(client, temp_file_path, message.chat.id),
@@ -104,7 +104,7 @@ async def kang(client, message: Message):
             if os.path.isfile(temp_file_path):
                 os.remove(temp_file_path)
         else:
-            return await msg.edit("Can't kang this message.")
+            return await msg.edit("ᴄᴀɴ'ᴛ ᴋᴀɴɢ ᴛʜɪs ᴍᴇssᴀɢᴇ....")
     except ShortnameOccupyFailed:
         return await message.reply_text("Change your name or username.")
     except Exception as e:
@@ -145,7 +145,7 @@ async def kang(client, message: Message):
             break
 
         await msg.edit(
-            "Sticker added to your pack!",
+            "sᴛɪᴄᴋᴇʀ ᴀᴅᴅᴇᴅ ᴛᴏ ʏᴏᴜʀ ᴘᴀᴄᴋ!\nᴛᴀᴘ ᴛʜᴇ ʙᴜᴛᴛᴏɴ",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("View Pack", url=f"https://t.me/addstickers/{packname}")]
             ])
@@ -156,7 +156,7 @@ async def kang(client, message: Message):
             [InlineKeyboardButton("Start", url=f"https://t.me/{botname_clean}")]
         ])
         await msg.edit(
-            "You need to start a private chat with me.",
+            "ʏᴏᴜ ɴᴇᴇᴅ ᴛᴏ sᴛᴀʀᴛ ᴀ ᴘʀɪᴠᴀᴛᴇ ᴄʜᴀᴛ ᴡɪᴛʜ ᴍᴇ...",
             reply_markup=keyboard,
         )
     except StickerPngNopng:
