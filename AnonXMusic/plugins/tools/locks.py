@@ -5,17 +5,17 @@ from AnonXMusic import app
 
 locked_content = {}
 
+ALL_LOCK_TYPES = [
+    "text", "photo", "video", "sticker", "voice", "document", "audio", "animation",
+    "contact", "poll", "location", "game", "forwarded", "url", "mention", "caption"
+]
+
 async def is_admin(client, chat_id, user_id):
     try:
         member = await client.get_chat_member(chat_id, user_id)
         return member.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]
     except:
         return False
-
-ALL_LOCK_TYPES = [
-    "text", "photo", "video", "sticker", "voice", "document", "audio", "animation",
-    "contact", "poll", "location", "game", "forwarded", "url", "mention", "caption"
-]
 
 @app.on_message(filters.command("locktypes") & filters.group)
 async def show_locktypes(client, message: Message):
@@ -78,11 +78,21 @@ async def list_locks(client, message: Message):
 @app.on_message(filters.group, group=69)
 async def enforce_locks(client, message: Message):
     chat_id = message.chat.id
+    user_id = message.from_user.id
     locked = locked_content.get(chat_id, set())
 
     if not locked:
         return
 
+    # allow admins and owner
+    try:
+        member = await client.get_chat_member(chat_id, user_id)
+        if member.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
+            return
+    except:
+        pass
+
+    # delete message if content type is locked
     if "text" in locked and message.text and not message.via_bot and not message.reply_to_message:
         return await message.delete()
     if "photo" in locked and message.photo:
