@@ -6,8 +6,9 @@ from AnonXMusic import app
 locked_content = {}
 
 ALL_LOCK_TYPES = [
-    "text", "photo", "video", "sticker", "voice", "document", "audio", "animation",
-    "contact", "poll", "location", "game", "forwarded", "url", "mention", "caption"
+    "all", "audio", "bots", "button", "contact", "document", "egame", "forward", "game",
+    "gif", "info", "inline", "invite", "location", "media", "messages", "other", "photo",
+    "pin", "poll", "previews", "rtl", "sticker", "url", "video", "voice"
 ]
 
 async def is_admin(client, chat_id, user_id):
@@ -19,8 +20,8 @@ async def is_admin(client, chat_id, user_id):
 
 @app.on_message(filters.command("locktypes") & filters.group)
 async def show_locktypes(client, message: Message):
-    types_list = "\n".join(f"- {lock_type}" for lock_type in ALL_LOCK_TYPES)
-    await message.reply(f"available lock types:\n{types_list}")
+    types_list = "\n".join(f"• {lock_type}" for lock_type in ALL_LOCK_TYPES)
+    await message.reply(f"locks available:\n{types_list}")
 
 @app.on_message(filters.command("lock") & filters.group)
 async def lock_command(client, message: Message):
@@ -34,7 +35,7 @@ async def lock_command(client, message: Message):
     chat_id = message.chat.id
 
     if lock_type == "all":
-        locked_content[chat_id] = set(ALL_LOCK_TYPES)
+        locked_content[chat_id] = set(ALL_LOCK_TYPES) - {"all"}
         return await message.reply("all content types have been locked.")
 
     if lock_type not in ALL_LOCK_TYPES:
@@ -72,19 +73,18 @@ async def list_locks(client, message: Message):
     if not locks:
         return await message.reply("no content is locked in this group.")
     
-    locked_list = "\n".join(f"- {lock}" for lock in sorted(locks))
+    locked_list = "\n".join(f"• {lock}" for lock in sorted(locks))
     await message.reply(f"currently locked:\n{locked_list}")
 
 @app.on_message(filters.group, group=69)
 async def enforce_locks(client, message: Message):
     chat_id = message.chat.id
     user_id = message.from_user.id
-    locked = locked_content.get(chat_id, set())
+    locks = locked_content.get(chat_id, set())
 
-    if not locked:
+    if not locks:
         return
 
-    # allow admins and owner
     try:
         member = await client.get_chat_member(chat_id, user_id)
         if member.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
@@ -92,38 +92,58 @@ async def enforce_locks(client, message: Message):
     except:
         pass
 
-    # delete message if content type is locked
-    if "text" in locked and message.text and not message.via_bot and not message.reply_to_message:
+    # Lock logic for non-admins
+    if "messages" in locks:
         return await message.delete()
-    if "photo" in locked and message.photo:
+    if "text" in locks and message.text:
         return await message.delete()
-    if "video" in locked and message.video:
+    if "photo" in locks and message.photo:
         return await message.delete()
-    if "sticker" in locked and message.sticker:
+    if "video" in locks and message.video:
         return await message.delete()
-    if "voice" in locked and message.voice:
+    if "sticker" in locks and message.sticker:
         return await message.delete()
-    if "audio" in locked and message.audio:
+    if "voice" in locks and message.voice:
         return await message.delete()
-    if "document" in locked and message.document:
+    if "audio" in locks and message.audio:
         return await message.delete()
-    if "animation" in locked and message.animation:
+    if "document" in locks and message.document:
         return await message.delete()
-    if "contact" in locked and message.contact:
+    if "animation" in locks and message.animation:
         return await message.delete()
-    if "poll" in locked and message.poll:
+    if "contact" in locks and message.contact:
         return await message.delete()
-    if "location" in locked and message.location:
+    if "poll" in locks and message.poll:
         return await message.delete()
-    if "game" in locked and message.game:
+    if "location" in locks and message.location:
         return await message.delete()
-    if "forwarded" in locked and message.forward_from:
+    if "game" in locks or "egame" in locks and message.game:
         return await message.delete()
-    if "mention" in locked and message.entities:
-        if any(ent.type == "mention" for ent in message.entities):
+    if "forward" in locks and message.forward_from:
+        return await message.delete()
+    if "bots" in locks and message.from_user.is_bot:
+        return await message.delete()
+    if "url" in locks and message.entities:
+        if any(e.type == "url" for e in message.entities):
             return await message.delete()
-    if "url" in locked and message.entities:
-        if any(ent.type == "url" for ent in message.entities):
+    if "mention" in locks and message.entities:
+        if any(e.type == "mention" for e in message.entities):
             return await message.delete()
-    if "caption" in locked and message.caption:
+    if "caption" in locks and message.caption:
+        return await message.delete()
+    if "pin" in locks and message.pinned_message:
+        return await message.delete()
+    if "inline" in locks and message.via_bot:
+        return await message.delete()
+    if "previews" in locks and message.web_page:
+        return await message.delete()
+    if "rtl" in locks and message.text and any("\u202E" in message.text for c in message.text):
+        return await message.delete()
+    if "media" in locks and (message.media or message.photo or message.video or message.document or message.audio):
+        return await message.delete()
+    if "other" in locks and not any([
+        message.text, message.photo, message.video, message.sticker, message.voice,
+        message.document, message.audio, message.animation, message.contact,
+        message.poll, message.location, message.game
+    ]):
         return await message.delete()
