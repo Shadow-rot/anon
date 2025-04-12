@@ -7,7 +7,7 @@ from AnonXMusic.utils.shadwo_ban import admin_filter
 
 spam_chats = []
 
-@app.on_message(filters.command(["utag", "all", "mention", "@all"]) & filters.group & admin_filter)
+@app.on_message(filters.command(["utag", "all", "mention", "@all", "atag", "@alltag"]) & filters.group & admin_filter)
 async def tag_all_users(client, message):
     chat_id = message.chat.id
 
@@ -28,10 +28,18 @@ async def tag_all_users(client, message):
                 break
 
             user = member.user
-            if user.is_bot:
+
+            # Skip bots and deleted accounts
+            if user.is_bot or user.is_deleted:
                 continue
 
-            batch.append(f"⊚ {user.mention}")
+            username = user.username
+            if username:
+                mention = f"⊚ @{username}"
+            else:
+                mention = f"⊚ {user.mention}"
+
+            batch.append(mention)
             count += 1
 
             if count % 10 == 0:
@@ -74,3 +82,13 @@ async def cancel_spam(client, message):
 
     spam_chats.remove(chat_id)
     return await message.reply("**Tagging has been stopped.**")
+
+# NEW: Message-based "@" trigger
+@app.on_message(filters.group & filters.text & admin_filter)
+async def tag_on_at_symbol(client, message):
+    if not message.text.strip().lower().startswith("@"):
+        return
+
+    # Simulate a command for the tag_all_users function
+    message.command = ["@all"]
+    await tag_all_users(client, message)
