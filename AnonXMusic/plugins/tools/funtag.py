@@ -384,7 +384,7 @@ async def mention_all_gn(client, message):
                 continue
             await client.send_message(
                 chat_id,
-                f"{member.user.mention}{member.user.id} {random.choice(GN_MESSAGES)}"
+                f"{member.user.mention} {random.choice(GN_MESSAGES)}"
             )
             await asyncio.sleep(4)
     finally:
@@ -412,7 +412,7 @@ async def mention_all_gm(client, message):
                 continue
             await client.send_message(
                 chat_id,
-                f"[{member.user.first_name}](tg://user?id={member.user.id}) {random.choice(GM_MESSAGES)}"
+                f"{member.user.mention} {random.choice(GM_MESSAGES)}"
             )
             await asyncio.sleep(4)
     finally:
@@ -440,7 +440,7 @@ async def mention_all_hi(client, message):
                 continue
             await client.send_message(
                 chat_id,
-                f"[{member.user.first_name}](tg://user?id={member.user.id}) {random.choice(HI_MESSAGES)}"
+                f"{member.user.mention} {random.choice(HI_MESSAGES)}"
             )
             await asyncio.sleep(4)
     finally:
@@ -468,7 +468,7 @@ async def mention_all_quotes(client, message):
                 continue
             await client.send_message(
                 chat_id,
-                f"[{member.user.first_name}](tg://user?id={member.user.id}) {random.choice(QUOTES)}"
+                f"{member.user.mention} {random.choice(QUOTES)}"
             )
             await asyncio.sleep(4)
     finally:
@@ -496,7 +496,7 @@ async def mention_all_shayari(client, message):
                 continue
             await client.send_message(
                 chat_id,
-                f"[{member.user.first_name}](tg://user?id={member.user.id}) {random.choice(SHAYARI)}"
+                f"{member.user.mention} {random.choice(SHAYARI)}"
             )
             await asyncio.sleep(4)
     finally:
@@ -524,7 +524,7 @@ async def mention_all_tagall(client, message):
                 continue
             await client.send_message(
                 chat_id,
-                f"[{member.user.first_name}](tg://user?id={member.user.id}) {random.choice(TAG_ALL)}"
+                f"{member.user.mention} {random.choice(TAG_ALL)}"
             )
             await asyncio.sleep(4)
     finally:
