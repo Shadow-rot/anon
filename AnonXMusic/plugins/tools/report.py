@@ -1,4 +1,4 @@
-from pyrogram import filters, enums
+"""from pyrogram import filters, enums
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from AnonXMusic import app
 from pyrogram.errors import PeerIdInvalid, UserIsBlocked
@@ -98,3 +98,4 @@ async def report_setting(client, message):
         # Check current setting (using SQL or a config method)
         current_setting = sql.chat_should_report(chat.id)
         await message.reply(f"Reporting is currently {'enabled' if current_setting else 'disabled'}.")
+"""
