@@ -1,5 +1,5 @@
 from pyrogram import Client, filters, enums
-from pyrogram.types import ChatPermissions
+from pyrogram.types import ChatPermissions, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors import ChatAdminRequired, UserAdminInvalid
 import asyncio
 from functools import wraps
@@ -57,13 +57,44 @@ async def ban_command_handler(client, message):
         msg = f"{user.mention} was banned by {message.from_user.mention}"
         if reason:
             msg += f"\nReason: {reason}"
-        await message.reply_text(msg)
+
+        keyboard = InlineKeyboardMarkup(
+            [[
+                InlineKeyboardButton(
+                    "Unban",
+                    callback_data=f"unban:{message.chat.id}:{user.id}"
+                )
+            ]]
+        )
+
+        await message.reply_text(msg, reply_markup=keyboard)
     except ChatAdminRequired:
         await message.reply_text("I need to be an admin with ban permissions.")
     except UserAdminInvalid:
         await message.reply_text("I cannot ban an admin.")
     except Exception as e:
         await message.reply_text(f"An error occurred: {e}")
+
+@app.on_callback_query(filters.regex(r"^unban:(-?\d+):(\d+)$"))
+async def unban_callback_handler(client, callback_query: CallbackQuery):
+    chat_id = int(callback_query.matches[0].group(1))
+    user_id = int(callback_query.matches[0].group(2))
+    from_user = callback_query.from_user
+
+    try:
+        member = await client.get_chat_member(chat_id, from_user.id)
+        if not (
+            member.status in [enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER]
+            and member.privileges.can_restrict_members
+        ):
+            return await callback_query.answer("You're not allowed to unban.", show_alert=True)
+
+        await client.unban_chat_member(chat_id, user_id)
+        await callback_query.message.edit_text(f"User [ID: {user_id}] has been unbanned by {from_user.mention}.")
+    except ChatAdminRequired:
+        await callback_query.answer("I need unban permissions.", show_alert=True)
+    except Exception as e:
+        await callback_query.answer(f"Error: {e}", show_alert=True)
 
 @app.on_message(filters.command("unban"))
 @admin_required
