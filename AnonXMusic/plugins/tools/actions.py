@@ -54,7 +54,7 @@ async def ban_command_handler(client, message):
         return
     try:
         await client.ban_chat_member(message.chat.id, user.id)
-        msg = f"{user.mention} was banned by {message.from_user.mention}"
+        msg = f"Banned ╰┈➤ {user.mention}\nbanned by ╰┈➤ {message.from_user.mention}"
         if reason:
             msg += f"\nReason: {reason}"
 
@@ -62,7 +62,7 @@ async def ban_command_handler(client, message):
             [[
                 InlineKeyboardButton(
                     "Unban",
-                    callback_data=f"unban:{message.chat.id}:{user.id}"
+                    callback_data=f"unban:{message.chat.id}:{user.mention}"
                 )
             ]]
         )
