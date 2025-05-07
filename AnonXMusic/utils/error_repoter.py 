@@ -1,0 +1,31 @@
+import os
+import logging
+import traceback
+import asyncio
+from pyrogram import Client
+from AnonXMusic import app
+from AnonXMusic.utils.database import is_on
+from pyrogram.errors import FloodWait
+
+LOGGER_ID = int(os.getenv("LOGGER_ID", 0))  # Must be set in env or config
+
+logger = logging.getLogger("AnonXMusicErrors")
+
+
+async def send_error_to_owner(error: Exception):
+    # Check if logger is enabled (you store it with ID 2)
+    if not await is_on(2):
+        return
+
+    tb = "".join(traceback.format_exception(type(error), error, error.__traceback__))
+    text = f"**[ERROR ALERT]**\n\n**Exception:** `{str(error)}`\n\n**Traceback:**\n```{tb}```"
+
+    logger.error(tb)
+
+    try:
+        await app.send_message(LOGGER_ID, text)
+    except FloodWait as e:
+        await asyncio.sleep(e.value)
+        await app.send_message(LOGGER_ID, text)
+    except Exception as e:
+        logger.warning(f"Could not send error log to LOGGER_ID: {e}")
