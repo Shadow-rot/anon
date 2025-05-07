@@ -62,7 +62,7 @@ async def ban_command_handler(client, message):
             [[
                 InlineKeyboardButton(
                     "Unban",
-                    callback_data=f"unban:{message.chat.id}:{user.mention}"
+                    callback_data=f"unban:{message.user.id}:{user.mention}"
                 )
             ]]
         )
