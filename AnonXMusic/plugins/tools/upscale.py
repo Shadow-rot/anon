@@ -36,11 +36,11 @@ async def upscale_image(client, message):
     try:
         # Use the DeepAI API to upscale the image
         response = requests.post(
-            "http://100.94.255.141:5000/superres",
+            "http://100.94.255.141:5050/api/superres",  # Make sure this matches your actual API URL
             files={
                 'image': open(image, 'rb'),
             },
-            headers={'api-key': 'bf9ee957-9fad-46f5-a403-3e96ca9004e4'}
+            headers={'api-key': 'bc1bf728-f74e-4d9c-8a35-12cec4ae4710'}  # Your actual API key
         )
         response.raise_for_status()  # Raise an exception for HTTP errors
 
