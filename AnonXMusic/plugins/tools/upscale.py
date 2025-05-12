@@ -36,7 +36,7 @@ async def upscale_image(client, message):
     try:
         # Use the DeepAI API to upscale the image
         response = requests.post(
-            "https://api.deepai.org/api/torch-srgan",
+            "http://100.94.255.141:5000/superres",
             files={
                 'image': open(image, 'rb'),
             },
