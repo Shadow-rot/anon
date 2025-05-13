@@ -1,4 +1,5 @@
-*** import os
+"""
+import os
 import random
 import asyncio
 from pathlib import Path
@@ -193,4 +194,4 @@ async def greet_new_member(client, member: ChatMemberUpdated):
 
         except Exception as e:
             LOGGER.error(f"Error in greeting new member: {e}")
-***
+"""
