@@ -1,4 +1,3 @@
-"""
 import os
 import random
 import asyncio
@@ -88,7 +87,7 @@ def welcomepic(pic_path, user, chatname, user_id, uname):
 
 @app.on_message(filters.command("wel") & ~filters.private)
 async def auto_state(client, message):
-    usage = "Usage:\n⦿/wel [on|off]\n➤ANNIE SPECIAL WELCOME.........."
+    usage = "Usage:\n⦿/wel [on|off]\n➤wel wek"
     if len(message.command) != 2:
         return await message.reply_text(usage)
 
@@ -170,7 +169,6 @@ async def greet_new_member(client, member: ChatMemberUpdated):
                 chat_id,
                 photo=welcome_img,
                 caption=f"""
-"""
 ❅────✦ ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ✦────❅
 {member.chat.title}
 ▰▰▰▰▰▰▰▰▰▰▰▰▰
@@ -181,7 +179,6 @@ async def greet_new_member(client, member: ChatMemberUpdated):
 ▰▰▰▰▰▰▰▰▰▰▰▰▰**
 ❅─────✧❅✦❅✧─────❅
 """,
-"""
                 reply_markup=InlineKeyboardMarkup([
                     [InlineKeyboardButton(button_text, url=deep_link)],
                     [InlineKeyboardButton(add_button_text, url=add_link)],
@@ -196,4 +193,3 @@ async def greet_new_member(client, member: ChatMemberUpdated):
 
         except Exception as e:
             LOGGER.error(f"Error in greeting new member: {e}")
-"""
