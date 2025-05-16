@@ -1,3 +1,4 @@
+"""
 from pyrogram import filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from AnonXMusic import app
@@ -124,3 +125,4 @@ You can use {mention} in your welcome text.
 /welcomehelp - Show this help message
     """
     await message.reply(text)
+"""
