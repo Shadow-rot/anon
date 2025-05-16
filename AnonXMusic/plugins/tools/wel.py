@@ -109,7 +109,7 @@ async def welcome_new_member(_, message: Message):
 # Help Message
 @app.on_message(filters.command("welcomehelp"))
 async def welcome_help(_, message: Message):
-    text = """
+    text = """ """
 **Welcome Module Help**
 
 Commands:
@@ -124,5 +124,7 @@ You can use {mention} in your welcome text.
 /welcome - Show current welcome settings
 /welcomehelp - Show this help message
     """
+
     await message.reply(text)
+"""
 """
