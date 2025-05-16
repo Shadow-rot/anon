@@ -124,7 +124,5 @@ You can use {mention} in your welcome text.
 /welcome - Show current welcome settings
 /welcomehelp - Show this help message
     """
-
-    await message.reply(text)
 """
 """
