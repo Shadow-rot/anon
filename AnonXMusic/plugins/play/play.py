@@ -25,24 +25,23 @@ from AnonXMusic.utils.logger import play_logs
 from AnonXMusic.utils.stream.stream import stream
 from config import BANNED_USERS, lyrical
 
-plain_alive_filter = filters.text & filters.regex(r"^(play|vplay)$", flags=re.IGNORECASE)
 
+plain_alive_filter = filters.text & filters.regex(
+    r"^(play|vplay|cplay|cvplay|playforce|vplayforce|cplayforce|cvplayforce)$", 
+    flags=re.IGNORECASE
+)
+
+command_filter = filters.command(
+    [
+        "play", "vplay", "cplay", "cvplay",
+        "playforce", "vplayforce", "cplayforce", "cvplayforce"
+    ],
+    prefixes=["/", ".", "!", ","]
+)
 
 @app.on_message(
-    filters.command(
-        [
-            "play",
-            "vplay",
-            "cplay",
-            "cvplay",
-            "playforce",
-            "vplayforce",
-            "cplayforce",
-            "cvplayforce", prefixes=["/", ".", "!", ","] | plain_alive_filter)
-        
-    & filters.group
-    & ~BANNED_USERS
-)]
+    (command_filter | plain_alive_filter) & filters.group & ~BANNED_USERS
+)
 @PlayWrapper
 async def play_commnd(
     client,
