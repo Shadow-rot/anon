@@ -38,8 +38,8 @@ plain_alive_filter = filters.text & filters.regex(r"^(play|vplay)$", flags=re.IG
             "playforce",
             "vplayforce",
             "cplayforce",
-            "cvplayforce", prefixes=["/", ".", "!", ","] | plain_alive_filter)
-        ]
+            "cvplayforce", prefixes=["/", ".", "!", ","]) | plain_alive_filter)
+        
     & filters.group
     & ~BANNED_USERS
 )
