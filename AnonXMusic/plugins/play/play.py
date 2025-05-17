@@ -26,11 +26,13 @@ from AnonXMusic.utils.stream.stream import stream
 from config import BANNED_USERS, lyrical
 
 
-plain_alive_filter = filters.text & filters.regex(
-    r"^(play|vplay|cplay|cvplay|playforce|vplayforce|cplayforce|cvplayforce)$", 
+# Plain (no prefix) commands: "play", "vplay", etc.
+plain_text_filter = filters.text & filters.regex(
+    r"^(play|vplay|cplay|cvplay|playforce|vplayforce|cplayforce|cvplayforce)\b",
     flags=re.IGNORECASE
 )
 
+# Symbol-prefixed commands: "/play", ".vplay", etc.
 command_filter = filters.command(
     [
         "play", "vplay", "cplay", "cvplay",
@@ -39,9 +41,8 @@ command_filter = filters.command(
     prefixes=["/", ".", "!", ","]
 )
 
-@app.on_message(
-    (command_filter | plain_alive_filter) & filters.group & ~BANNED_USERS
-)
+# Combined filter
+@app.on_message((command_filter | plain_text_filter) & filters.group & ~BANNED_USERS)
 @PlayWrapper
 async def play_commnd(
     client,
