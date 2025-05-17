@@ -23,7 +23,7 @@ from pyrogram import filters
 owner_filter = filters.user(OWNER_ID)
 
 
-@app.on_message(filters.command(["stats", "gstats"]) & filters.group & ~BANNED_USERS & owner_filter)
+@app.on_message(filters.command(["stats", "gstats"]) & ~BANNED_USERS & owner_filter)
 @language
 async def stats_global(client, message: Message, _):
     upl = stats_buttons(_, True)
