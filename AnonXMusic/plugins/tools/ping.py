@@ -15,7 +15,9 @@ from config import BANNED_USERS, OWNER_ID  # Make sure OWNER_ID is a list or set
 owner_filter = filters.user(OWNER_ID)
 
 
-@app.on_message(filters.command(["ping", "alive"]) & ~BANNED_USERS & owner_filter)
+@app.on_message(
+    filters.command(["ping", "alive"], prefixes=["/", ".", "!", ",", "?"]) & ~BANNED_USERS & owner_filter
+)
 @language
 async def ping_com(client, message: Message, _):
     start = datetime.now()
