@@ -15,7 +15,7 @@ from config import BANNED_USERS, OWNER_ID
 owner_filter = filters.user(OWNER_ID)
 
 # Filter to catch "alive" without any prefix
-plain_alive_filter = filters.text & filters.regex(r"^(alive)$", flags=re.IGNORECASE)
+plain_alive_filter = filters.text & filters.regex(r"^(alive|ping)$", flags=re.IGNORECASE)
 
 @app.on_message(
     (filters.command(["ping", "alive"], prefixes=["/", ".", "!", ","]) | plain_alive_filter)
