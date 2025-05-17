@@ -8,16 +8,19 @@ from AnonXMusic.core.call import Anony
 from AnonXMusic.utils import bot_sys_stats
 from AnonXMusic.utils.decorators.language import language
 from AnonXMusic.utils.inline import supp_markup
-from config import BANNED_USERS, PING_IMG_URL
+from config import BANNED_USERS, OWNER_ID  # Make sure OWNER_ID is a list or set of ints
 
 
-@app.on_message(filters.command(["ping", "alive"]) & ~BANNED_USERS)
+# Filter to allow only the owner
+owner_filter = filters.user(OWNER_ID)
+
+
+@app.on_message(filters.command(["ping", "alive"]) & ~BANNED_USERS & owner_filter)
 @language
 async def ping_com(client, message: Message, _):
     start = datetime.now()
-    response = await message.reply_photo(
-        photo=PING_IMG_URL,
-        caption=_["ping_1"].format(app.mention),
+    response = await message.reply_text(
+        _["ping_1"].format(app.mention)
     )
     pytgping = await Anony.ping()
     UP, CPU, RAM, DISK = await bot_sys_stats()
