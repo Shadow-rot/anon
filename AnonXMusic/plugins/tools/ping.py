@@ -8,15 +8,19 @@ from AnonXMusic.core.call import Anony
 from AnonXMusic.utils import bot_sys_stats
 from AnonXMusic.utils.decorators.language import language
 from AnonXMusic.utils.inline import supp_markup
-from config import BANNED_USERS, OWNER_ID  # Make sure OWNER_ID is a list or set of ints
+from config import BANNED_USERS, OWNER_ID
 
 
 # Filter to allow only the owner
 owner_filter = filters.user(OWNER_ID)
 
+# Filter to catch "alive" without any prefix
+plain_alive_filter = filters.text & filters.regex(r"^(alive)$", flags=re.IGNORECASE)
 
 @app.on_message(
-    filters.command(["ping", "alive"], prefixes=["/", ".", "!", ",", "?"]) & ~BANNED_USERS & owner_filter
+    (filters.command(["ping", "alive"], prefixes=["/", ".", "!", ","]) | plain_alive_filter)
+    & ~BANNED_USERS
+    & owner_filter
 )
 @language
 async def ping_com(client, message: Message, _):
