@@ -109,29 +109,14 @@ async def demote_command_handler(client: Client, message: Message):
         if member.status != enums.ChatMemberStatus.ADMINISTRATOR:
             return await message.reply_text(f"{user.mention} is already a normal member.")
 
-        # Remove all admin privileges (reset to normal user)
+        # This fully removes admin status (not just clears powers)
         await client.promote_chat_member(
             chat_id=message.chat.id,
             user_id=user.id,
-            privileges=ChatPrivileges(
-                can_change_info=False,
-                can_delete_messages=False,
-                can_invite_users=False,
-                can_restrict_members=False,
-                can_pin_messages=False,
-                can_promote_members=False,
-                can_manage_video_chats=False,
-                is_anonymous=False
-            )
+            privileges=None  # Fully demote from admin
         )
 
-        # Also reset the custom title to clear staff tags
-        try:
-            await client.set_administrator_title(message.chat.id, user.id, "")
-        except:
-            pass  # silently ignore if not applicable
-
-        await message.reply_text(f"{user.mention} has been demoted from admin.")
+        await message.reply_text(f"{user.mention} has been completely demoted from admin.")
     except Exception as e:
         await message.reply_text(f"An error occurred: {e}")
 
