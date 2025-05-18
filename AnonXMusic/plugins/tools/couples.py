@@ -43,7 +43,7 @@ async def couples_handler(_, message):
         p2 = await app.download_media(photo2) if photo2 else FALLBACK_PFP
 
         def process_pfp(path):
-            size = (160, 160)  # Slightly smaller for perfect fit
+            size = (135, 135)  # Even smaller for perfect overlay
             img = Image.open(path).convert("RGBA").resize(size)
             mask = Image.new("L", size, 0)
             draw = ImageDraw.Draw(mask)
@@ -55,25 +55,18 @@ async def couples_handler(_, message):
         img2 = process_pfp(p2)
 
         template = Image.open(TEMPLATE_PATH).convert("RGBA")
-        template.paste(img1, (60, 55), img1)   # Left
-        template.paste(img2, (265, 55), img2)  # Right
+        template.paste(img1, (75, 65), img1)   # Adjusted for new size
+        template.paste(img2, (265, 65), img2)
 
         out_path = f"temp_couple_{message.chat.id}.png"
         template.save(out_path)
 
         today, tomorrow = get_today_tomorrow()
-        caption = f"""
-┏━━━━━━━━━━━━━━━┓
-  𝐓ᴏᴅᴀʏ'ꜱ 💞 𝐂ᴏᴜᴘʟᴇ 𝐌ᴀᴛᴄʜ 
-┗━━━━━━━━━━━━━━━┛
 
-➤ {name1}  +  {name2} =  ᗯᗩᖇᗰ ᒪOᐯᗴ 💗
-
-ꜱᴘʀᴇᴀᴅɪɴɢ ʟᴏᴠᴇ ɪɴ {message.chat.title} ✨
-
-⏳ ɴᴇxᴛ ᴄᴏᴜᴘʟᴇ ʀᴇᴠᴇᴀʟ ᴏɴ: {tomorrow}
-
-#ʟᴏᴠᴇ #ᴄᴏᴜᴘʟᴇ #ꜱʜɪᴘᴘᴇᴅ
+        caption = f"""╭─❍ 𝑻𝒐𝒅𝒂𝒚'𝒔 𝑪𝒖𝒕𝒆𝒔𝒕 𝑪𝒐𝒖𝒑𝒍𝒆 ♥
+│ • {name1} + {name2} = ꧁❤️‍ 𝑳𝒐𝒗𝒆𝒃𝒊𝒓𝒅𝒔 ❤️‍꧂
+│ • 𝑮𝒓𝒐𝒖𝒑: {message.chat.title}
+╰• ☞ 𝑵𝒆𝒙𝒕 𝒑𝒂𝒊𝒓 𝒐𝒏 {tomorrow}
 """
 
         await message.reply_photo(out_path, caption=caption)
