@@ -1,9 +1,8 @@
-"""
 import re
 from AnonXMusic import app
 from config import BOT_USERNAME
 from AnonXMusic.utils.shadwo_ban import admin_filter
-from AnonXMusic.utils.filtersdb import *
+from AnonXMusic.utils.filtersdb import add_filter_db, get_filters_list, get_filter, stop_db, stop_all_db
 from AnonXMusic.utils.filters_func import GetFIlterMessage, get_text_reason, SendFilterMessage
 from AnonXMusic.utils.yumidb import user_admin
 from pyrogram import filters
@@ -147,4 +146,3 @@ async def stop(client, message):
 
     await stop_db(chat_id, filter_name)
     await message.reply(f"I've stopped {filter_name}.")
-"""
