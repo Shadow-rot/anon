@@ -1,3 +1,4 @@
+"""
 import re
 from AnonXMusic import app
 from config import BOT_USERNAME
@@ -146,3 +147,4 @@ async def stop(client, message):
 
     await stop_db(chat_id, filter_name)
     await message.reply(f"I've stopped {filter_name}.")
+"""
