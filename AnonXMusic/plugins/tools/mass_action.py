@@ -1,4 +1,5 @@
 import asyncio
+from asyncio import Semaphore, create_task, gather
 from pyrogram import Client, filters
 from pyrogram.types import (
     InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery,
@@ -7,6 +8,9 @@ from pyrogram.types import (
 from pyrogram.enums import ChatMemberStatus, ChatMembersFilter
 from AnonXMusic import app
 from AnonXMusic.misc import SUDOERS
+
+# Concurrency limit (adjust as needed)
+MAX_CONCURRENT = 20
 
 def get_keyboard(command):
     return InlineKeyboardMarkup([
@@ -21,24 +25,19 @@ async def get_group_owner(client, chat_id):
         async for member in client.get_chat_members(chat_id, filter=ChatMembersFilter.ADMINISTRATORS):
             if member.status == ChatMemberStatus.OWNER:
                 return member.user
-    except Exception as e:
+    except Exception:
         return None
 
 async def is_owner_or_sudoer(client, chat_id, user_id):
     owner_user = await get_group_owner(client, chat_id)
     if owner_user is None:
         return False, None
-    owner_id = owner_user.id
-    if user_id == owner_id or user_id in SUDOERS:
-        return True, owner_user
-    else:
-        return False, owner_user
+    return user_id == owner_user.id or user_id in SUDOERS, owner_user
 
 async def get_bot_member(client, chat_id):
     try:
-        bot_member = await client.get_chat_member(chat_id, client.me.id)
-        return bot_member
-    except Exception as e:
+        return await client.get_chat_member(chat_id, client.me.id)
+    except Exception:
         return None
 
 @app.on_message(filters.command(["kickall", "banall", "unbanall", "muteall", "unmuteall", "unpinall"]) & filters.group)
@@ -103,75 +102,109 @@ async def handle_admin_callback(client: Client, callback_query: CallbackQuery):
                 await perform_unmute_all(client, chat_id)
             elif command == "unpinall":
                 await perform_unpin_all(client, chat_id)
-        except Exception as e:
+        except Exception:
             await callback_query.message.edit(f"An error occurred during {command}.")
-    elif action == "no":
+    else:
         await callback_query.message.edit(f"{command.capitalize()} process canceled.")
 
-async def perform_kick_all(client: Client, chat_id: int):
-    kicked = 0
-    error_count = 0
+# ========================= Optimized Bulk Functions =========================
 
-    async for member in client.get_chat_members(chat_id):
-        if member.user.is_bot or member.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
-            continue
+async def ban_user(client, chat_id, user_id, sem, counters):
+    async with sem:
         try:
-            await client.ban_chat_member(chat_id, member.user.id)
-            await asyncio.sleep(0.1)
-            await client.unban_chat_member(chat_id, member.user.id)
-            kicked += 1
-        except Exception as e:
-            error_count += 1
-        await asyncio.sleep(0.1)
-    await client.send_message(chat_id, f"Kicked {kicked} members successfully. Failed to kick {error_count} members.")
+            await client.ban_chat_member(chat_id, user_id)
+            counters["banned"] += 1
+        except Exception:
+            counters["errors"] += 1
 
 async def perform_ban_all(client: Client, chat_id):
-    banned = 0
-    error_count = 0
+    sem = Semaphore(MAX_CONCURRENT)
+    counters = {"banned": 0, "errors": 0}
+    tasks = []
 
     async for member in client.get_chat_members(chat_id):
         if member.user.is_bot or member.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
             continue
+        tasks.append(create_task(ban_user(client, chat_id, member.user.id, sem, counters)))
+
+    await gather(*tasks)
+    await client.send_message(chat_id, f"Banned {counters['banned']} users. Failed: {counters['errors']}.")
+
+async def kick_user(client, chat_id, user_id, sem, counters):
+    async with sem:
         try:
-            await client.ban_chat_member(chat_id, member.user.id)
-            banned += 1
-        except Exception as e:
-            error_count += 1
-        await asyncio.sleep(0.1)
-    await client.send_message(chat_id, f"Banned {banned} members successfully. Failed to ban {error_count} members.")
+            await client.ban_chat_member(chat_id, user_id)
+            await client.unban_chat_member(chat_id, user_id)
+            counters["kicked"] += 1
+        except Exception:
+            counters["errors"] += 1
+
+async def perform_kick_all(client: Client, chat_id):
+    sem = Semaphore(MAX_CONCURRENT)
+    counters = {"kicked": 0, "errors": 0}
+    tasks = []
+
+    async for member in client.get_chat_members(chat_id):
+        if member.user.is_bot or member.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
+            continue
+        tasks.append(create_task(kick_user(client, chat_id, member.user.id, sem, counters)))
+
+    await gather(*tasks)
+    await client.send_message(chat_id, f"Kicked {counters['kicked']} users. Failed: {counters['errors']}.")
+
+async def unban_user(client, chat_id, user_id, sem, counters):
+    async with sem:
+        try:
+            await client.unban_chat_member(chat_id, user_id)
+            counters["unbanned"] += 1
+        except Exception:
+            counters["errors"] += 1
 
 async def perform_unban_all(client: Client, chat_id):
-    unbanned = 0
-    error_count = 0
+    sem = Semaphore(MAX_CONCURRENT)
+    counters = {"unbanned": 0, "errors": 0}
+    tasks = []
 
     async for member in client.get_chat_members(chat_id, filter=ChatMembersFilter.BANNED):
+        tasks.append(create_task(unban_user(client, chat_id, member.user.id, sem, counters)))
+
+    await gather(*tasks)
+    await client.send_message(chat_id, f"Unbanned {counters['unbanned']} users. Failed: {counters['errors']}.")
+
+async def mute_user(client, chat_id, user_id, sem, counters, permissions):
+    async with sem:
         try:
-            await client.unban_chat_member(chat_id, member.user.id)
-            unbanned += 1
-        except Exception as e:
-            error_count += 1
-        await asyncio.sleep(0.1)
-    await client.send_message(chat_id, f"Unbanned {unbanned} members successfully. Failed to unban {error_count} members.")
+            await client.restrict_chat_member(chat_id, user_id, permissions)
+            counters["muted"] += 1
+        except Exception:
+            counters["errors"] += 1
 
 async def perform_mute_all(client: Client, chat_id):
-    muted = 0
-    error_count = 0
+    sem = Semaphore(MAX_CONCURRENT)
+    counters = {"muted": 0, "errors": 0}
+    tasks = []
     permissions = ChatPermissions()
 
     async for member in client.get_chat_members(chat_id):
         if member.user.is_bot or member.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
             continue
+        tasks.append(create_task(mute_user(client, chat_id, member.user.id, sem, counters, permissions)))
+
+    await gather(*tasks)
+    await client.send_message(chat_id, f"Muted {counters['muted']} users. Failed: {counters['errors']}.")
+
+async def unmute_user(client, chat_id, user_id, sem, counters, permissions):
+    async with sem:
         try:
-            await client.restrict_chat_member(chat_id, member.user.id, permissions)
-            muted += 1
-        except Exception as e:
-            error_count += 1
-        await asyncio.sleep(0.1)
-    await client.send_message(chat_id, f"Muted {muted} members successfully. Failed to mute {error_count} members.")
+            await client.restrict_chat_member(chat_id, user_id, permissions)
+            counters["unmuted"] += 1
+        except Exception:
+            counters["errors"] += 1
 
 async def perform_unmute_all(client: Client, chat_id):
-    unmuted = 0
-    error_count = 0
+    sem = Semaphore(MAX_CONCURRENT)
+    counters = {"unmuted": 0, "errors": 0}
+    tasks = []
     permissions = ChatPermissions(
         can_send_messages=True,
         can_send_media_messages=True,
@@ -184,17 +217,14 @@ async def perform_unmute_all(client: Client, chat_id):
     async for member in client.get_chat_members(chat_id):
         if member.user.is_bot or member.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
             continue
-        try:
-            await client.restrict_chat_member(chat_id, member.user.id, permissions)
-            unmuted += 1
-        except Exception as e:
-            error_count += 1
-        await asyncio.sleep(0.1)
-    await client.send_message(chat_id, f"Unmuted {unmuted} members successfully. Failed to unmute {error_count} members.")
+        tasks.append(create_task(unmute_user(client, chat_id, member.user.id, sem, counters, permissions)))
+
+    await gather(*tasks)
+    await client.send_message(chat_id, f"Unmuted {counters['unmuted']} users. Failed: {counters['errors']}.")
 
 async def perform_unpin_all(client: Client, chat_id):
     try:
         await client.unpin_all_chat_messages(chat_id)
         await client.send_message(chat_id, "All messages unpinned successfully.")
-    except Exception as e:
+    except Exception:
         await client.send_message(chat_id, "An error occurred while trying to unpin the messages.")
