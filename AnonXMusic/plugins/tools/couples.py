@@ -1,119 +1,93 @@
-"""import os 
+import os
 import random
-from datetime import datetime 
+from datetime import datetime
 from telegraph import upload_file
-from PIL import Image , ImageDraw
-from pyrogram import *
-from pyrogram.types import *
-from pyrogram.enums import *
+from PIL import Image, ImageDraw
+from pyrogram import filters
+from pyrogram.enums import ChatType
+from AnonXMusic import app
 
-from AnonXMusic import app as app
-from AnonXMusic.utils.couples_db import _get_image, get_couple
+TEMPLATE_PATH = "AnonXMusic/assets/Couples.jpg"  # New uploaded PNG
+FALLBACK_PFP = "AnonXMusic/assets/upic.png"
 
-def dt():
+def get_today_tomorrow():
     now = datetime.now()
-    dt_string = now.strftime("%d/%m/%Y %H:%M")
-    dt_list = dt_string.split(" ")
-    return dt_list
-
-
-def dt_tom():
-    a = (
-        str(int(dt()[0].split("/")[0]) + 1)
-        + "/"
-        + dt()[0].split("/")[1]
-        + "/"
-        + dt()[0].split("/")[2]
-    )
-    return a
-
-tomorrow = str(dt_tom())
-today = str(dt()[0])
+    today = now.strftime("%d/%m/%Y")
+    tomorrow = (now.replace(day=now.day + 1)).strftime("%d/%m/%Y")
+    return today, tomorrow
 
 @app.on_message(filters.command("couples"))
-async def ctest(_, message):
-    cid = message.chat.id
+async def couples_handler(_, message):
     if message.chat.type == ChatType.PRIVATE:
         return await message.reply_text("This command only works in groups.")
+
+    msg = await message.reply("Picking today's couple...")
+
     try:
+        users = [
+            member.user.id async for member in app.get_chat_members(message.chat.id, limit=50)
+            if not member.user.is_bot
+        ]
+        if len(users) < 2:
+            return await msg.edit("Not enough members to select a couple.")
 
-         msg = await message.reply_text("🦋")
+        c1, c2 = random.sample(users, 2)
 
-         list_of_users = []
+        user1, user2 = await app.get_users([c1, c2])
+        name1 = user1.mention
+        name2 = user2.mention
 
-         async for i in app.get_chat_members(message.chat.id, limit=50):
-             if not i.user.is_bot:
-               list_of_users.append(i.user.id)
+        photo1 = user1.photo.big_file_id if user1.photo else None
+        photo2 = user2.photo.big_file_id if user2.photo else None
 
-         c1_id = random.choice(list_of_users)
-         c2_id = random.choice(list_of_users)
-         while c1_id == c2_id:
-              c1_id = random.choice(list_of_users)
+        p1 = await app.download_media(photo1) if photo1 else FALLBACK_PFP
+        p2 = await app.download_media(photo2) if photo2 else FALLBACK_PFP
 
+        # Open profile pics and apply circular mask
+        def process_pfp(path):
+            img = Image.open(path).convert("RGBA").resize((210, 210))
+            mask = Image.new("L", img.size, 0)
+            draw = ImageDraw.Draw(mask)
+            draw.ellipse((0, 0) + img.size, fill=255)
+            img.putalpha(mask)
+            return img
 
-         photo1 = (await app.get_chat(c1_id)).photo
-         photo2 = (await app.get_chat(c2_id)).photo
+        img1 = process_pfp(p1)
+        img2 = process_pfp(p2)
 
-         N1 = (await app.get_users(c1_id)).mention 
-         N2 = (await app.get_users(c2_id)).mention
+        # Open template and paste
+        template = Image.open(TEMPLATE_PATH).convert("RGBA")
+        template.paste(img1, (30, 35), img1)
+        template.paste(img2, (255, 35), img2)
 
-         try:
-            p1 = await app.download_media(photo1.big_file_id, file_name="pfp.png")
-         except Exception:
-            p1 = "ANNIEMUSIC/assets/upic.png"
-         try:
-            p2 = await app.download_media(photo2.big_file_id, file_name="pfp1.png")
-         except Exception:
-            p2 = "ANNIEMUSIC/assets/upic.png"
+        out_path = f"temp_couple_{message.chat.id}.png"
+        template.save(out_path)
 
-         img1 = Image.open(f"{p1}")
-         img2 = Image.open(f"{p2}")
-
-         img = Image.open("ANNIEMUSIC/assets/annie/ANNIECP.png")
-
-         img1 = img1.resize((486,486))
-         img2 = img2.resize((486,486))
-
-         mask = Image.new('L', img1.size, 0)
-         draw = ImageDraw.Draw(mask) 
-         draw.ellipse((0, 0) + img1.size, fill=255)
-
-         mask1 = Image.new('L', img2.size, 0)
-         draw = ImageDraw.Draw(mask1) 
-         draw.ellipse((0, 0) + img2.size, fill=255)
-
-
-         img1.putalpha(mask)
-         img2.putalpha(mask1)
-
-         draw = ImageDraw.Draw(img)
-
-         img.paste(img1, (410, 500), img1)
-         img.paste(img2, (1395, 500), img2)
-
-         img.save(f'test_{cid}.png')
-
-         TXT = f"""
-"""**𝐓ᴏᴅᴀʏ's 𝐒ᴇʟᴇᴄᴛᴇᴅ 𝐂ᴏᴜᴘʟᴇs 🎉 :
+        today, tomorrow = get_today_tomorrow()
+        caption = f"""
+𝐓ᴏᴅᴀʏ's 𝐒ᴇʟᴇᴄᴛᴇᴅ 𝐂ᴏᴜᴘʟᴇs 🎉 :
 ✧══════•❁♡︎❁•══════✧
-{N1} + {N2} = 💗
+{name1} + {name2} = 💗
 ✧══════•❁♡︎❁•══════✧
-𝐍ᴇxᴛ 𝐂ᴏᴜᴘʟᴇs 𝐖ɪʟʟ 𝐁ᴇ 𝐒ᴇʟᴇᴄᴛᴇᴅ 𝐎ɴ {tomorrow} !!**
-""""""
+𝐍ᴇxᴛ 𝐂ᴏᴜᴘʟᴇs 𝐎ɴ {tomorrow} !!
+"""
 
-         await message.reply_photo(f"test_{cid}.png", caption=TXT)
-         await msg.delete()
-         a = upload_file(f"test_{cid}.png")
-         for x in a:
-           img = "https://graph.org/" + x
-           couple = {"c1_id": c1_id, "c2_id": c2_id}
+        await message.reply_photo(out_path, caption=caption)
+        await msg.delete()
+
+        # Optional Telegraph upload
+        try:
+            link = upload_file(out_path)[0]
+            print("Telegraph URL:", "https://graph.org/" + link)
+        except:
+            pass
 
     except Exception as e:
-        print(str(e))
-    try:
-      os.remove(f"./downloads/pfp1.png")
-      os.remove(f"./downloads/pfp2.png")
-      os.remove(f"test_{cid}.png")
-    except Exception:
-       pass
-"""
+        await msg.edit(f"Error: {e}")
+    finally:
+        for f in [p1, p2, out_path]:
+            try:
+                if os.path.exists(f) and "upic.png" not in f:
+                    os.remove(f)
+            except:
+                pass
