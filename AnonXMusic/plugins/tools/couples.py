@@ -7,7 +7,7 @@ from pyrogram import filters
 from pyrogram.enums import ChatType
 from AnonXMusic import app
 
-TEMPLATE_PATH = "AnonXMusic/assets/Couples.jpg"  # New uploaded PNG
+TEMPLATE_PATH = "AnonXMusic/assets/Couples.jpg"
 FALLBACK_PFP = "AnonXMusic/assets/upic.png"
 
 def get_today_tomorrow():
@@ -21,7 +21,7 @@ async def couples_handler(_, message):
     if message.chat.type == ChatType.PRIVATE:
         return await message.reply_text("This command only works in groups.")
 
-    msg = await message.reply("Picking today's couple...")
+    msg = await message.reply("cooking today's couples...")
 
     try:
         users = [
@@ -32,7 +32,6 @@ async def couples_handler(_, message):
             return await msg.edit("Not enough members to select a couple.")
 
         c1, c2 = random.sample(users, 2)
-
         user1, user2 = await app.get_users([c1, c2])
         name1 = user1.mention
         name2 = user2.mention
@@ -43,22 +42,23 @@ async def couples_handler(_, message):
         p1 = await app.download_media(photo1) if photo1 else FALLBACK_PFP
         p2 = await app.download_media(photo2) if photo2 else FALLBACK_PFP
 
-        # Open profile pics and apply circular mask
         def process_pfp(path):
-            img = Image.open(path).convert("RGBA").resize((210, 210))
-            mask = Image.new("L", img.size, 0)
+            size = (170, 170)  # Smaller size for proper circle fit
+            img = Image.open(path).convert("RGBA").resize(size)
+            mask = Image.new("L", size, 0)
             draw = ImageDraw.Draw(mask)
-            draw.ellipse((0, 0) + img.size, fill=255)
+            draw.ellipse((0, 0, size[0], size[1]), fill=255)
             img.putalpha(mask)
             return img
 
         img1 = process_pfp(p1)
         img2 = process_pfp(p2)
 
-        # Open template and paste
         template = Image.open(TEMPLATE_PATH).convert("RGBA")
-        template.paste(img1, (30, 35), img1)
-        template.paste(img2, (255, 35), img2)
+
+        # Coordinates for better alignment in circle frames
+        template.paste(img1, (52, 48), img1)   # Left circle
+        template.paste(img2, (258, 48), img2)  # Right circle
 
         out_path = f"temp_couple_{message.chat.id}.png"
         template.save(out_path)
@@ -69,13 +69,11 @@ async def couples_handler(_, message):
 ✧══════•❁♡︎❁•══════✧
 {name1} + {name2} = 💗
 ✧══════•❁♡︎❁•══════✧
-𝐍ᴇxᴛ 𝐂ᴏᴜᴘʟᴇs 𝐎ɴ {tomorrow} !!
 """
 
         await message.reply_photo(out_path, caption=caption)
         await msg.delete()
 
-        # Optional Telegraph upload
         try:
             link = upload_file(out_path)[0]
             print("Telegraph URL:", "https://graph.org/" + link)
