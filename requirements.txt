@@ -29,3 +29,4 @@ gtts
 gpytranslate
 openai
 emojis
+telegraph
