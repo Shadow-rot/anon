@@ -21,7 +21,7 @@ async def couples_handler(_, message):
     if message.chat.type == ChatType.PRIVATE:
         return await message.reply_text("This command only works in groups.")
 
-    msg = await message.reply("cooking today's couples...")
+    msg = await message.reply("Picking today's couple...")
 
     try:
         users = [
@@ -43,7 +43,7 @@ async def couples_handler(_, message):
         p2 = await app.download_media(photo2) if photo2 else FALLBACK_PFP
 
         def process_pfp(path):
-            size = (170, 170)  # Smaller size for proper circle fit
+            size = (160, 160)  # Slightly smaller for perfect fit
             img = Image.open(path).convert("RGBA").resize(size)
             mask = Image.new("L", size, 0)
             draw = ImageDraw.Draw(mask)
@@ -55,20 +55,25 @@ async def couples_handler(_, message):
         img2 = process_pfp(p2)
 
         template = Image.open(TEMPLATE_PATH).convert("RGBA")
-
-        # Coordinates for better alignment in circle frames
-        template.paste(img1, (52, 48), img1)   # Left circle
-        template.paste(img2, (258, 48), img2)  # Right circle
+        template.paste(img1, (60, 55), img1)   # Left
+        template.paste(img2, (265, 55), img2)  # Right
 
         out_path = f"temp_couple_{message.chat.id}.png"
         template.save(out_path)
 
         today, tomorrow = get_today_tomorrow()
         caption = f"""
-𝐓ᴏᴅᴀʏ's 𝐒ᴇʟᴇᴄᴛᴇᴅ 𝐂ᴏᴜᴘʟᴇs 🎉 :
-✧══════•❁♡︎❁•══════✧
-{name1} + {name2} = 💗
-✧══════•❁♡︎❁•══════✧
+┏━━━━━━━━━━━━━━━┓
+  𝐓ᴏᴅᴀʏ'ꜱ 💞 𝐂ᴏᴜᴘʟᴇ 𝐌ᴀᴛᴄʜ 
+┗━━━━━━━━━━━━━━━┛
+
+➤ {name1}  +  {name2} =  ᗯᗩᖇᗰ ᒪOᐯᗴ 💗
+
+ꜱᴘʀᴇᴀᴅɪɴɢ ʟᴏᴠᴇ ɪɴ {message.chat.title} ✨
+
+⏳ ɴᴇxᴛ ᴄᴏᴜᴘʟᴇ ʀᴇᴠᴇᴀʟ ᴏɴ: {tomorrow}
+
+#ʟᴏᴠᴇ #ᴄᴏᴜᴘʟᴇ #ꜱʜɪᴘᴘᴇᴅ
 """
 
         await message.reply_photo(out_path, caption=caption)
