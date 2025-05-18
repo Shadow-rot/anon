@@ -25,10 +25,7 @@ async def _filter(client, message):
 
     content, text, data_type = await GetFIlterMessage(message)
     await add_filter_db(chat_id, filter_name=filter_name, content=content, text=text, data_type=data_type)
-    await message.reply(
-        f"Saved filter `{filter_name}`.",
-        parse_mode="Markdown"
-    )
+    await message.reply(f"Saved filter `{filter_name}`.")
 
 
 @app.on_message(~filters.bot & filters.group, group=4)
@@ -71,19 +68,14 @@ async def _filters(client, message):
     FILTERS = await get_filters_list(chat_id)
 
     if len(FILTERS) == 0:
-        await message.reply(
-            f'No filters in {chat_title}.'
-        )
+        await message.reply(f'No filters in {chat_title}.')
         return
 
     filters_list = f'List of filters in {chat_title}:\n'
     for filter_ in FILTERS:
         filters_list += f'- `{filter_}`\n'
 
-    await message.reply(
-        filters_list,
-        parse_mode="Markdown"
-    )
+    await message.reply(filters_list)
 
 
 @app.on_message(filters.command('stopall') & admin_filter)
@@ -102,9 +94,8 @@ async def stopall(client, message):
     )
 
     await message.reply(
-        text=(f'Are you sure you want to stop **ALL** filters in `{chat_title}`? This action is irreversible.'),
-        reply_markup=KEYBOARD,
-        parse_mode="Markdown"
+        text=f'Are you sure you want to stop **ALL** filters in `{chat_title}`? This action is irreversible.',
+        reply_markup=KEYBOARD
     )
 
 
@@ -138,7 +129,4 @@ async def stop(client, message):
         return
 
     await stop_db(chat_id, filter_name)
-    await message.reply(
-        f"I've stopped `{filter_name}`.",
-        parse_mode="Markdown"
-    )
+    await message.reply(f"I've stopped `{filter_name}`.")
