@@ -178,7 +178,7 @@ async def greet_new_member(client, member: ChatMemberUpdated):
                 photo=welcome_img,
                 caption=f"""
 𓆩✦ 𝓐 𝓝𝓮𝔀 𝓢𝓽𝓪𝓻 𝓗𝓪𝓼 𝓔𝓷𝓽𝓮𝓻𝓮𝓭 𝓞𝓾𝓻 𝓢𝓴𝔂 ✦𓆪  
-     ━━━━❖ {member.chat.title} ❖━━━━ 
+ ━❖ {member.chat.title} ❖━ 
 ╭════•┈┈┈┈•════╮  
 ┃ ✦ 𝙽𝚊𝚖𝚎: {user.mention}  
 ┃ ✦ 𝚄𝚜𝚎𝚛𝚗𝚊𝚖𝚎: @{user.username or "No Username"}  
