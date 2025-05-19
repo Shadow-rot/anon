@@ -70,15 +70,23 @@ def circle(pfp, size=(500, 500)):
 
 
 def welcomepic(pic_path, user, chatname, user_id, uname):
-    background = Image.open("AnonXMusic/assets/AnnieNwel.png")
+    background = Image.open("AnonXMusic/assets/Welcome.jpg")
     pfp = Image.open(pic_path).convert("RGBA")
-    pfp = circle(pfp, size=(835, 839))
+
+    # New size to match white circle (estimated around 420x420)
+    circle_size = (420, 420)
+    pfp = circle(pfp, size=circle_size)
+
     draw = ImageDraw.Draw(background)
     font_large = ImageFont.truetype('AnonXMusic/assets/ArialReg.ttf', size=65)
+
+    # New position to match the white circle on the image
+    pfp_position = (210, 250)  # Adjust as needed for perfect fit
+
     draw.text((421, 715), f'{user}', fill=(242, 242, 242), font=font_large)
     draw.text((270, 1005), f'{user_id}', fill=(242, 242, 242), font=font_large)
     draw.text((570, 1308), f"{uname}", fill=(242, 242, 242), font=font_large)
-    pfp_position = (1887, 390)
+
     background.paste(pfp, pfp_position, pfp)
     image_path = f"downloads/welcome#{user_id}.png"
     background.save(image_path)
