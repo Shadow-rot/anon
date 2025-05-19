@@ -6,7 +6,9 @@ from PIL import Image, ImageDraw, ImageFont
 from pyrogram import Client, filters, enums
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ChatMemberUpdated
 from logging import getLogger
-from AnonXMusic import app
+from pyrogram import Client
+
+app = Client("AnonXMusic")  # Use your session name here
 
 LOGGER = getLogger(__name__)
 
