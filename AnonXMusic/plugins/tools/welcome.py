@@ -2,17 +2,15 @@ import os
 import asyncio
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
-from PIL import Image, ImageDraw, ImageFont, ImageEnhance
+from PIL import Image, ImageDraw, ImageFont
 from pyrogram import Client, filters, enums
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ChatMemberUpdated
 from logging import getLogger
 from AnonXMusic import app
 
-
 LOGGER = getLogger(__name__)
 
 
-# In-memory welcome state store
 class WelcomeState:
     def __init__(self):
         self.data = {}
@@ -55,8 +53,8 @@ class WelcomeState:
 state = WelcomeState()
 temp_msg = {}
 
-# Mask profile picture to circle
-def make_circle(image, size=(500, 500)):
+# Draw circle profile pic
+def make_circle(image, size=(190, 190)):
     image = image.resize(size).convert("RGBA")
     mask = Image.new("L", size, 0)
     draw = ImageDraw.Draw(mask)
@@ -65,24 +63,25 @@ def make_circle(image, size=(500, 500)):
     return image
 
 
-# Compose final welcome image
+# Create final image with profile inside the drawn white circle
 def create_welcome_image(profile_path, name, user_id, username):
-    bg = Image.open("/mnt/data/file-PRsPtTMYFwsb8EBdbPUex6").convert("RGBA")
-    font = ImageFont.truetype("AnonXMusic/assets/ArialReg.ttf", 65)
-
+    bg = Image.open("AnonXMusic/assets/Welcome.jpg").convert("RGBA")
+    font = ImageFont.truetype("AnonXMusic/assets/ArialReg.ttf", 45)
     draw = ImageDraw.Draw(bg)
 
+    # Paste PFP in the circle's center (adjust if needed)
+    pfp = Image.open(profile_path).convert("RGBA")
+    pfp = make_circle(pfp, (190, 190))
+    bg.paste(pfp, (60, 240), pfp)  # coords inside white circle
+
+    # Draw text centered
     def draw_center(text, y):
         w, _ = draw.textsize(text, font=font)
         draw.text(((bg.width - w) / 2, y), text, font=font, fill=(255, 255, 255))
 
-    draw_center(name, 715)
-    draw_center(str(user_id), 1005)
-    draw_center(username, 1308)
-
-    pfp = Image.open(profile_path).convert("RGBA")
-    pfp = make_circle(pfp, (500, 500))
-    bg.paste(pfp, (715, 390), pfp)
+    draw_center(name, 460)
+    draw_center(f"@{username}" if username else "No Username", 510)
+    draw_center(f"ID: {user_id}", 560)
 
     output = f"downloads/wel_{user_id}.png"
     bg.save(output)
@@ -109,10 +108,11 @@ async def toggle_welcome(app, message):
 @app.on_chat_member_updated(filters.group, group=-3)
 async def welcome_user(app, member: ChatMemberUpdated):
     chat_id = member.chat.id
-    user = member.new_chat_member.user
 
     if not member.new_chat_member or member.new_chat_member.status != enums.ChatMemberStatus.MEMBER:
         return
+
+    user = member.new_chat_member.user
 
     if not await state.is_on(chat_id):
         if await state.auto_reenable(chat_id):
@@ -138,7 +138,7 @@ async def welcome_user(app, member: ChatMemberUpdated):
                 pass
 
         img = create_welcome_image(
-            pic, user.first_name, user.id, f"@{user.username}" if user.username else "No Username"
+            pic, user.first_name, user.id, user.username
         )
 
         count = await app.get_chat_members_count(chat_id)
