@@ -59,7 +59,7 @@ wlcm = WelDatabase()
 class temp:
     MELCOW = {}
 
-def circle(pfp, size=(300, 300)):
+def circle(pfp, size=(200, 200)):
     pfp = pfp.resize(size, Image.LANCZOS).convert("RGBA")
     mask = Image.new("L", size, 0)
     draw = ImageDraw.Draw(mask)
@@ -74,14 +74,14 @@ def welcomepic(pic_path, user, chatname, user_id, uname):
     pfp = Image.open(pic_path).convert("RGBA")
 
     # New size to match white circle (estimated around 420x420)
-    circle_size = (300, 300)
+    circle_size = (200, 200)
     pfp = circle(pfp, size=circle_size)
 
     draw = ImageDraw.Draw(background)
     font_large = ImageFont.truetype('AnonXMusic/assets/ArialReg.ttf', size=65)
 
     # New position to match the white circle on the image
-    pfp_position = (180, 400)  # Adjust as needed for perfect fit
+    pfp_position = (300, 500)  # Adjust as needed for perfect fit
 
     draw.text((421, 715), f'{user}', fill=(242, 242, 242), font=font_large)
     draw.text((270, 1005), f'{user_id}', fill=(242, 242, 242), font=font_large)
