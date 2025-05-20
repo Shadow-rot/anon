@@ -79,63 +79,58 @@ async def list_locks(client, message: Message):
 @app.on_message(filters.group, group=69)
 async def enforce_locks(client, message: Message):
     chat_id = message.chat.id
-    user_id = message.from_user.id
+    from_user = message.from_user
+
+    # Ignore messages with no sender (e.g., anonymous admins or service messages)
+    if not from_user:
+        return
+
+    user_id = from_user.id
     locks = locked_content.get(chat_id, set())
 
+    # Allow if no locks or user is admin
     if not locks or await is_admin(client, chat_id, user_id):
         return
 
-    if "messages" in locks:
-        return await message.delete()
-    if "text" in locks and message.text:
-        return await message.delete()
-    if "photo" in locks and message.photo:
-        return await message.delete()
-    if "video" in locks and message.video:
-        return await message.delete()
-    if "sticker" in locks and message.sticker:
-        return await message.delete()
-    if "voice" in locks and message.voice:
-        return await message.delete()
-    if "audio" in locks and message.audio:
-        return await message.delete()
-    if "document" in locks and message.document:
-        return await message.delete()
-    if "animation" in locks and message.animation:
-        return await message.delete()
-    if "contact" in locks and message.contact:
-        return await message.delete()
-    if "poll" in locks and message.poll:
-        return await message.delete()
-    if "location" in locks and message.location:
-        return await message.delete()
-    if ("game" in locks or "egame" in locks) and message.game:
-        return await message.delete()
-    if "forward" in locks and message.forward_from:
-        return await message.delete()
-    if "bots" in locks and message.from_user.is_bot:
-        return await message.delete()
+    # Message type-based deletion
+    conditions = [
+        ("messages", True),
+        ("text", message.text),
+        ("photo", message.photo),
+        ("video", message.video),
+        ("sticker", message.sticker),
+        ("voice", message.voice),
+        ("audio", message.audio),
+        ("document", message.document),
+        ("animation", message.animation),
+        ("contact", message.contact),
+        ("poll", message.poll),
+        ("location", message.location),
+        ("game", message.game),
+        ("forward", message.forward_from),
+        ("bots", from_user.is_bot),
+        ("caption", message.caption),
+        ("pin", message.pinned_message),
+        ("inline", message.via_bot),
+        ("previews", message.web_page),
+        ("rtl", message.text and "\u202E" in message.text),
+        ("media", any([message.photo, message.video, message.document, message.audio])),
+        ("other", not any([
+            message.text, message.photo, message.video, message.sticker, message.voice,
+            message.document, message.audio, message.animation, message.contact,
+            message.poll, message.location, message.game
+        ]))
+    ]
+
+    # URL and mention checks
     if "url" in locks and message.entities:
         if any(e.type == "url" for e in message.entities):
             return await message.delete()
     if "mention" in locks and message.entities:
         if any(e.type == "mention" for e in message.entities):
             return await message.delete()
-    if "caption" in locks and message.caption:
-        return await message.delete()
-    if "pin" in locks and message.pinned_message:
-        return await message.delete()
-    if "inline" in locks and message.via_bot:
-        return await message.delete()
-    if "previews" in locks and message.web_page:
-        return await message.delete()
-    if "rtl" in locks and message.text and "\u202E" in message.text:
-        return await message.delete()
-    if "media" in locks and (message.photo or message.video or message.document or message.audio):
-        return await message.delete()
-    if "other" in locks and not any([
-        message.text, message.photo, message.video, message.sticker, message.voice,
-        message.document, message.audio, message.animation, message.contact,
-        message.poll, message.location, message.game
-    ]):
-        return await message.delete()
+
+    # Loop through conditions and delete if locked
+    for lock_type, condition in conditions:
+        if lock_type in locks and condition:
+            return await message.delete()
