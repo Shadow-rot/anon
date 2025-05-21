@@ -14,38 +14,27 @@ async def anime_info(_, message):
     query = " ".join(message.command[1:])
     if not query:
         return await message.reply("Usage: /anime <anime name>")
-    async with AioJikan() as jikan:
-        try:
-            result = await jikan.search("anime", query)
-            anime = result["results"][0]
-            await message.reply(
-                f"**{anime['title']}**\n"
-                f"Score: {anime['score']}\n"
-                f"Episodes: {anime['episodes']}\n"
-                f"Type: {anime['type']}\n"
-                f"Airing: {anime['airing']}\n"
-                f"URL: {anime['url']}"
-            )
-        except Exception as e:
-            await message.reply(f"Error: {e}")
-
-@app.on_message(filters.command("character"))
-async def character_info(_, message):
-    query = " ".join(message.command[1:])
-    if not query:
-        return await message.reply("Usage: /character <character name>")
-    async with AioJikan() as jikan:
-        try:
-            result = await jikan.search("character", query)
-            character = result["results"][0]
-            await message.reply(
-                f"**{character['name']}**\n"
-                f"URL: {character['url']}\n"
-                f"Anime: {character.get('anime')[0]['name'] if character.get('anime') else 'N/A'}"
-            )
-        except Exception as e:
-            await message.reply(f"Error: {e}")
-
+    
+    url = f"https://api.jikan.moe/v4/anime?q={query}&limit=1"
+    
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as resp:
+            if resp.status != 200:
+                return await message.reply("Failed to fetch anime info.")
+            data = await resp.json()
+    
+    if not data.get("data"):
+        return await message.reply("No anime found.")
+    
+    anime = data["data"][0]
+    await message.reply(
+        f"**{anime['title']}**\n"
+        f"Score: {anime.get('score', 'N/A')}\n"
+        f"Episodes: {anime.get('episodes', 'N/A')}\n"
+        f"Status: {anime.get('status', 'N/A')}\n"
+        f"Aired: {anime.get('aired', {}).get('string', 'N/A')}\n"
+        f"URL: {anime['url']}"
+    )
 @app.on_message(filters.command("manga"))
 async def manga_info(_, message):
     query = " ".join(message.command[1:])
