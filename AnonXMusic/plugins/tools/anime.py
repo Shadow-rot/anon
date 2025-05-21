@@ -54,7 +54,8 @@ async def anime_info(_, message):
     await message.reply_photo(
         photo=image,
         caption=caption,
-        reply_markup=buttons
+        reply_markup=buttons,
+        disable_web_page_preview=True
     )
 
 
