@@ -1,5 +1,6 @@
 import os
 import aiohttp
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from bs4 import BeautifulSoup
 from datetime import datetime
 from pyrogram import filters
@@ -29,13 +30,32 @@ async def anime_info(_, message):
         return await message.reply("No anime found.")
 
     anime = data["data"][0]
-    await message.reply(
-        f"**{anime['title']}**\n"
-        f"Score: {anime.get('score', 'N/A')}\n"
-        f"Episodes: {anime.get('episodes', 'N/A')}\n"
-        f"Status: {anime.get('status', 'N/A')}\n"
-        f"Aired: {anime.get('aired', {}).get('string', 'N/A')}\n"
-        f"URL: {anime['url']}"
+    title = anime['title']
+    score = anime.get('score', 'N/A')
+    episodes = anime.get('episodes', 'N/A')
+    status = anime.get('status', 'N/A')
+    aired = anime.get('aired', {}).get('string', 'N/A')
+    url = anime['url']
+    image = anime['images']['jpg']['image_url']
+
+    caption = (
+        f"{title}*\n"
+        f"Score: {score}\n"
+        f"Episodes: {episodes}\n"
+        f"Status: {status}\n"
+        f"Aired: {aired}\n\n"
+        f"_Message provided by [Siya](https://t.me/siyaprobot)_"
+    )
+
+    buttons = InlineKeyboardMarkup(
+        [[InlineKeyboardButton("View on MyAnimeList", url=url)]]
+    )
+
+    await message.reply_photo(
+        photo=image,
+        caption=caption,
+        reply_markup=buttons,
+        parse_mode="markdown"
     )
 
 
