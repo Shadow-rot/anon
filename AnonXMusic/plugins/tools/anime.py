@@ -57,7 +57,6 @@ async def anime_info(_, message):
     await message.reply(
         formatted_with_preview,
         reply_markup=buttons,
-        parse_mode="html",
         disable_web_page_preview=False  # enable to show 4:3 image preview
     )
 
