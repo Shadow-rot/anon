@@ -39,25 +39,27 @@ async def anime_info(_, message):
     image = anime['images']['jpg']['image_url']
 
     caption = (
-        f"{title}*\n"
-        f"Score: {score}\n"
-        f"Episodes: {episodes}\n"
-        f"Status: {status}\n"
-        f"Aired: {aired}\n\n"
-        f"_Message provided by [Siya](https://t.me/siyaprobot)_"
+        f"<b>{title}</b>\n"
+        f"<b>Score:</b> {score}\n"
+        f"<b>Episodes:</b> {episodes}\n"
+        f"<b>Status:</b> {status}\n"
+        f"<b>Aired:</b> {aired}\n\n"
+        f"<i>Message provided by <a href='https://t.me/siyaprobot'>Siya</a></i>"
     )
+
+    # Use HTML anchor tag to show 4:3 preview image below message
+    formatted_with_preview = f"{caption}\n\n<a href='{image}'>.</a>"
 
     buttons = InlineKeyboardMarkup(
         [[InlineKeyboardButton("View on MyAnimeList", url=url)]]
     )
 
-    await message.reply_photo(
-        photo=image,
-        caption=caption,
+    await message.reply(
+        formatted_with_preview,
         reply_markup=buttons,
-        disable_web_page_preview=True
+        parse_mode="html",
+        disable_web_page_preview=False  # enable to show 4:3 image preview
     )
-
 
 @app.on_message(filters.command("manga"))
 async def manga_info(_, message):
