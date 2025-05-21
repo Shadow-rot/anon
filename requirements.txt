@@ -30,3 +30,6 @@ gpytranslate
 openai
 emojis
 telegraph
+bs4
+beautifulsoup4
+jikanpy
