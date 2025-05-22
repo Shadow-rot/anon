@@ -37,7 +37,6 @@ async def start_pm(client, message: Message, _):
                 + f"\n\n<b><a href='{START_IMG_URL}'>Video Preview</a></b>",
                 reply_markup=keyboard,
                 disable_web_page_preview=False,
-                parse_mode="html",
             )
         if name[0:3] == "sud":
             await sudoers_list(client=client, message=message, _=_)
@@ -91,7 +90,6 @@ async def start_pm(client, message: Message, _):
             + f"\n\n<b><a href='{START_IMG_URL}'>Video Preview</a></b>",
             reply_markup=InlineKeyboardMarkup(out),
             disable_web_page_preview=False,
-            parse_mode="html",
         )
 
 
@@ -105,7 +103,6 @@ async def start_gp(client, message: Message, _):
         + f"\n\n<b><a href='{START_IMG_URL}'>Video Preview</a></b>",
         reply_markup=InlineKeyboardMarkup(out),
         disable_web_page_preview=False,
-        parse_mode="html",
     )
 
 
@@ -146,7 +143,6 @@ async def welcome(client, message: Message):
                     + f"\n\n<b><a href='{START_IMG_URL}'>Video Preview</a></b>",
                     reply_markup=InlineKeyboardMarkup(out),
                     disable_web_page_preview=False,
-                    parse_mode="html",
                 )
                 await add_served_chat(message.chat.id)
                 await message.stop_propagation()
