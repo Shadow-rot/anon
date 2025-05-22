@@ -4,6 +4,8 @@ from io import BytesIO
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from AnonXMusic import app
+import requests
+from bs4 import BeautifulSoup
 
 
 async def fetch_json(url):
@@ -22,7 +24,36 @@ async def fetch_image_bytes(image_url):
             return None
 
 
-async def send_anime_card(message, title, info, image_url, site_url):
+def check_hindi_dub(anime_title):
+    search_url = f"https://animekaizoku.com/?s={anime_title.replace(' ', '+')}"
+    headers = {"User-Agent": "Mozilla/5.0"}
+
+    try:
+        response = requests.get(search_url, headers=headers)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.content, "html.parser")
+
+        post_link = soup.find("h2", class_="post-title")
+        if not post_link or not post_link.a:
+            return False
+
+        anime_page_url = post_link.a["href"]
+
+        anime_page = requests.get(anime_page_url, headers=headers)
+        anime_page.raise_for_status()
+        page_soup = BeautifulSoup(anime_page.content, "html.parser")
+
+        page_text = page_soup.get_text().lower()
+        if "hindi dubbed" in page_text or "hindi" in page_text:
+            return True
+        return False
+
+    except Exception as e:
+        print(f"Error checking Hindi dub: {e}")
+        return False
+
+
+async def send_anime_card(message, title, info, image_url, site_url, buttons=None):
     image_data = await fetch_image_bytes(image_url)
     if not image_data:
         return await message.reply("Failed to fetch image.")
@@ -36,10 +67,12 @@ async def send_anime_card(message, title, info, image_url, site_url):
         f"{info}\n\n"
         f"<i>Message provided by <a href='https://t.me/siyaprobot'>Siya</a></i>"
     )
-    buttons = InlineKeyboardMarkup(
-        [[InlineKeyboardButton("View on Website", url=site_url)]]
+
+    await message.reply_photo(
+        photo=image_file,
+        caption=caption,
+        reply_markup=InlineKeyboardMarkup(buttons) if buttons else None
     )
-    await message.reply_photo(photo=image_file, caption=caption, reply_markup=buttons)
 
 
 @app.on_message(filters.command("anime"))
@@ -47,36 +80,38 @@ async def anime_info(_, message):
     query = " ".join(message.command[1:])
     if not query:
         return await message.reply("Usage: /anime <anime name>")
+
     data = await fetch_json(f"https://api.jikan.moe/v4/anime?q={query}&limit=1")
     if not data or not data.get("data"):
         return await message.reply("No anime found.")
+    
     anime = data["data"][0]
 
-    # Hindi dub assumption via Kaizoku/Kayo
-    hindi_dub_available = False  # We can't confirm via API, so we guess "Not confirmed"
+    # Check for Hindi Dub availability
+    hindi_dub = check_hindi_dub(anime['title'])
 
     info = (
         f"<b>Score:</b> {anime.get('score', 'N/A')}\n"
         f"<b>Episodes:</b> {anime.get('episodes', 'N/A')}\n"
         f"<b>Status:</b> {anime.get('status', 'N/A')}\n"
         f"<b>Aired:</b> {anime.get('aired', {}).get('string', 'N/A')}\n"
-        f"<b>Hindi Dub:</b> {'Possibly available' if hindi_dub_available else 'Not confirmed'}"
+        f"<b>Hindi Dub:</b> {'Available' if hindi_dub else 'Not available'}"
     )
 
     query_encoded = query.replace(" ", "+")
     buttons = [
-        [InlineKeyboardButton("View on Website", url=anime['url'])],
-        [InlineKeyboardButton("Search Hindi Dub (Kaizoku)", url=f"https://animekaizoku.com/?s={query_encoded}")],
-        [InlineKeyboardButton("Search Hindi Dub (Kayo)", url=f"https://animekayo.com/?s={query_encoded}")]
+        [InlineKeyboardButton("View on MyAnimeList", url=anime['url'])],
+        [InlineKeyboardButton("Search on Kaizoku", url=f"https://animekaizoku.com/?s={query_encoded}")],
+        [InlineKeyboardButton("Search on Kayo", url=f"https://animekayo.com/?s={query_encoded}")]
     ]
 
-    markup = InlineKeyboardMarkup(buttons)
     await send_anime_card(
         message,
         anime['title'],
         info,
         anime['images']['jpg']['large_image_url'],
-        anime['url']
+        anime['url'],
+        buttons
     )
 
 @app.on_message(filters.command("character"))
