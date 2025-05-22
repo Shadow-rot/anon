@@ -19,6 +19,8 @@ async def fetch_json(url):
             return await resp.json()
 
 
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
 @app.on_message(filters.command("anime"))
 async def anime_info(_, message):
     query = " ".join(message.command[1:])
@@ -36,7 +38,7 @@ async def anime_info(_, message):
     status = anime.get('status', 'N/A')
     aired = anime.get('aired', {}).get('string', 'N/A')
     url = anime['url']
-    image = anime['images']['jpg']['large_image_url'] or anime['images']['jpg']['image_url']
+    image = anime['images']['jpg'].get('large_image_url') or anime['images']['jpg']['image_url']
 
     caption = (
         f"<b>{title}</b>\n"
@@ -51,15 +53,11 @@ async def anime_info(_, message):
         [[InlineKeyboardButton("View on MyAnimeList", url=url)]]
     )
 
-    # Add image URL in its own line to trigger Telegram preview
-    text = f"{caption}\n\n{image}"
-
-    await message.reply(
-        text,
-        reply_markup=buttons,
-        disable_web_page_preview=False
+    await message.reply_photo(
+        photo=image,
+        caption=caption,
+        reply_markup=buttons
     )
-
 
 @app.on_message(filters.command("manga"))
 async def manga_info(_, message):
