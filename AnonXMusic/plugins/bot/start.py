@@ -20,7 +20,7 @@ from AnonXMusic.utils.database import (
 from AnonXMusic.utils.decorators.language import LanguageStart
 from AnonXMusic.utils.formatters import get_readable_time
 from AnonXMusic.utils.inline import help_pannel, private_panel, start_panel
-from config import BANNED_USERS, START_IMG_URL
+from config import BANNED_USERS
 from strings import get_string
 
 
@@ -28,22 +28,22 @@ from strings import get_string
 @LanguageStart
 async def start_pm(client, message: Message, _):
     await add_served_user(message.from_user.id)
-    if len(message.text.split(START_IMG_URL)) > 1:
+    if len(message.text.split()) > 1:
         name = message.text.split(None, 1)[1]
         if name[0:4] == "help":
             keyboard = help_pannel(_)
-            return await message.reply_text(
-                _["help_1"].format(config.SUPPORT_CHAT)
-                + f"\n\n<b><a href='{START_IMG_URL}'>!</a></b>",
+            return await message.reply_video(
+                video="https://files.catbox.moe/ydjas6.mp4",
+                caption=_["help_1"].format("<a href='https://t.me/YourSupportChat'>Support Chat</a>"),
                 reply_markup=keyboard,
-                disable_web_page_preview=False,
+                disable_web_page_preview=True,
             )
         if name[0:3] == "sud":
             await sudoers_list(client=client, message=message, _=_)
             if await is_on_off(2):
                 return await app.send_message(
                     chat_id=config.LOGGER_ID,
-                    text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ ᴛᴏ ᴄʜᴇᴄᴋ <b>sᴜᴅᴏʟɪsᴛ</b>.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
+                    text=f"{message.from_user.mention} just started the bot to check <b>sudolist</b>.\n\n<b>User ID:</b> <code>{message.from_user.id}</code>\n<b>Username:</b> @{message.from_user.username}",
                 )
             return
         if name[0:3] == "inf":
@@ -67,7 +67,7 @@ async def start_pm(client, message: Message, _):
                 [
                     [
                         InlineKeyboardButton(text=_["S_B_8"], url=link),
-                        InlineKeyboardButton(text=_["S_B_9"], url=config.SUPPORT_CHAT),
+                        InlineKeyboardButton(text=_["S_B_9"], url="https://t.me/YourSupportChat"),
                     ],
                 ]
             )
@@ -77,20 +77,26 @@ async def start_pm(client, message: Message, _):
                 photo=thumbnail,
                 caption=searched_text,
                 reply_markup=key,
+                disable_web_page_preview=True,
             )
             if await is_on_off(2):
                 return await app.send_message(
                     chat_id=config.LOGGER_ID,
-                    text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ ᴛᴏ ᴄʜᴇᴄᴋ <b>ᴛʀᴀᴄᴋ ɪɴғᴏʀᴍᴀᴛɪᴏɴ</b>.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
+                    text=f"{message.from_user.mention} just started the bot to check <b>track information</b>.\n\n<b>User ID:</b> <code>{message.from_user.id}</code>\n<b>Username:</b> @{message.from_user.username}",
                 )
     else:
         out = private_panel(_)
-        return await message.reply_text(
-            _["start_2"].format(message.from_user.mention, app.mention)
-            + f"\n\n<b><a href='{START_IMG_URL}'>!</a></b>",
+        await message.reply_video(
+            video="https://files.catbox.moe/ydjas6.mp4",
+            caption=_["start_2"].format(message.from_user.mention, app.mention),
             reply_markup=InlineKeyboardMarkup(out),
-            disable_web_page_preview=False,
+            disable_web_page_preview=True,
         )
+        if await is_on_off(2):
+            return await app.send_message(
+                chat_id=config.LOGGER_ID,
+                text=f"{message.from_user.mention} just started the bot.\n\n<b>User ID:</b> <code>{message.from_user.id}</code>\n<b>Username:</b> @{message.from_user.username}",
+            )
 
 
 @app.on_message(filters.command(["start"]) & filters.group & ~BANNED_USERS)
@@ -98,12 +104,13 @@ async def start_pm(client, message: Message, _):
 async def start_gp(client, message: Message, _):
     out = start_panel(_)
     uptime = int(time.time() - _boot_)
-    return await message.reply_text(
-        _["start_1"].format(app.mention, get_readable_time(uptime))
-        + f"\n\n<b><a href='{START_IMG_URL}'>!</a></b>",
+    await message.reply_video(
+        video="https://files.catbox.moe/ydjas6.mp4",
+        caption=_["start_1"].format(app.mention, get_readable_time(uptime)),
         reply_markup=InlineKeyboardMarkup(out),
-        disable_web_page_preview=False,
+        disable_web_page_preview=True,
     )
+    return await add_served_chat(message.chat.id)
 
 
 @app.on_message(filters.new_chat_members, group=-1)
@@ -126,23 +133,23 @@ async def welcome(client, message: Message):
                         _["start_5"].format(
                             app.mention,
                             f"https://t.me/{app.username}?start=sudolist",
-                            config.SUPPORT_CHAT,
+                            "<a href='https://t.me/YourSupportChat'>Support Chat</a>",
                         ),
                         disable_web_page_preview=True,
                     )
                     return await app.leave_chat(message.chat.id)
 
                 out = start_panel(_)
-                await message.reply_text(
-                    _["start_3"].format(
+                await message.reply_video(
+                    video="https://files.catbox.moe/ydjas6.mp4",
+                    caption=_["start_3"].format(
                         message.from_user.first_name,
                         app.mention,
                         message.chat.title,
                         app.mention,
-                    )
-                    + f"\n\n<b><a href='{START_IMG_URL}'>!</a></b>",
+                    ),
                     reply_markup=InlineKeyboardMarkup(out),
-                    disable_web_page_preview=False,
+                    disable_web_page_preview=True,
                 )
                 await add_served_chat(message.chat.id)
                 await message.stop_propagation()
