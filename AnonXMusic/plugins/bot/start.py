@@ -24,10 +24,6 @@ from config import BANNED_USERS, START_IMG_URL
 from strings import get_string
 
 
-# Generate a preview thumbnail for the video
-preview_thumb = f"https://images.weserv.nl/?url={START_IMG_URL[8:]}&w=800&h=600&fit=cover"
-
-
 @app.on_message(filters.command(["start"]) & filters.private & ~BANNED_USERS)
 @LanguageStart
 async def start_pm(client, message: Message, _):
@@ -36,11 +32,12 @@ async def start_pm(client, message: Message, _):
         name = message.text.split(None, 1)[1]
         if name[0:4] == "help":
             keyboard = help_pannel(_)
-            return await message.reply_video(
-                video=config.START_IMG_URL,
-                thumb=preview_thumb,
-                caption=_["help_1"].format(config.SUPPORT_CHAT),
+            return await message.reply_text(
+                _["help_1"].format(config.SUPPORT_CHAT)
+                + f"\n\n<b><a href='{START_IMG_URL}'>Video Preview</a></b>",
                 reply_markup=keyboard,
+                disable_web_page_preview=False,
+                parse_mode="html",
             )
         if name[0:3] == "sud":
             await sudoers_list(client=client, message=message, _=_)
@@ -89,17 +86,13 @@ async def start_pm(client, message: Message, _):
                 )
     else:
         out = private_panel(_)
-        await message.reply_video(
-            video=START_IMG_URL,
-            thumb=preview_thumb,
-            caption=_["start_2"].format(message.from_user.mention, app.mention),
+        return await message.reply_text(
+            _["start_2"].format(message.from_user.mention, app.mention)
+            + f"\n\n<b><a href='{START_IMG_URL}'>Video Preview</a></b>",
             reply_markup=InlineKeyboardMarkup(out),
+            disable_web_page_preview=False,
+            parse_mode="html",
         )
-        if await is_on_off(2):
-            return await app.send_message(
-                chat_id=config.LOGGER_ID,
-                text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
-            )
 
 
 @app.on_message(filters.command(["start"]) & filters.group & ~BANNED_USERS)
@@ -107,13 +100,13 @@ async def start_pm(client, message: Message, _):
 async def start_gp(client, message: Message, _):
     out = start_panel(_)
     uptime = int(time.time() - _boot_)
-    await message.reply_video(
-        video=config.START_IMG_URL,
-        thumb=preview_thumb,
-        caption=_["start_1"].format(app.mention, get_readable_time(uptime)),
+    return await message.reply_text(
+        _["start_1"].format(app.mention, get_readable_time(uptime))
+        + f"\n\n<b><a href='{START_IMG_URL}'>Video Preview</a></b>",
         reply_markup=InlineKeyboardMarkup(out),
+        disable_web_page_preview=False,
+        parse_mode="html",
     )
-    return await add_served_chat(message.chat.id)
 
 
 @app.on_message(filters.new_chat_members, group=-1)
@@ -143,16 +136,17 @@ async def welcome(client, message: Message):
                     return await app.leave_chat(message.chat.id)
 
                 out = start_panel(_)
-                await message.reply_video(
-                    video=config.START_IMG_URL,
-                    thumb=preview_thumb,
-                    caption=_["start_3"].format(
+                await message.reply_text(
+                    _["start_3"].format(
                         message.from_user.first_name,
                         app.mention,
                         message.chat.title,
                         app.mention,
-                    ),
+                    )
+                    + f"\n\n<b><a href='{START_IMG_URL}'>Video Preview</a></b>",
                     reply_markup=InlineKeyboardMarkup(out),
+                    disable_web_page_preview=False,
+                    parse_mode="html",
                 )
                 await add_served_chat(message.chat.id)
                 await message.stop_propagation()
