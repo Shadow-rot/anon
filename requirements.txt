@@ -35,4 +35,3 @@ beautifulsoup4
 jikanpy
 bing_image_downloader
 nekosbest
-lexica-api
