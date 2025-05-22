@@ -51,14 +51,33 @@ async def anime_info(_, message):
     if not data or not data.get("data"):
         return await message.reply("No anime found.")
     anime = data["data"][0]
+
+    # Hindi dub assumption via Kaizoku/Kayo
+    hindi_dub_available = False  # We can't confirm via API, so we guess "Not confirmed"
+
     info = (
         f"<b>Score:</b> {anime.get('score', 'N/A')}\n"
         f"<b>Episodes:</b> {anime.get('episodes', 'N/A')}\n"
         f"<b>Status:</b> {anime.get('status', 'N/A')}\n"
-        f"<b>Aired:</b> {anime.get('aired', {}).get('string', 'N/A')}"
+        f"<b>Aired:</b> {anime.get('aired', {}).get('string', 'N/A')}\n"
+        f"<b>Hindi Dub:</b> {'Possibly available' if hindi_dub_available else 'Not confirmed'}"
     )
-    await send_anime_card(message, anime['title'], info, anime['images']['jpg']['large_image_url'], anime['url'])
 
+    query_encoded = query.replace(" ", "+")
+    buttons = [
+        [InlineKeyboardButton("View on Website", url=anime['url'])],
+        [InlineKeyboardButton("Search Hindi Dub (Kaizoku)", url=f"https://animekaizoku.com/?s={query_encoded}")],
+        [InlineKeyboardButton("Search Hindi Dub (Kayo)", url=f"https://animekayo.com/?s={query_encoded}")]
+    ]
+
+    markup = InlineKeyboardMarkup(buttons)
+    await send_anime_card(
+        message,
+        anime['title'],
+        info,
+        anime['images']['jpg']['large_image_url'],
+        anime['url']
+    )
 
 @app.on_message(filters.command("character"))
 async def character_info(_, message):
