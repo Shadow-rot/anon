@@ -33,3 +33,5 @@ telegraph
 bs4
 beautifulsoup4
 jikanpy
+bing_image_downloader
+nekosbest
