@@ -15,8 +15,17 @@ async def fetch_json(url):
                 return await resp.json()
             return None
 
+async def fetch_image_bytes(url):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as resp:
+            if resp.status == 200:
+                return await resp.read()
+            return None
+
 async def send_anime_card(message, title, info, image_url, site_url):
-    img_proxy = f"https://images.weserv.nl/?url={image_url[8:]}&w=800&h=600&fit=cover"
+    image_data = await fetch_image_bytes(image_url)
+    if not image_data:
+        return await message.reply("Failed to fetch image.")
     caption = (
         f"<b>{title}</b>\n"
         f"{info}\n\n"
@@ -25,7 +34,7 @@ async def send_anime_card(message, title, info, image_url, site_url):
     buttons = InlineKeyboardMarkup(
         [[InlineKeyboardButton("View on Website", url=site_url)]]
     )
-    await message.reply_photo(img_proxy, caption=caption, reply_markup=buttons)
+    await message.reply_photo(image_data, caption=caption, reply_markup=buttons)
 
 @app.on_message(filters.command("anime"))
 async def anime_info(_, message):
