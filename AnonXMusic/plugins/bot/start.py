@@ -140,7 +140,7 @@ async def welcome(client, message: Message):
                         message.chat.title,
                         app.mention,
                     )
-                    + f"\n\n<b><a href='{START_IMG_URL}'>Video Preview</a></b>",
+                    + f"\n\n<b><a href='{START_IMG_URL}'>!</a></b>",
                     reply_markup=InlineKeyboardMarkup(out),
                     disable_web_page_preview=False,
                 )
