@@ -36,7 +36,7 @@ async def anime_info(_, message):
     status = anime.get('status', 'N/A')
     aired = anime.get('aired', {}).get('string', 'N/A')
     url = anime['url']
-    image = anime['images']['jpg']['image_url']
+    image = anime['images']['jpg']['large_image_url'] or anime['images']['jpg']['image_url']
 
     caption = (
         f"<b>{title}</b>\n"
@@ -47,18 +47,19 @@ async def anime_info(_, message):
         f"<i>Message provided by <a href='https://t.me/siyaprobot'>Siya</a></i>"
     )
 
-    # Use HTML anchor tag to show 4:3 preview image below message
-    formatted_with_preview = f"{caption}\n\n<a href='{image}'>.</a>"
-
     buttons = InlineKeyboardMarkup(
         [[InlineKeyboardButton("View on MyAnimeList", url=url)]]
     )
 
+    # Add image URL in its own line to trigger Telegram preview
+    text = f"{caption}\n\n{image}"
+
     await message.reply(
-        formatted_with_preview,
+        text,
         reply_markup=buttons,
-        disable_web_page_preview=False  # enable to show 4:3 image preview
+        disable_web_page_preview=False
     )
+
 
 @app.on_message(filters.command("manga"))
 async def manga_info(_, message):
