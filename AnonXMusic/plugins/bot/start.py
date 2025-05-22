@@ -20,7 +20,7 @@ from AnonXMusic.utils.database import (
 from AnonXMusic.utils.decorators.language import LanguageStart
 from AnonXMusic.utils.formatters import get_readable_time
 from AnonXMusic.utils.inline import help_pannel, private_panel, start_panel
-from config import BANNED_USERS
+from config import BANNED_USERS, START_IMG_URL, SUPPORT_CHAT
 from strings import get_string
 
 
@@ -33,8 +33,10 @@ async def start_pm(client, message: Message, _):
         if name[0:4] == "help":
             keyboard = help_pannel(_)
             return await message.reply_video(
-                video="https://files.catbox.moe/ydjas6.mp4",
-                caption=_["help_1"].format("<a href='https://t.me/YourSupportChat'>Support Chat</a>"),
+                video=START_IMG_URL,
+                caption=_["help_1"].format(
+                    f"<a href='https://t.me/{SUPPORT_CHAT}'>Support Chat</a>"
+                ),
                 reply_markup=keyboard,
                 disable_web_page_preview=True,
             )
@@ -43,12 +45,12 @@ async def start_pm(client, message: Message, _):
             if await is_on_off(2):
                 return await app.send_message(
                     chat_id=config.LOGGER_ID,
-                    text=f"{message.from_user.mention} just started the bot to check <b>sudolist</b>.\n\n<b>User ID:</b> <code>{message.from_user.id}</code>\n<b>Username:</b> @{message.from_user.username}",
+                    text=f"{message.from_user.mention} just checked <b>sudo list</b>.\n\n<b>User ID:</b> <code>{message.from_user.id}</code>\n<b>Username:</b> @{message.from_user.username}",
                 )
             return
         if name[0:3] == "inf":
             m = await message.reply_text("🔎")
-            query = (str(name)).replace("info_", "", 1)
+            query = str(name).replace("info_", "", 1)
             query = f"https://www.youtube.com/watch?v={query}"
             results = VideosSearch(query, limit=1)
             for result in (await results.next())["result"]:
@@ -67,7 +69,7 @@ async def start_pm(client, message: Message, _):
                 [
                     [
                         InlineKeyboardButton(text=_["S_B_8"], url=link),
-                        InlineKeyboardButton(text=_["S_B_9"], url="https://t.me/YourSupportChat"),
+                        InlineKeyboardButton(text=_["S_B_9"], url=f"https://t.me/{SUPPORT_CHAT}"),
                     ],
                 ]
             )
@@ -82,20 +84,23 @@ async def start_pm(client, message: Message, _):
             if await is_on_off(2):
                 return await app.send_message(
                     chat_id=config.LOGGER_ID,
-                    text=f"{message.from_user.mention} just started the bot to check <b>track information</b>.\n\n<b>User ID:</b> <code>{message.from_user.id}</code>\n<b>Username:</b> @{message.from_user.username}",
+                    text=f"{message.from_user.mention} viewed <b>track info</b>.\n\n<b>User ID:</b> <code>{message.from_user.id}</code>\n<b>Username:</b> @{message.from_user.username}",
                 )
     else:
         out = private_panel(_)
         await message.reply_video(
-            video="https://files.catbox.moe/ydjas6.mp4",
-            caption=_["start_2"].format(message.from_user.mention, app.mention),
+            video=START_IMG_URL,
+            caption=_["start_2"].format(
+                message.from_user.mention,
+                f"<a href='{START_IMG_URL}'>Preview</a> | {app.mention}"
+            ),
             reply_markup=InlineKeyboardMarkup(out),
             disable_web_page_preview=True,
         )
         if await is_on_off(2):
             return await app.send_message(
                 chat_id=config.LOGGER_ID,
-                text=f"{message.from_user.mention} just started the bot.\n\n<b>User ID:</b> <code>{message.from_user.id}</code>\n<b>Username:</b> @{message.from_user.username}",
+                text=f"{message.from_user.mention} started the bot.\n\n<b>User ID:</b> <code>{message.from_user.id}</code>\n<b>Username:</b> @{message.from_user.username}",
             )
 
 
@@ -105,7 +110,7 @@ async def start_gp(client, message: Message, _):
     out = start_panel(_)
     uptime = int(time.time() - _boot_)
     await message.reply_video(
-        video="https://files.catbox.moe/ydjas6.mp4",
+        video=START_IMG_URL,
         caption=_["start_1"].format(app.mention, get_readable_time(uptime)),
         reply_markup=InlineKeyboardMarkup(out),
         disable_web_page_preview=True,
@@ -133,7 +138,7 @@ async def welcome(client, message: Message):
                         _["start_5"].format(
                             app.mention,
                             f"https://t.me/{app.username}?start=sudolist",
-                            "<a href='https://t.me/YourSupportChat'>Support Chat</a>",
+                            f"https://t.me/{SUPPORT_CHAT}",
                         ),
                         disable_web_page_preview=True,
                     )
@@ -141,7 +146,7 @@ async def welcome(client, message: Message):
 
                 out = start_panel(_)
                 await message.reply_video(
-                    video="https://files.catbox.moe/ydjas6.mp4",
+                    video=START_IMG_URL,
                     caption=_["start_3"].format(
                         message.from_user.first_name,
                         app.mention,
