@@ -34,7 +34,7 @@ async def start_pm(client, message: Message, _):
             keyboard = help_pannel(_)
             return await message.reply_text(
                 _["help_1"].format(config.SUPPORT_CHAT)
-                + f"\n\n<b><a href='{START_IMG_URL}'>Video Preview</a></b>",
+                + f"\n\n<b><a href='{START_IMG_URL}'>!</a></b>",
                 reply_markup=keyboard,
                 disable_web_page_preview=False,
             )
@@ -87,7 +87,7 @@ async def start_pm(client, message: Message, _):
         out = private_panel(_)
         return await message.reply_text(
             _["start_2"].format(message.from_user.mention, app.mention)
-            + f"\n\n<b><a href='{START_IMG_URL}'>Video Preview</a></b>",
+            + f"\n\n<b><a href='{START_IMG_URL}'>!</a></b>",
             reply_markup=InlineKeyboardMarkup(out),
             disable_web_page_preview=False,
         )
@@ -100,7 +100,7 @@ async def start_gp(client, message: Message, _):
     uptime = int(time.time() - _boot_)
     return await message.reply_text(
         _["start_1"].format(app.mention, get_readable_time(uptime))
-        + f"\n\n<b><a href='{START_IMG_URL}'>Video Preview</a></b>",
+        + f"\n\n<b><a href='{START_IMG_URL}'>!</a></b>",
         reply_markup=InlineKeyboardMarkup(out),
         disable_web_page_preview=False,
     )
