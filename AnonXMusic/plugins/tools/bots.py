@@ -1,14 +1,17 @@
 import asyncio
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher, types, Router
 from aiogram.enums import ChatType
 from aiogram.filters import Command, ChatTypeFilter
 from aiogram.client.default import DefaultBotProperties
+import os
+from dotenv import load_dotenv
 
-BOT_TOKEN = "8111617507:AAHPKqyDoXGouCSUGKsO1JCge4VdFJuuyAE"  # Replace with your bot token
+load_dotenv()
+BOT_TOKEN = os.getenv("BOT_TOKEN")  # Set in .env file
 
-dp = Dispatcher()
+router = Router()
 
-@dp.message(Command("bots"), ChatTypeFilter([ChatType.GROUP, ChatType.SUPERGROUP]))
+@router.message(Command("bots"), ChatTypeFilter([ChatType.GROUP, ChatType.SUPERGROUP]))
 async def list_bots(message: types.Message, bot: Bot):
     chat_id = message.chat.id
     bot_members = []
@@ -31,6 +34,8 @@ async def list_bots(message: types.Message, bot: Bot):
 
 async def main():
     bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
+    dp = Dispatcher()
+    dp.include_router(router)
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
