@@ -6,7 +6,7 @@ from aiogram.enums.chat_type import ChatType
 from aiogram.filters import Command
 from aiogram.client.default import DefaultBotProperties
 
-BOT_TOKEN = "YOUR_BOT_TOKEN"  # Replace with your bot token
+BOT_TOKEN = "8111617507:AAHPKqyDoXGouCSUGKsO1JCge4VdFJuuyAE"  # Replace with your bot token
 
 dp = Dispatcher()
 
