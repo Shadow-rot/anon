@@ -1,63 +1,41 @@
-import os
+import asyncio
 import aiohttp
-from io import BytesIO
+from urllib.parse import quote_plus
+from bs4 import BeautifulSoup
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from AnonXMusic import app
-import requests
-from bs4 import BeautifulSoup
+from io import BytesIO
 
+# Shared aiohttp session
+session = aiohttp.ClientSession()
 
+# Fetch JSON data
 async def fetch_json(url):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as resp:
-            if resp.status == 200:
-                return await resp.json()
-            return None
+    async with session.get(url) as resp:
+        return await resp.json() if resp.status == 200 else None
 
+# Fetch image bytes
+async def fetch_image_bytes(url):
+    async with session.get(url) as resp:
+        return await resp.read() if resp.status == 200 else None
 
-async def fetch_image_bytes(image_url):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(image_url) as resp:
-            if resp.status == 200:
-                return await resp.read()
-            return None
-
-
-def check_hindi_dub(anime_title):
-    search_url = f"https://animekaizoku.com/?s={anime_title.replace(' ', '+')}"
-    headers = {"User-Agent": "Mozilla/5.0"}
-
+# Hindi Dub Check
+async def async_check_hindi_dub(anime_title):
     try:
-        response = requests.get(search_url, headers=headers)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.content, "html.parser")
-
-        post_link = soup.find("h2", class_="post-title")
-        if not post_link or not post_link.a:
-            return False
-
-        anime_page_url = post_link.a["href"]
-
-        anime_page = requests.get(anime_page_url, headers=headers)
-        anime_page.raise_for_status()
-        page_soup = BeautifulSoup(anime_page.content, "html.parser")
-
-        page_text = page_soup.get_text().lower()
-        if "hindi dubbed" in page_text or "hindi" in page_text:
-            return True
+        url = f"https://animekaizoku.com/?s={quote_plus(anime_title)}"
+        async with session.get(url, timeout=7) as resp:
+            soup = BeautifulSoup(await resp.text(), "html.parser")
+            return "Hindi" in soup.text
+    except:
         return False
 
-    except Exception as e:
-        print(f"Error checking Hindi dub: {e}")
-        return False
-
-
-async def send_anime_card(message, title, info, image_url, site_url, buttons=None):
+# Send Anime Card
+async def send_anime_card(message, title, info, image_url, buttons):
     image_data = await fetch_image_bytes(image_url)
     if not image_data:
         return await message.reply("Failed to fetch image.")
-
+    
     image_file = BytesIO(image_data)
     image_file.name = "anime.jpg"
     image_file.seek(0)
@@ -68,41 +46,41 @@ async def send_anime_card(message, title, info, image_url, site_url, buttons=Non
         f"<i>Message provided by <a href='https://t.me/siyaprobot'>Siya</a></i>"
     )
 
-    await message.reply_photo(
-        photo=image_file,
-        caption=caption,
-        reply_markup=InlineKeyboardMarkup(buttons) if buttons else None
-    )
+    await message.reply_photo(photo=image_file, caption=caption, reply_markup=InlineKeyboardMarkup(buttons))
 
-
+# /anime command
 @app.on_message(filters.command("anime"))
 async def anime_info(_, message):
     query = " ".join(message.command[1:])
     if not query:
         return await message.reply("Usage: /anime <anime name>")
 
-    data = await fetch_json(f"https://api.jikan.moe/v4/anime?q={query}&limit=1")
-    if not data or not data.get("data"):
-        return await message.reply("No anime found.")
-    
-    anime = data["data"][0]
+    jikan_url = f"https://api.jikan.moe/v4/anime?q={quote_plus(query)}&limit=1"
+    jikan_data, hindi_dub = await asyncio.gather(
+        fetch_json(jikan_url),
+        async_check_hindi_dub(query)
+    )
 
-    # Check for Hindi Dub availability
-    hindi_dub = check_hindi_dub(anime['title'])
+    if not jikan_data or not jikan_data.get("data"):
+        return await message.reply("No anime found.")
+
+    anime = jikan_data["data"][0]
 
     info = (
-        f"<b>Score:</b> {anime.get('score', 'N/A')}\n"
+        f"<b>Score:</b> {anime.get('score', 'N/A')} | "
+        f"<b>Type:</b> {anime.get('type', 'N/A')} | "
         f"<b>Episodes:</b> {anime.get('episodes', 'N/A')}\n"
-        f"<b>Status:</b> {anime.get('status', 'N/A')}\n"
+        f"<b>Status:</b> {anime.get('status', 'N/A')} | "
+        f"<b>Duration:</b> {anime.get('duration', 'N/A')}\n"
         f"<b>Aired:</b> {anime.get('aired', {}).get('string', 'N/A')}\n"
+        f"<b>Rating:</b> {anime.get('rating', 'N/A')} | "
         f"<b>Hindi Dub:</b> {'Available' if hindi_dub else 'Not available'}"
     )
 
-    query_encoded = query.replace(" ", "+")
     buttons = [
-        [InlineKeyboardButton("View on MyAnimeList", url=anime['url'])],
-        [InlineKeyboardButton("Search on Kaizoku", url=f"https://animekaizoku.com/?s={query_encoded}")],
-        [InlineKeyboardButton("Search on Kayo", url=f"https://animekayo.com/?s={query_encoded}")]
+        [InlineKeyboardButton("MyAnimeList", url=anime['url'])],
+        [InlineKeyboardButton("Search on Kaizoku", url=f"https://animekaizoku.com/?s={quote_plus(query)}")],
+        [InlineKeyboardButton("Search on Kayo", url=f"https://animekayo.com/?s={quote_plus(query)}")]
     ]
 
     await send_anime_card(
@@ -110,7 +88,6 @@ async def anime_info(_, message):
         anime['title'],
         info,
         anime['images']['jpg']['large_image_url'],
-        anime['url'],
         buttons
     )
 
