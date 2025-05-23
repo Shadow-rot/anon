@@ -1,3 +1,4 @@
+aiogram==3.4.1
 aiofiles
 aiohttp
 asyncio
@@ -36,4 +37,3 @@ jikanpy
 bing_image_downloader
 nekosbest
 lexica-api
-aiogram==3.4.1
