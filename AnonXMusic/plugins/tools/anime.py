@@ -1,95 +1,114 @@
 import asyncio
 import aiohttp
+from html import escape
 from urllib.parse import quote_plus
-from bs4 import BeautifulSoup
+from io import BytesIO
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from bs4 import BeautifulSoup
 from AnonXMusic import app
-from io import BytesIO
 
-# Shared aiohttp session
+hindi_dub_cache = {}
+
+# Reuse one aiohttp session
 session = aiohttp.ClientSession()
 
-# Fetch JSON data
 async def fetch_json(url):
     async with session.get(url) as resp:
-        return await resp.json() if resp.status == 200 else None
+        if resp.status == 200:
+            return await resp.json()
+        return None
 
-# Fetch image bytes
 async def fetch_image_bytes(url):
     async with session.get(url) as resp:
-        return await resp.read() if resp.status == 200 else None
+        if resp.status == 200:
+            return await resp.read()
+        return None
 
-# Hindi Dub Check
-async def async_check_hindi_dub(anime_title):
+async def check_hindi_dub(anime_title):
+    if anime_title in hindi_dub_cache:
+        return hindi_dub_cache[anime_title]
     try:
-        url = f"https://animekaizoku.com/?s={quote_plus(anime_title)}"
-        async with session.get(url, timeout=7) as resp:
-            soup = BeautifulSoup(await resp.text(), "html.parser")
-            return "Hindi" in soup.text
-    except:
-        return False
+        search_url = f"https://animekaizoku.com/?s={quote_plus(anime_title)}"
+        async with session.get(search_url) as resp:
+            if resp.status != 200:
+                return False
+            html = await resp.text()
+            soup = BeautifulSoup(html, "html.parser")
+            if "Hindi" in soup.get_text():
+                hindi_dub_cache[anime_title] = True
+                return True
+    except Exception:
+        pass
+    hindi_dub_cache[anime_title] = False
+    return False
 
-# Send Anime Card
-async def send_anime_card(message, title, info, image_url, buttons):
+async def send_anime_card(message, title, info, image_url, site_url, buttons=None):
     image_data = await fetch_image_bytes(image_url)
     if not image_data:
         return await message.reply("Failed to fetch image.")
-    
     image_file = BytesIO(image_data)
     image_file.name = "anime.jpg"
     image_file.seek(0)
 
     caption = (
-        f"<b>{title}</b>\n"
+        f"<b>{escape(title)}</b>\n"
         f"{info}\n\n"
         f"<i>Message provided by <a href='https://t.me/siyaprobot'>Siya</a></i>"
     )
+    reply_markup = InlineKeyboardMarkup(buttons) if buttons else None
+    return await message.reply_photo(photo=image_file, caption=caption, reply_markup=reply_markup)
 
-    await message.reply_photo(photo=image_file, caption=caption, reply_markup=InlineKeyboardMarkup(buttons))
-
-# /anime command
 @app.on_message(filters.command("anime"))
 async def anime_info(_, message):
     query = " ".join(message.command[1:])
     if not query:
         return await message.reply("Usage: /anime <anime name>")
 
-    jikan_url = f"https://api.jikan.moe/v4/anime?q={quote_plus(query)}&limit=1"
-    jikan_data, hindi_dub = await asyncio.gather(
-        fetch_json(jikan_url),
-        async_check_hindi_dub(query)
-    )
-
-    if not jikan_data or not jikan_data.get("data"):
+    fields = "title,score,episodes,status,images,type,duration,aired,rating,url"
+    url = f"https://api.jikan.moe/v4/anime?q={quote_plus(query)}&limit=1&fields={fields}"
+    data = await fetch_json(url)
+    if not data or not data.get("data"):
         return await message.reply("No anime found.")
-
-    anime = jikan_data["data"][0]
-
+    
+    anime = data["data"][0]
     info = (
-        f"<b>Score:</b> {anime.get('score', 'N/A')} | "
         f"<b>Type:</b> {anime.get('type', 'N/A')} | "
-        f"<b>Episodes:</b> {anime.get('episodes', 'N/A')}\n"
-        f"<b>Status:</b> {anime.get('status', 'N/A')} | "
         f"<b>Duration:</b> {anime.get('duration', 'N/A')}\n"
+        f"<b>Episodes:</b> {anime.get('episodes', 'N/A')} | "
+        f"<b>Status:</b> {anime.get('status', 'N/A')}\n"
         f"<b>Aired:</b> {anime.get('aired', {}).get('string', 'N/A')}\n"
         f"<b>Rating:</b> {anime.get('rating', 'N/A')} | "
-        f"<b>Hindi Dub:</b> {'Available' if hindi_dub else 'Not available'}"
+        f"<b>Score:</b> {anime.get('score', 'N/A')}\n"
+        f"<b>Hindi Dub:</b> <i>Checking...</i>"
     )
 
     buttons = [
-        [InlineKeyboardButton("MyAnimeList", url=anime['url'])],
+        [InlineKeyboardButton("View on MyAnimeList", url=anime["url"])],
         [InlineKeyboardButton("Search on Kaizoku", url=f"https://animekaizoku.com/?s={quote_plus(query)}")],
         [InlineKeyboardButton("Search on Kayo", url=f"https://animekayo.com/?s={quote_plus(query)}")]
     ]
 
-    await send_anime_card(
-        message,
-        anime['title'],
-        info,
-        anime['images']['jpg']['large_image_url'],
-        buttons
+    reply = await send_anime_card(
+        message, anime["title"], info,
+        anime["images"]["jpg"]["large_image_url"],
+        anime["url"], buttons
     )
+
+    async def update_dub():
+        dub = await check_hindi_dub(anime["title"])
+        updated_info = info.replace("<i>Checking...</i>", "Available" if dub else "Not available")
+        updated_caption = (
+            f"<b>{escape(anime['title'])}</b>\n"
+            f"{updated_info}\n\n"
+            f"<i>Message provided by <a href='https://t.me/siyaprobot'>Siya</a></i>"
+        )
+        try:
+            await reply.edit_caption(updated_caption, reply_markup=InlineKeyboardMarkup(buttons))
+        except Exception:
+            pass
+
+    asyncio.create_task(update_dub())
 
 @app.on_message(filters.command("character"))
 async def character_info(_, message):
