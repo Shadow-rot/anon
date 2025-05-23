@@ -1,37 +1,43 @@
 import asyncio
+from aiogram import Bot, Dispatcher, F
+from aiogram.types import Message
+from aiogram.enums.chat_member_status import ChatMemberStatus
+from aiogram.enums.chat_type import ChatType
+from aiogram.filters import Command
+from aiogram.client.default import DefaultBotProperties
 
-from pyrogram import enums, filters
-from pyrogram.errors import FloodWait
+BOT_TOKEN = "YOUR_BOT_TOKEN"  # Replace with your bot token
 
-from AnonXMusic import app
+dp = Dispatcher()
 
-
-@app.on_message(filters.command("bots") & filters.group)
-async def bots(client, message):
-
+@dp.message(Command("bots"), F.chat.type == ChatType.GROUP)
+async def get_bots_list(message: Message, bot: Bot):
     try:
-        botList = []
-        async for bot in app.get_chat_members(
-            message.chat.id, filter=enums.ChatMembersFilter.BOTS
-        ):
-            botList.append(bot.user)
-        lenBotList = len(botList)
-        text3 = f"ʙᴏᴛ ʟɪsᴛ - {message.chat.title}\n\n🤖 ʙᴏᴛs\n"
-        while len(botList) > 1:
-            bot = botList.pop(0)
-            text3 += f"├ @{bot.username}\n"
-        else:
-            bot = botList.pop(0)
-            text3 += f"└ @{bot.username}\n\n"
-            text3 += f"ᴛᴏᴛᴀʟ ɴᴜᴍʙᴇʀ ᴏғ ʙᴏᴛs: {lenBotList}" 
-            await app.send_message(message.chat.id, text3)
-    except FloodWait as e:
-        await asyncio.sleep(e.value)
+        chat_id = message.chat.id
+        bots = []
+        async for member in bot.get_chat_administrators(chat_id):
+            if member.user.is_bot:
+                bots.append(member.user)
+
+        if not bots:
+            return await message.answer("No bots found in this group.")
+
+        response = f"ʙᴏᴛ ʟɪsᴛ - {message.chat.title}\n\n🤖 ʙᴏᴛs\n"
+        for i, b in enumerate(bots):
+            branch = "└" if i == len(bots) - 1 else "├"
+            response += f"{branch} @{b.username or b.first_name}\n"
+
+        response += f"\nᴛᴏᴛᴀʟ ɴᴜᴍʙᴇʀ ᴏғ ʙᴏᴛs: {len(bots)}"
+        await message.answer(response)
+
+    except Exception as e:
+        await message.answer(f"Error: {e}")
 
 
-MODULE = "Bᴏᴛs"
-HELP = """
-ʙᴏᴛs
+async def main():
+    bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
+    await dp.start_polling(bot)
 
-• /bots - ɢᴇᴛ ᴀ ʟɪsᴛ ᴏғ ʙᴏᴛs ɪɴ ᴛʜᴇ ɢʀᴏᴜᴘ.
-"""
+
+if __name__ == "__main__":
+    asyncio.run(main())
