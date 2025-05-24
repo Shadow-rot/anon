@@ -14,23 +14,20 @@ class TelegramErrorHandler(logging.Handler):
             asyncio.create_task(self.send_error(record))
 
     async def send_error(self, record):
-        try:
-            tb = ''.join(traceback.format_exception(
-                record.exc_info[0], record.exc_info[1], record.exc_info[2]
-            )) if record.exc_info else "No traceback available."
+    try:
+        tb = ''.join(
+            traceback.format_exception(record.exc_info[0], record.exc_info[1], record.exc_info[2])
+        ) if record.exc_info else "No traceback available."
 
-            message = (
-                f"**Error Logged:**\n\n"
-                f"`{record.levelname}`: `{record.getMessage()}`\n\n"
-                f"**Traceback:**\n"
-                f"```{tb[:3800]}```"  # limit to avoid Telegram limit
-            )
-            await self.client.send_message(chat_id=OWNER_ID, text=message)
-        except Exception as e:
-            print(f"[Error Handler] Failed to send error notification: {e}")
+        # Full message in monospace using triple backticks
+        message = (
+            "```"
+            f"\n[Error Logged]\n"
+            f"{record.levelname}: {record.getMessage()}\n\n"
+            f"Traceback:\n{tb[:3900]}"  # keeping under Telegram limit
+            "```"
+        )
 
-def setup_error_logging():
-    from AnonXMusic import app  # import your Client instance
-    handler = TelegramErrorHandler(app)
-    handler.setLevel(logging.ERROR)
-    logging.getLogger().addHandler(handler)
+        await self.client.send_message(chat_id=OWNER_ID, text=message)
+    except Exception as e:
+        print(f"[Error Handler] Failed to send error notification: {e}")
