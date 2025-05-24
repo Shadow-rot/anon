@@ -12,6 +12,9 @@ from AnonXMusic.plugins import ALL_MODULES
 from AnonXMusic.utils.database import get_banned_users, get_gbanned
 from config import BANNED_USERS
 
+# Error logging setup
+from AnonXMusic.core.error_handler import setup_error_logging
+setup_error_logging()
 
 async def init():
     if (
