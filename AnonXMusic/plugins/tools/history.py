@@ -13,7 +13,7 @@ from AnonXMusic.core.userbot import assistants
 async def sg(client: Client, message: Message):
     # Agar reply nahi kiya gaya ho aur koi argument bhi na diya ho
     if not message.reply_to_message and len(message.text.split()) < 2:
-        return await message.reply("**Usage:** Reply to a user or use `/sg username_or_id`")
+        return await message.reply("Usage: Reply to a user or use `/sg username_or_id`")
 
     # Reply kiya gaya ho to us user ka ID lo, warna argument se lo
     if message.reply_to_message:
