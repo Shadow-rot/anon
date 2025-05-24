@@ -21,12 +21,13 @@ class TelegramErrorHandler(logging.Handler):
 
         # Full message in monospace using triple backticks
         message = (
-            "```"
-            f"\n[Error Logged]\n"
-            f"{record.levelname}: {record.getMessage()}\n\n"
-            f"Traceback:\n{tb[:3900]}"  # keeping under Telegram limit
-            "```"
-        )
+    "```python\n"
+    f"# Error Logged\n"
+    f"# Level: {record.levelname}\n"
+    f"# Message:\n{record.getMessage()}\n\n"
+    f"# Traceback:\n{tb[:3800]}\n"
+    "```"
+)
 
         await self.client.send_message(chat_id=OWNER_ID, text=message)
     except Exception as e:
