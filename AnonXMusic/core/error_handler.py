@@ -28,17 +28,19 @@ class TelegramErrorHandler(logging.Handler):
             func = record.funcName
             exc_type = record.exc_info[0].__name__ if record.exc_info else "UnknownError"
 
-            # Format message
+            # Format plain message
             message = (
-                "```python\n"
-                f"# Error Logged on {time_str}\n"
-                f"# Type: {exc_type}\n"
-                f"# Level: {record.levelname}\n"
-                f"# File: {file} | Line: {line} | Function: {func}\n"
-                f"# Message:\n{record.getMessage()}\n\n"
-                f"# Traceback:\n{tb[:3800]}\n"
-                "```"
+                f"**[Error Logged]**\n\n"
+                f"**Time:** {time_str}\n"
+                f"**Type:** {exc_type}\n"
+                f"**Level:** {record.levelname}\n"
+                f"**File:** {file}\n"
+                f"**Line:** {line}\n"
+                f"**Function:** {func}\n"
+                f"**Message:**\n`{record.getMessage()}`\n\n"
+                f"**Traceback:**\n`{tb[:3900]}`"
             )
+
             await self.client.send_message(chat_id=OWNER_ID, text=message)
         except Exception as e:
             print(f"[Error Handler] Failed to send error notification: {e}")
