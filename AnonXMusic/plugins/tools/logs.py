@@ -1,4 +1,4 @@
-import logging
+"""import logging
 import traceback
 import asyncio
 from pyrogram import Client
@@ -33,3 +33,4 @@ def setup_error_logging():
     handler = TelegramErrorHandler(app)
     handler.setLevel(logging.ERROR)
     logging.getLogger().addHandler(handler)
+"""
