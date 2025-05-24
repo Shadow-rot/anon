@@ -1,4 +1,5 @@
 import time
+
 from pyrogram import filters
 from pyrogram.enums import ChatType
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
@@ -19,7 +20,7 @@ from AnonXMusic.utils.database import (
 from AnonXMusic.utils.decorators.language import LanguageStart
 from AnonXMusic.utils.formatters import get_readable_time
 from AnonXMusic.utils.inline import help_pannel, private_panel, start_panel
-from config import BANNED_USERS, START_IMG_URL, SUPPORT_CHAT
+from config import BANNED_USERS, START_IMG_URL
 from strings import get_string
 
 
@@ -27,33 +28,26 @@ from strings import get_string
 @LanguageStart
 async def start_pm(client, message: Message, _):
     await add_served_user(message.from_user.id)
-    if len(message.text.split()) > 1:
+    if len (message.text.split(START_IMG_URL)) > 1:
         name = message.text.split(None, 1)[1]
-        if name.startswith("help"):
+        if name[0:4] == "help":
             keyboard = help_pannel(_)
-            caption = f"<a href='{START_IMG_URL}'>\u2063</a>\n\n{_['help_1'].format(SUPPORT_CHAT)}"
-            return await message.reply_text(
-                text=caption,
+            return await message.reply_video(
+            video=config.START_IMG_URL,
+                caption=_["help_1"].format(config.SUPPORT_CHAT),
                 reply_markup=keyboard,
-                disable_web_page_preview=False,
             )
-
-        if name.startswith("sud"):
+        if name[0:3] == "sud":
             await sudoers_list(client=client, message=message, _=_)
             if await is_on_off(2):
                 return await app.send_message(
                     chat_id=config.LOGGER_ID,
-                    text=(
-                        f"{message.from_user.mention} started the bot to check <b>sudolist</b>.\n\n"
-                        f"<b>User ID:</b> <code>{message.from_user.id}</code>\n"
-                        f"<b>Username:</b> @{message.from_user.username}"
-                    ),
+                    text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ ᴛᴏ ᴄʜᴇᴄᴋ <b>sᴜᴅᴏʟɪsᴛ</b>.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
                 )
             return
-
-        if name.startswith("inf"):
+        if name[0:3] == "inf":
             m = await message.reply_text("🔎")
-            query = name.replace("info_", "", 1)
+            query = (str(name)).replace("info_", "", 1)
             query = f"https://www.youtube.com/watch?v={query}"
             results = VideosSearch(query, limit=1)
             for result in (await results.next())["result"]:
@@ -72,7 +66,7 @@ async def start_pm(client, message: Message, _):
                 [
                     [
                         InlineKeyboardButton(text=_["S_B_8"], url=link),
-                        InlineKeyboardButton(text=_["S_B_9"], url=SUPPORT_CHAT),
+                        InlineKeyboardButton(text=_["S_B_9"], url=config.SUPPORT_CHAT),
                     ],
                 ]
             )
@@ -86,29 +80,20 @@ async def start_pm(client, message: Message, _):
             if await is_on_off(2):
                 return await app.send_message(
                     chat_id=config.LOGGER_ID,
-                    text=(
-                        f"{message.from_user.mention} started the bot to check "
-                        f"<b>track information</b>.\n\n"
-                        f"<b>User ID:</b> <code>{message.from_user.id}</code>\n"
-                        f"<b>Username:</b> @{message.from_user.username}"
-                    ),
+                    text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ ᴛᴏ ᴄʜᴇᴄᴋ <b>ᴛʀᴀᴄᴋ ɪɴғᴏʀᴍᴀᴛɪᴏɴ</b>.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
                 )
     else:
         out = private_panel(_)
-        caption = f"<a href='{START_IMG_URL}'>\u2063</a>\n\n{_['start_2'].format(message.from_user.mention, app.mention)}"
-        await message.reply_text(
-            text=caption,
+        await message.reply_video(
+            video=START_IMG_URL,
+            caption=_["start_2"].format(message.from_user.mention, app.mention),
             reply_markup=InlineKeyboardMarkup(out),
-            disable_web_page_preview=False,
-        )
+
+)
         if await is_on_off(2):
             return await app.send_message(
                 chat_id=config.LOGGER_ID,
-                text=(
-                    f"{message.from_user.mention} started the bot.\n\n"
-                    f"<b>User ID:</b> <code>{message.from_user.id}</code>\n"
-                    f"<b>Username:</b> @{message.from_user.username}"
-                ),
+                text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
             )
 
 
@@ -117,11 +102,10 @@ async def start_pm(client, message: Message, _):
 async def start_gp(client, message: Message, _):
     out = start_panel(_)
     uptime = int(time.time() - _boot_)
-    caption = f"<a href='{START_IMG_URL}'>\u2063</a>\n\n{_['start_1'].format(app.mention, get_readable_time(uptime))}"
-    await message.reply_text(
-        text=caption,
+    await message.reply_video(
+            video=config.START_IMG_URL,
+        caption=_["start_1"].format(app.mention, get_readable_time(uptime)),
         reply_markup=InlineKeyboardMarkup(out),
-        disable_web_page_preview=False,
     )
     return await add_served_chat(message.chat.id)
 
@@ -146,23 +130,22 @@ async def welcome(client, message: Message):
                         _["start_5"].format(
                             app.mention,
                             f"https://t.me/{app.username}?start=sudolist",
-                            SUPPORT_CHAT,
+                            config.SUPPORT_CHAT,
                         ),
                         disable_web_page_preview=True,
                     )
                     return await app.leave_chat(message.chat.id)
 
                 out = start_panel(_)
-                caption = f"<a href='{START_IMG_URL}'>\u2063</a>\n\n" + _["start_3"].format(
-                    message.from_user.first_name,
-                    app.mention,
-                    message.chat.title,
-                    app.mention,
-                )
-                await message.reply_text(
-                    text=caption,
+                await message.reply_video(
+            video=config.START_IMG_URL,
+                    caption=_["start_3"].format(
+                        message.from_user.first_name,
+                        app.mention,
+                        message.chat.title,
+                        app.mention,
+                    ),
                     reply_markup=InlineKeyboardMarkup(out),
-                    disable_web_page_preview=False,
                 )
                 await add_served_chat(message.chat.id)
                 await message.stop_propagation()
