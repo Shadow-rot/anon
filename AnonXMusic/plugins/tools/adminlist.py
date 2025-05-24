@@ -49,12 +49,13 @@ async def adminlist(client, message):
         total_admins = len(admins) + (1 if owner else 0)
 
         # Summary stats
-        text += "\n─ Group Admin Stats ─\n"
-        text += f"👥 Total Members: {total_members}\n"
-        text += f"🔢 Admin Count: {total_admins}\n"
+        text += "\n─ Group Stats ─\n"
+        text += f"👥 Members: {total_members}\n"
+        text += f"🔢 Admins: {total_admins}\n"
         text += f"🤖 Bot Admins: {bot_admins}\n"
         text += f"🎖️ With Titles: {custom_titles}\n"
         text += f"🧑‍⚖️ Promoted Admins: {promoted_admins}\n"
+        text += "\n💡 To add new admins: Open group > Manage Group > Administrators"
 
         # Inline keyboard
         buttons = types.InlineKeyboardMarkup([
@@ -62,7 +63,11 @@ async def adminlist(client, message):
                 types.InlineKeyboardButton("➕ Add Admin", url=f"https://t.me/{app.me.username}?startgroup=true"),
                 types.InlineKeyboardButton("ℹ️ Group Info", callback_data="group_info")
             ],
-            [types.InlineKeyboardButton("🔄 Refresh", callback_data="refresh_admins")]
+            [
+                types.InlineKeyboardButton("🔄 Refresh", callback_data="refresh_admins"),
+                types.InlineKeyboardButton("🤖 Bot List", callback_data="botlist")
+            ],
+            [types.InlineKeyboardButton("📛 Deleted Accounts", callback_data="deleted_list")]
         ])
 
         await message.reply(text, reply_markup=buttons)
@@ -75,7 +80,7 @@ async def adminlist(client, message):
 
 @app.on_callback_query(filters.regex("refresh_admins"))
 async def refresh_admins_callback(client, query):
-    await query.answer("Refreshing...", show_alert=False)
+    await query.answer("Refreshing...")
     await adminlist(client, query.message)
 
 
@@ -92,3 +97,29 @@ async def group_info_callback(client, query):
 """
     await query.answer()
     await query.message.reply(info)
+
+
+@app.on_callback_query(filters.regex("botlist"))
+async def bot_list(client, query):
+    bots = []
+    async for member in app.get_chat_members(query.message.chat.id):
+        if member.user.is_bot:
+            bots.append(f"🤖 {member.user.first_name} [@{member.user.username or 'N/A'}]")
+
+    await query.answer()
+    if not bots:
+        return await query.message.reply("No bots found in this group.")
+    await query.message.reply("🤖 Bot List:\n" + "\n".join(bots))
+
+
+@app.on_callback_query(filters.regex("deleted_list"))
+async def deleted_list(client, query):
+    deleted = []
+    async for member in app.get_chat_members(query.message.chat.id):
+        if member.user.is_deleted:
+            deleted.append("📛 Deleted Account")
+
+    await query.answer()
+    if not deleted:
+        return await query.message.reply("No deleted accounts found.")
+    await query.message.reply(f"Found {len(deleted)} deleted accounts.\n" + "\n".join(deleted))
