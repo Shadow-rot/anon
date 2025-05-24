@@ -1,3 +1,4 @@
+"""
 import datetime
 import logging
 import traceback
@@ -42,3 +43,4 @@ class TelegramErrorHandler(logging.Handler):
             await self.client.send_message(chat_id=OWNER_ID, text=message)
         except Exception as e:
             print(f"[Error Handler] Failed to send error notification: {e}")
+"""
