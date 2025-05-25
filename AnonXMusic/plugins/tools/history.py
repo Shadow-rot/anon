@@ -6,13 +6,12 @@ from pyrogram.types import Message
 from pyrogram.raw.functions.messages import DeleteHistory
 
 from AnonXMusic import userbot as us, app
-from AnonXMusic.core.userbot import assistants
 
 
 @app.on_message(filters.command("sg"))
 async def sg(client: Client, message: Message):
     if not message.reply_to_message and len(message.text.split()) < 2:
-        return await message.reply("Usage: Reply to a user or use `/sg username_or_id`")
+        return await message.reply("**Usage:** Reply to a user or use `/sg username_or_id`")
 
     if message.reply_to_message:
         target_user = message.reply_to_message.from_user.id
@@ -29,11 +28,8 @@ async def sg(client: Client, message: Message):
     sg_bots = ["sangmata_bot", "sangmata_beta_bot"]
     sg_bot = random.choice(sg_bots)
 
-    # Get the first assistant from the list
-    try:
-        ubot = assistants[0]  # List se pehla userbot lelo
-    except IndexError:
-        return await lol.edit("No userbot is connected.")
+    # Use default userbot
+    ubot = us.one
 
     try:
         send = await ubot.send_message(sg_bot, str(user.id))
