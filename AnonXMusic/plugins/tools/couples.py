@@ -1,3 +1,4 @@
+"""
 import os
 import random
 from datetime import datetime
@@ -87,3 +88,4 @@ async def couples_handler(_, message):
                     os.remove(f)
             except:
                 pass
+"""
