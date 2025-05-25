@@ -64,7 +64,7 @@ async def couples_handler(_, message):
 
         today, tomorrow = get_today_tomorrow()
 
-        caption = f"""╭─❍ 𝑻𝒐𝒅𝒂𝒚'𝒔 𝑪𝒖𝒕𝒆𝒔𝒕 𝑪𝒐𝒖𝒑𝒍𝒆 ♥
+      """  caption = f"""╭─❍ 𝑻𝒐𝒅𝒂𝒚'𝒔 𝑪𝒖𝒕𝒆𝒔𝒕 𝑪𝒐𝒖𝒑𝒍𝒆 ♥
 │ • {name1} + {name2} = 𝑳𝒐𝒗𝒆𝒃𝒊𝒓𝒅𝒔
 │ • 𝑮𝒓𝒐𝒖𝒑: {message.chat.title}
 ╰• ☞ 𝑵𝒆𝒙𝒕 𝒑𝒂𝒊𝒓 𝒐𝒏 {tomorrow}
@@ -88,4 +88,4 @@ async def couples_handler(_, message):
                     os.remove(f)
             except:
                 pass
-"""
+""" """
