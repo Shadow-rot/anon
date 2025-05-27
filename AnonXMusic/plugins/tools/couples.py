@@ -11,6 +11,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from motor.motor_asyncio import AsyncIOMotorClient
 from AnonXMusic import app
 from AnonXMusic.config import MONGO_DB_URI
+
 mongo = AsyncIOMotorClient(os.environ.get("MONGO_DB_URI"))
 couples_col = mongo.AnonXMusic.couples
 
