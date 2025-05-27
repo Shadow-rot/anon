@@ -2,6 +2,12 @@ from typing import Union
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from AnonXMusic import app
+from strings import (
+    HELP_1, HELP_2, HELP_3, HELP_4,
+    HELP_5, HELP_6, HELP_7, HELP_8,
+    HELP_9, HELP_10, HELP_11, HELP_12,
+    HELP_13, HELP_14, HELP_15, HELP_16,
+)
 
 
 def help_pannel(_, START: Union[bool, int] = None):
@@ -79,23 +85,23 @@ async def help_button_handler(_, query: CallbackQuery):
     data = query.data.split()[1]
 
     help_texts = {
-        "hb1": "Help for Module 1",
-        "hb2": "Help for Module 2",
-        "hb3": "Help for Module 3",
-        "hb4": "Help for Module 4",
-        "hb5": "Help for Module 5",
-        "hb6": "Help for Module 6",
-        "hb7": "Help for Module 7",
-        "hb8": "Help for Module 8",
-        "hb9": "Help for Module 9",
-        "hb10": "Help for Module 10",
-        "hb11": "Help for Module 11",
-        "hb12": "Help for Module 12",
-        "hb13": "Help for Module 13",
-        "hb14": "Help for Module 14",
-        "hb15": "Help for Module 15",
-        "hb16": "Help for Module 16",
-    }
+    "hb1": HELP_1,
+    "hb2": HELP_2,
+    "hb3": HELP_3,
+    "hb4": HELP_4,
+    "hb5": HELP_5,
+    "hb6": HELP_6,
+    "hb7": HELP_7,
+    "hb8": HELP_8,
+    "hb9": HELP_9,
+    "hb10": HELP_10,
+    "hb11": HELP_11,
+    "hb12": HELP_12,
+    "hb13": HELP_13,
+    "hb14": HELP_14,
+    "hb15": HELP_15,
+    "hb16": HELP_16,
+}
 
     help_text = help_texts.get(data, "Help not found.")
 
