@@ -29,7 +29,7 @@ async def download_instagram_reel(client, message):
         async with httpx.AsyncClient() as session:
             response = await session.get(ALT_API_URL + url)
             response.raise_for_status()
-            data = await response.json()
+            data = response.json()  # FIXED: removed `await`
 
         video_url = (
             data.get("media") or
