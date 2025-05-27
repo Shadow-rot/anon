@@ -43,7 +43,7 @@ def extract_content(response) -> str:
 
 
 def format_response(model_name: str, response_content: str) -> str:
-    return f"**Model:** {model_name}\n\n**Response:**\n{response_content}"
+    return f"* Model: * {model_name}\n\n* Response:* \n{response_content}"
 
 
 @app.on_message(filters.command("bard"))
