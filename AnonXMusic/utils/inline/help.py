@@ -180,7 +180,7 @@ async def help_button_handler(_, query: CallbackQuery):
 
 /playforce ᴏʀ /vplayforce : sᴛᴏᴩs ᴛʜᴇ ᴏɴɢᴏɪɴɢ sᴛʀᴇᴀᴍ ᴀɴᴅ sᴛᴀʀᴛs sᴛʀᴇᴀᴍɪɴɢ ᴛʜᴇ ʀᴇǫᴜᴇsᴛᴇᴅ ᴛʀᴀᴄᴋ.
 """,
-    "hb12 : """<b><u>sʜᴜғғʟᴇ ᴏ‌ᴜᴇᴜᴇ :</b></u>
+    "hb12": """<b><u>sʜᴜғғʟᴇ ᴏ‌ᴜᴇᴜᴇ :</b></u>
 
 /shuffle : sʜᴜғғʟᴇ's ᴛʜᴇ ᴏ‌ᴜᴇᴜᴇ.
 /queue : sʜᴏᴡs ᴛʜᴇ sʜᴜғғʟᴇᴅ ᴏ‌ᴜᴇᴜᴇ.
