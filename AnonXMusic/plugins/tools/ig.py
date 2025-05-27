@@ -33,19 +33,26 @@ async def download_instagram_video(client, message: Message):
                 video_url = result["result"]["url"]
     except Exception as e:
         await a.edit(f"❌ Failed to fetch video info:\n{e}")
-        await app.send_message(LOGGER_ID, f"Instagram error:\n{e}")
+        await app.send_message(LOGGER_ID, f"Instagram fetch error:\n{e}")
         return
 
     temp_path = "reel.mp4"
 
     try:
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/122.0.0.0 Safari/537.36"
+            )
+        }
+
         async with aiohttp.ClientSession() as session:
-            async with session.get(video_url) as video_resp:
+            async with session.get(video_url, headers=headers) as video_resp:
                 if video_resp.status != 200:
                     raise Exception(f"Download failed with status code {video_resp.status}")
-                f = await aiofiles.open(temp_path, mode='wb')
-                await f.write(await video_resp.read())
-                await f.close()
+                async with aiofiles.open(temp_path, mode='wb') as f:
+                    await f.write(await video_resp.read())
 
         await a.delete()
         await message.reply_video(video=temp_path, caption="Powered by: @lovely_xu_bot")
