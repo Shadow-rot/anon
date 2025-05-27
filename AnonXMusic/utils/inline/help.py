@@ -80,28 +80,28 @@ def private_help_panel(_):
 
 
 # Handler for all 16 help buttons
-@app.on_callback_query(filters.regex(r"help_callback hb(1[0-6]|[1-9])"))
+@app.on_callback_query(filters.regex(r"help_callback_hb(1[0-6]|[1-9])"))
 async def help_button_handler(_, query: CallbackQuery):
-    data = query.data.split()[1]
+    data = query.data.replace("help_callback_", "")
 
     help_texts = {
-    "hb1": HELP_1,
-    "hb2": HELP_2,
-    "hb3": HELP_3,
-    "hb4": HELP_4,
-    "hb5": HELP_5,
-    "hb6": HELP_6,
-    "hb7": HELP_7,
-    "hb8": HELP_8,
-    "hb9": HELP_9,
-    "hb10": HELP_10,
-    "hb11": HELP_11,
-    "hb12": HELP_12,
-    "hb13": HELP_13,
-    "hb14": HELP_14,
-    "hb15": HELP_15,
-    "hb16": HELP_16,
-}
+        "hb1": HELP_1,
+        "hb2": HELP_2,
+        "hb3": HELP_3,
+        "hb4": HELP_4,
+        "hb5": HELP_5,
+        "hb6": HELP_6,
+        "hb7": HELP_7,
+        "hb8": HELP_8,
+        "hb9": HELP_9,
+        "hb10": HELP_10,
+        "hb11": HELP_11,
+        "hb12": HELP_12,
+        "hb13": HELP_13,
+        "hb14": HELP_14,
+        "hb15": HELP_15,
+        "hb16": HELP_16,
+    }
 
     help_text = help_texts.get(data, "Help not found.")
 
