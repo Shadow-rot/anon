@@ -1,65 +1,50 @@
 import re
-import aiohttp
-import aiofiles
-import os
+import httpx
 from pyrogram import filters
-from pyrogram.types import Message
 from AnonXMusic import app
-from config import LOGGER_ID
 
-INSTAGRAM_REGEX = r"^(https?://)?(www\.)?(instagram\.com|instagr\.am)/reel/.*$"
-COMMANDS = ["ig", "instagram", "reel"]
+DOWNLOADING_STICKER_ID = "CAACAgEAAx0CfD7LAgACO7xmZzb83lrLUVhxtmUaanKe0_ionAAC-gADUSkNORIJSVEUKRrhHgQ"
+INSTAGRAM_REGEX = r"(https?://)?(www\.)?(instagram\.com|instagr\.am)/(reel|p|tv)/[^\s/?]+"
 
-@app.on_message(filters.command(COMMANDS) | filters.regex(INSTAGRAM_REGEX))
-async def download_instagram_video(client, message: Message):
-    if message.command and len(message.command) < 2:
-        return await message.reply_text("ᴘʟᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴀ ᴠᴀʟɪᴅ ɪɴsᴛᴀɢʀᴀᴍ ʀᴇᴇʟ URL.")
-    
-    url = message.text.split()[1] if message.command else message.text.strip()
+# Free scraper API
+ALT_API_URL = "https://instagram-scraper-api.replit.app/insta?url="
 
-    if not re.match(INSTAGRAM_REGEX, url):
-        return await message.reply_text("❌ This is not a valid Instagram reel link.")
+@app.on_message(filters.command(["ig", "insta"]) | filters.regex(INSTAGRAM_REGEX))
+async def download_instagram_reel(client, message):
+    if message.command and len(message.command) > 1:
+        url = message.command[1]
+    else:
+        match = re.search(INSTAGRAM_REGEX, message.text)
+        url = match.group(0) if match else None
 
-    a = await message.reply_text("⏳ Processing...")
+    if not url:
+        return await message.reply_text("Please provide a valid Instagram reel/post URL.")
 
-    api_url = f"https://insta-dl.hazex.workers.dev/?url={url}"
-
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(api_url) as resp:
-                result = await resp.json()
-                if result.get("error"):
-                    raise Exception("API error or unsupported reel.")
-                video_url = result["result"]["url"]
-    except Exception as e:
-        await a.edit(f"❌ Failed to fetch video info:\n{e}")
-        await app.send_message(LOGGER_ID, f"Instagram fetch error:\n{e}")
-        return
-
-    temp_path = "reel.mp4"
+    sticker = await message.reply_sticker(DOWNLOADING_STICKER_ID)
 
     try:
-        headers = {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/122.0.0.0 Safari/537.36"
-            )
-        }
+        async with httpx.AsyncClient() as session:
+            response = await session.get(ALT_API_URL + url)
+            response.raise_for_status()
+            data = response.json()
+            print("Scraper Response:", data)
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(video_url, headers=headers) as video_resp:
-                if video_resp.status != 200:
-                    raise Exception(f"Download failed with status code {video_resp.status}")
-                async with aiofiles.open(temp_path, mode='wb') as f:
-                    await f.write(await video_resp.read())
+        video_url = data.get("media") or data.get("video_url")
+        if not video_url:
+            return await message.reply_text("Could not extract video. It may be private or unavailable.")
 
-        await a.delete()
-        await message.reply_video(video=temp_path, caption="Powered by: @lovely_xu_bot")
+        bot = await app.get_me()
+        caption = f"[{bot.first_name}](https://t.me/{bot.username}) powered this."
 
+        if video_url.endswith((".jpg", ".jpeg", ".png")):
+            await message.reply_photo(video_url, caption=caption, parse_mode="markdown")
+        else:
+            await message.reply_video(video_url, caption=caption, parse_mode="markdown")
+
+    except httpx.HTTPStatusError as e:
+        await message.reply_text(f"Scraper error: {e.response.text}")
     except Exception as e:
-        await message.reply_text(f"❌ Failed to upload video:\n{e}")
-        await app.send_message(LOGGER_ID, f"Upload error:\n{e}")
+        print(f"Error: {e}")
+        await message.reply_text("Something went wrong. Try another reel or later.")
     finally:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        await sticker.delete()
