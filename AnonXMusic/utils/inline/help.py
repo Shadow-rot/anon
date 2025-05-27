@@ -41,6 +41,30 @@ def help_pannel(_, START: Union[bool, int] = None):
                 InlineKeyboardButton(text=_["H_B_15"], callback_data="help_callback hb15"),
                 InlineKeyboardButton(text=_["H_B_16"], callback_data="help_callback hb16"),
             ],
+            [
+                InlineKeyboardButton(text=_["H_B_17"], callback_data="help_callback hb17"),
+                InlineKeyboardButton(text=_["H_B_18"], callback_data="help_callback hb18"),
+                InlineKeyboardButton(text=_["H_B_19"], callback_data="help_callback hb19"),
+            ],
+            [
+                InlineKeyboardButton(text=_["H_B_20"], callback_data="help_callback hb20"),
+                InlineKeyboardButton(text=_["H_B_21"], callback_data="help_callback hb21"),
+                InlineKeyboardButton(text=_["H_B_22"], callback_data="help_callback hb22"),
+            ],
+            [
+                InlineKeyboardButton(text=_["H_B_23"], callback_data="help_callback hb23"),
+                InlineKeyboardButton(text=_["H_B_24"], callback_data="help_callback hb24"),
+                InlineKeyboardButton(text=_["H_B_25"], callback_data="help_callback hb25"),
+            ],
+            [
+                InlineKeyboardButton(text=_["H_B_26"], callback_data="help_callback hb26"),
+                InlineKeyboardButton(text=_["H_B_27"], callback_data="help_callback hb27"),
+                InlineKeyboardButton(text=_["H_B_28"], callback_data="help_callback hb28"),
+            ],
+            [
+                InlineKeyboardButton(text=_["H_B_29"], callback_data="help_callback hb29"),
+                InlineKeyboardButton(text=_["H_B_30"], callback_data="help_callback hb30"),
+            ],
             mark,
         ]
     )
@@ -74,7 +98,7 @@ def private_help_panel(_):
 
 
 # Handler for all 16 help buttons
-@app.on_callback_query(filters.regex(r"help_callback hb(1[0-6]|[1-9])"))
+@app.on_callback_query(filters.regex(r"help_callback hb([1-9]|1[0-9]|2[0-9]|30)"))
 async def help_button_handler(_, query: CallbackQuery):
     data = query.data.split()[1]
 
