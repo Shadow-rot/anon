@@ -79,39 +79,74 @@ async def help_button_handler(_, query: CallbackQuery):
     data = query.data.split()[1]
 
     help_texts = {
-        "hb1": """<b><u>ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅs :</b></u>
+    "hb1": """<b><u>ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅs :</b></u>
 
 ᴊᴜsᴛ ᴀᴅᴅ <b>ᴄ</b> ɪɴ ᴛʜᴇ sᴛᴀʀᴛɪɴɢ ᴏғ ᴛʜᴇ ᴄᴏᴍᴍᴀɴᴅs ᴛᴏ ᴜsᴇ ᴛʜᴇᴍ ғᴏʀ ᴄʜᴀɴɴᴇʟ.
 
-
 /pause : ᴩᴀᴜsᴇ ᴛʜᴇ ᴄᴜʀʀᴇɴᴛ ᴩʟᴀʏɪɴɢ sᴛʀᴇᴀᴍ.
-
 /resume : ʀᴇsᴜᴍᴇ ᴛʜᴇ ᴩᴀᴜsᴇᴅ sᴛʀᴇᴀᴍ.
-
-/skip : sᴋɪᴩ ᴛʜᴇ ᴄᴜʀʀᴇɴᴛ ᴩʟᴀʏɪɴɢ sᴛʀᴇᴀᴍ ᴀɴᴅ sᴛᴀʀᴛ sᴛʀᴇᴀᴍɪɴɢ ᴛʜᴇ ɴᴇxᴛ ᴛʀᴀᴄᴋ ɪɴ ǫᴜᴇᴜᴇ.
-
-/end ᴏʀ /stop : ᴄʟᴇᴀʀs ᴛʜᴇ ǫᴜᴇᴜᴇ ᴀɴᴅ ᴇɴᴅ ᴛʜᴇ ᴄᴜʀʀᴇɴᴛ ᴩʟᴀʏɪɴɢ sᴛʀᴇᴀᴍ.
-
+/skip : sᴋɪᴩ ᴛʜᴇ ᴄᴜʀʀᴇɴᴛ ᴩʟᴀʏɪɴɢ sᴛʀᴇᴀᴍ ᴀɴᴅ sᴛᴀʀᴛ ᴛʜᴇ ɴᴇxᴛ ᴛʀᴀᴄᴋ.
+/end ᴏʀ /stop : ᴄʟᴇᴀʀs ᴛʜᴇ ǫᴜᴇᴜᴇ ᴀɴᴅ ᴇɴᴅs ᴛʜᴇ sᴛʀᴇᴀᴍ.
 /player : ɢᴇᴛ ᴀ ɪɴᴛᴇʀᴀᴄᴛɪᴠᴇ ᴩʟᴀʏᴇʀ ᴩᴀɴᴇʟ.
-
-/queue : sʜᴏᴡs ᴛʜᴇ ǫᴜᴇᴜᴇᴅ ᴛʀᴀᴄᴋs ʟɪsᴛ.
+/queue : sʜᴏᴡs ǫᴜᴇᴜᴇᴅ ᴛʀᴀᴄᴋs.
 """,
-        "hb2": "Help for Module 2",
-        "hb3": "Help for Module 3",
-        "hb4": "Help for Module 4",
-        "hb5": "Help for Module 5",
-        "hb6": "Help for Module 6",
-        "hb7": "Help for Module 7",
-        "hb8": "Help for Module 8",
-        "hb9": "Help for Module 9",
-        "hb10": "Help for Module 10",
-        "hb11": "Help for Module 11",
-        "hb12": "Help for Module 12",
-        "hb13": "Help for Module 13",
-        "hb14": "Help for Module 14",
-        "hb15": "Help for Module 15",
-        "hb16": "Help for Module 16",
-    }
+    "hb2": """
+<b><u>ᴀᴜᴛʜ ᴜsᴇʀs :</b></u>
+
+ᴀᴜᴛʜ ᴜsᴇʀs ᴄᴀɴ ᴜsᴇ ᴀᴅᴍɪɴ ʀɪɢʜᴛs ɪɴ ᴛʜᴇ ʙᴏᴛ ᴡɪᴛʜᴏᴜᴛ ᴀᴅᴍɪɴ ʀɪɢʜᴛs ɪɴ ᴛʜᴇ ᴄʜᴀᴛ.
+
+/auth [ᴜsᴇʀɴᴀᴍᴇ/ᴜsᴇʀ_ɪᴅ] : ᴀᴅᴅ ᴀ ᴜsᴇʀ ᴛᴏ ᴀᴜᴛʜ ʟɪsᴛ.
+/unauth [ᴜsᴇʀɴᴀᴍᴇ/ᴜsᴇʀ_ɪᴅ] : ʀᴇᴍᴏᴠᴇ ғʀᴏᴍ ᴀᴜᴛʜ ʟɪsᴛ.
+/authusers : sʜᴏᴡ ᴀᴜᴛʜ ᴜsᴇʀs ʟɪsᴛ.
+""",
+    "hb3": """
+<u><b>ʙʀᴏᴀᴅᴄᴀsᴛ ғᴇᴀᴛᴜʀᴇ</b></u> [ᴏɴʟʏ ғᴏʀ sᴜᴅᴏᴇʀs] :
+
+/broadcast [ᴍᴇssᴀɢᴇ/ʀᴇᴩʟʏ] : sᴇɴᴅ ᴀ ᴍᴇssᴀɢᴇ ᴛᴏ ᴀʟʟ sᴇʀᴠᴇᴅ ᴄʜᴀᴛs.
+
+<b>ᴍᴏᴅᴇs:</b>
+- <b>pin</b>: ᴩɪɴ ᴛᴏ ᴄʜᴀᴛs
+- <b>pinloud</b>: ᴩɪɴ + ɴᴏᴛɪғɪᴄᴀᴛɪᴏɴ
+- <b>user</b>: sᴇɴᴅ ᴛᴏ sᴛᴀʀᴛᴇᴅ ᴜsᴇʀs
+- <b>assistant</b>: sᴇɴᴅ ᴠɪᴀ ᴀssɪsᴛᴀɴᴛ
+- <b>nobot</b>: sᴋɪᴩ ʙᴏᴛ
+
+<b>ᴇxᴀᴍᴩʟᴇ:</b> <code>/broadcast -user -assistant -pin ᴛᴇsᴛ</code>
+""",
+    "hb4": """<u><b>ᴄʜᴀᴛ ʙʟᴀᴄᴋʟɪsᴛ :</b></u> [ᴏɴʟʏ ғᴏʀ sᴜᴅᴏᴇʀs]
+
+/blacklistchat [ᴄʜᴀᴛ_ɪᴅ] : ʙʟᴏᴄᴋ ᴀ ᴄʜᴀᴛ.
+/whitelistchat [ᴄʜᴀᴛ_ɪᴅ] : ᴜɴʙʟᴏᴄᴋ ᴀ ᴄʜᴀᴛ.
+/blacklistedchat : ʟɪsᴛ ᴀʟʟ ʙʟᴏᴄᴋᴇᴅ ᴄʜᴀᴛs.
+""",
+    "hb5": """
+<u><b>ʙʟᴏᴄᴋ ᴜsᴇʀs:</b></u> [ᴏɴʟʏ ғᴏʀ sᴜᴅᴏᴇʀs]
+
+/block [ᴜsᴇʀɴᴀᴍᴇ/ʀᴇᴩʟʏ] : ʙʟᴏᴄᴋ ᴛʜᴇ ᴜsᴇʀ.
+/unblock [ᴜsᴇʀɴᴀᴍᴇ/ʀᴇᴩʟʏ] : ᴜɴʙʟᴏᴄᴋ ᴛʜᴇ ᴜsᴇʀ.
+/blockedusers : sʜᴏᴡ ʙʟᴏᴄᴋᴇᴅ ᴜsᴇʀs.
+""",
+    "hb6": """
+<u><b>ᴄʜᴀɴɴᴇʟ ᴩʟᴀʏ ᴄᴏᴍᴍᴀɴᴅs:</b></u>
+
+ᴇɴᴀʙʟᴇᴅ ᴛᴏ ᴘʟᴀʏ ᴍᴜsɪᴄ ɪɴ ᴄʜᴀɴɴᴇʟs ᴜsɪɴɢ ᴛʜᴇ ʙᴏᴛ.
+
+/cplay : ᴘʟᴀʏ ᴛʀᴀᴄᴋ ɪɴ ᴄʜᴀɴɴᴇʟ.
+/cpause : ᴩᴀᴜsᴇ ᴄʜᴀɴɴᴇʟ ᴘʟᴀʏ.
+/cresume : ʀᴇsᴜᴍᴇ ᴄʜᴀɴɴᴇʟ ᴘʟᴀʏ.
+/cend : sᴛᴏᴘ ᴄʜᴀɴɴᴇʟ ᴘʟᴀʏ.
+""",
+    "hb7": "Help for Module 7",
+    "hb8": "Help for Module 8",
+    "hb9": "Help for Module 9",
+    "hb10": "Help for Module 10",
+    "hb11": "Help for Module 11",
+    "hb12": "Help for Module 12",
+    "hb13": "Help for Module 13",
+    "hb14": "Help for Module 14",
+    "hb15": "Help for Module 15",
+    "hb16": "Help for Module 16",
+}
 
     help_text = help_texts.get(data, "Help not found.")
 
