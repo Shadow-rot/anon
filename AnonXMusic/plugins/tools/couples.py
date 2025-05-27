@@ -9,10 +9,10 @@ from pyrogram.enums import ChatType
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from motor.motor_asyncio import AsyncIOMotorClient
 from AnonXMusic import app
-from AnonXMusic.config import MONGO_URL
+from AnonXMusic.config import MONGO_DB_URI
 
 # DB setup
-mongo = AsyncIOMotorClient(MONGO_URL)
+mongo = AsyncIOMotorClient(MONGO_DB_URI)
 couples_col = mongo.AnonXMusic.couples
 
 TEMPLATE_PATH = "AnonXMusic/assets/Couples.jpg"
