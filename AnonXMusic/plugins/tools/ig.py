@@ -29,7 +29,7 @@ async def download_instagram_reel(client, message):
         async with httpx.AsyncClient() as session:
             response = await session.get(ALT_API_URL + url)
             response.raise_for_status()
-            data = response.json()  # FIXED: removed `await`
+            data = response.json()
 
         video_url = (
             data.get("media") or
@@ -41,20 +41,20 @@ async def download_instagram_reel(client, message):
             return await message.reply_text("❌ Could not extract video. It may be private or broken.")
 
         bot = await app.get_me()
-        caption = f"[{bot.first_name}](https://t.me/{bot.username}) powered this."
+        caption = f"{bot.first_name} powered this. https://t.me/{bot.username}"
 
         buttons = InlineKeyboardMarkup(
             [[InlineKeyboardButton("Open on Instagram", url=url)]]
         )
 
         if video_url.endswith((".jpg", ".jpeg", ".png")):
-            await message.reply_photo(video_url, caption=caption, parse_mode="markdown", reply_markup=buttons)
+            await message.reply_photo(video_url, caption=caption, reply_markup=buttons)
         else:
-            await message.reply_video(video_url, caption=caption, parse_mode="markdown", reply_markup=buttons)
+            await message.reply_video(video_url, caption=caption, reply_markup=buttons)
 
     except httpx.HTTPStatusError as e:
-        await message.reply_text(f"❌ Scraper error:\n`{e.response.text}`")
+        await message.reply_text(f"❌ Scraper error:\n{e.response.text}")
     except Exception as e:
-        await message.reply_text(f"❌ Unexpected error:\n`{str(e)}`")
+        await message.reply_text(f"❌ Unexpected error:\n{str(e)}")
     finally:
         await sticker.delete()
