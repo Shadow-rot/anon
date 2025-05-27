@@ -7,7 +7,7 @@ DOWNLOADING_STICKER_ID = "CAACAgEAAx0CfD7LAgACO7xmZzb83lrLUVhxtmUaanKe0_ionAAC-g
 INSTAGRAM_REGEX = r"(https?://)?(www\.)?(instagram\.com|instagr\.am)/(reel|p|tv)/[^\s/?]+"
 
 # Free scraper API
-ALT_API_URL = "https://instagram-scraper-api.replit.app/insta?url="
+ALT_API_URL = "https://insta-dl.hazex.workers.dev/?url="
 
 @app.on_message(filters.command(["ig", "insta"]) | filters.regex(INSTAGRAM_REGEX))
 async def download_instagram_reel(client, message):
