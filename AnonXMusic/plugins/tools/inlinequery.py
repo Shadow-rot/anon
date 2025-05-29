@@ -1,3 +1,4 @@
+"""
 from pyrogram import filters, types, enums
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from cachetools import TTLCache
@@ -107,3 +108,4 @@ async def inlinequery(client, query: types.InlineQuery):
         cache_time=5,
         is_gallery=True
     )
+"""
