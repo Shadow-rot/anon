@@ -35,5 +35,3 @@ beautifulsoup4
 bing_image_downloader
 nekosbest
 lexica-api
-cachetools 
-python-telegram-bot==20.6
