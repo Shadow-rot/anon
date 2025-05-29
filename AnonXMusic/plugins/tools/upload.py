@@ -1,3 +1,4 @@
+"""
 import urllib.request
 from pymongo import ReturnDocument
 from telegram import Update
@@ -176,3 +177,6 @@ UPDATE_HANDLER = CommandHandler('update', update, block=False)
 app.add_handler(UPLOAD_HANDLER)
 app.add_handler(DELETE_HANDLER)
 app.add_handler(UPDATE_HANDLER)
+
+
+"""
