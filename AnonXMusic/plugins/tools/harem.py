@@ -1,3 +1,5 @@
+# AnonXMusic/plugins/harem.py
+
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from itertools import groupby
@@ -14,8 +16,7 @@ async def harem_cmd(client, message, page: int = 0):
     user = await user_collection.find_one({"id": user_id})
 
     if not user or not user.get("characters"):
-        await message.reply_text("𝙔𝙤𝙪 𝙃𝙖𝙫𝙚 𝙉𝙤𝙩 𝙂𝙧𝙖𝙗 𝙖𝙣𝙮 𝙒𝙖𝙞𝙛𝙪 𝙔𝙚𝙩...")
-        return
+        return await message.reply_text("𝙔𝙤𝙪 𝙃𝙖𝙫𝙚 𝙉𝙤𝙩 𝙂𝙧𝙖𝙗𝙗𝙚𝙙 𝘼𝙣𝙮 𝙒𝙖𝙞𝙛𝙪 𝙔𝙚𝙩...")
 
     characters = sorted(user['characters'], key=lambda x: (x['anime'], x['id']))
     character_counts = {k: len(list(v)) for k, v in groupby(characters, key=lambda x: x['id'])}
@@ -37,7 +38,10 @@ async def harem_cmd(client, message, page: int = 0):
             harem_message += f'➥{char["id"]}| {char["rarity"]} |{char["name"]} ×{count}\n'
 
     total_count = len(user['characters'])
-    keyboard = [[InlineKeyboardButton(f"See Collection ({total_count})", switch_inline_query_current_chat=f"collection.{user_id}")]]
+    keyboard = [[
+        InlineKeyboardButton(f"See Collection ({total_count})", switch_inline_query_current_chat=f"collection.{user_id}")
+    ]]
+
     if total_pages > 1:
         nav_buttons = []
         if page > 0:
@@ -61,12 +65,13 @@ async def harem_cmd(client, message, page: int = 0):
     else:
         await message.reply_text(harem_message, reply_markup=reply_markup, parse_mode="html")
 
+
 @app.on_callback_query(filters.regex(r"^harem:(-?\d+):(\d+)$"))
 async def harem_callback(client, callback_query):
     page, user_id = map(int, callback_query.data.split(":")[1:])
     if callback_query.from_user.id != user_id:
-        await callback_query.answer("It's not your harem!", show_alert=True)
-        return
+        return await callback_query.answer("It's not your harem!", show_alert=True)
+
     message = callback_query.message
     message.from_user = callback_query.from_user
     await harem_cmd(client, message, page=page)
