@@ -15,8 +15,11 @@ from config import BANNED_USERS
 # Error logging setup
 from AnonXMusic.core.error_handler import setup_error_logging
 
+# AutoFixGuard import
+from AnonXMusic.utils.autofixguard import add_retryfix_command
+
 async def init():
-    # Setup logging first
+    # Setup error logging
     setup_error_logging()
 
     if (
@@ -43,9 +46,13 @@ async def init():
 
     await app.start()
 
+    # Load plugin modules
     for all_module in ALL_MODULES:
         importlib.import_module("AnonXMusic.plugins" + all_module)
     LOGGER("AnonXMusic.plugins").info("Successfully Imported Modules...")
+
+    # Enable retryfix command for OWNER
+    add_retryfix_command(app)
 
     await userbot.start()
     await Anony.start()
