@@ -1,7 +1,7 @@
 import os
 import random
 import tempfile
-from datetime import datetime, timedelta
+from datetime import datetime
 from PIL import Image, ImageDraw
 from pyrogram import filters
 from pyrogram.enums import ChatType
@@ -9,12 +9,6 @@ from AnonXMusic import app
 
 TEMPLATE_PATH = "AnonXMusic/assets/Couples.jpg"
 FALLBACK_PFP = "AnonXMusic/assets/upic.png"
-
-def get_today_tomorrow():
-    now = datetime.now()
-    today = now.strftime("%d/%m/%Y")
-    tomorrow = (now + timedelta(days=1)).strftime("%d/%m/%Y")
-    return today, tomorrow
 
 def circle_avatar(image_path, size=(135, 135)):
     img = Image.open(image_path).convert("RGBA").resize(size)
@@ -29,21 +23,19 @@ async def couples_handler(_, message):
     if message.chat.type == ChatType.PRIVATE:
         return await message.reply_text("This command only works in groups.")
 
-    msg = await message.reply("Finding an active couple...")
+    msg = await message.reply("Finding a lucky couple...")
 
     try:
-        # Step 1: Collect recent active user IDs
-        active_ids = set()
-        async for msg_ in app.get_chat_history(message.chat.id, limit=200):
-            if msg_.from_user and not msg_.from_user.is_bot:
-                active_ids.add(msg_.from_user.id)
+        # Fetch all group members
+        members = []
+        async for m in app.get_chat_members(message.chat.id):
+            if m.user and not m.user.is_bot:
+                members.append(m.user.id)
 
-        active_ids = list(active_ids)
-        if len(active_ids) < 2:
-            return await msg.edit("Not enough active users found in recent messages.")
+        if len(members) < 2:
+            return await msg.edit("Not enough members to make a couple.")
 
-        # Step 2: Randomly choose 2
-        c1, c2 = random.sample(active_ids, 2)
+        c1, c2 = random.sample(members, 2)
         user1, user2 = await app.get_users([c1, c2])
 
         name1 = user1.mention
@@ -71,10 +63,9 @@ async def couples_handler(_, message):
             out_path = temp_img.name
             template.save(out_path)
 
-        _, tomorrow = get_today_tomorrow()
         chat_title = message.chat.title or "this group"
 
-        caption = f"""╭─❍ 𝑻𝒐𝒅𝒂𝒚'𝒔 𝑨𝒄𝒕𝒊𝒗𝒆 𝑪𝒐𝒖𝒑𝒍𝒆 ♥
+        caption = f"""╭─❍ 𝑻𝒐𝒅𝒂𝒚'𝒔 𝑹𝒂𝒏𝒅𝒐𝒎 𝑪𝒐𝒖𝒑𝒍𝒆 ♥
 │ • {name1} + {name2} = 𝑳𝒐𝒗𝒆𝒃𝒊𝒓𝒅𝒔
 │ • 𝑮𝒓𝒐𝒖𝒑: {chat_title}
 ╰• ☞  𝑵𝒆𝒙𝒕 𝒍𝒖𝒄𝒌𝒚 𝒑𝒂𝒊𝒓 𝒘𝒉𝒆𝒏 𝒚𝒐𝒖 𝒓𝒖𝒏 /couples 𝒂𝒈𝒂𝒊𝒏 ♥"""
@@ -82,13 +73,13 @@ async def couples_handler(_, message):
         await message.reply_photo(out_path, caption=caption)
         await msg.delete()
 
-        # Cleanup
+    except Exception as e:
+        await msg.edit(f"Something went wrong: {e}")
+
+    finally:
         for file in [p1, p2, out_path]:
             try:
                 if file and os.path.exists(file) and "upic.png" not in file:
                     os.remove(file)
             except:
                 pass
-
-    except Exception as e:
-        await msg.edit(f"Something went wrong: {e}")
