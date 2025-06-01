@@ -1,6 +1,6 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from AnonXMusic.utils.database import users_col
+from AnonXMusic.utils.data import users_col
 import math
 import random
 from datetime import datetime, timedelta
