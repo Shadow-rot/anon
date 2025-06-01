@@ -112,7 +112,7 @@ async def roll(_, message: Message):
     if amount < 0:
         return await message.reply_text("Amount must be positive.")
 
-    user_data = await user_collection.find_one({'id': user_id})
+    user_data = await users_col.find_one({'id': user_id})
     if not user_data:
         return await message.reply_text("User data not found.")
 
@@ -130,7 +130,7 @@ async def roll(_, message: Message):
     xp_change = 4 if choice == result else -2
     balance_change = amount if choice == result else -amount
 
-    await user_collection.update_one(
+    await users_col.update_one(
         {'id': user_id},
         {'$inc': {'balance': balance_change, 'user_xp': xp_change}}
     )
