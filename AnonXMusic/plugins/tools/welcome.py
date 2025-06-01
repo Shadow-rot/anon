@@ -59,7 +59,7 @@ wlcm = WelDatabase()
 class temp:
     MELCOW = {}
 
-def circle(pfp, size=(300, 300)):
+def circle(pfp, size=(220, 220)):
     pfp = pfp.resize(size, Image.LANCZOS).convert("RGBA")
     mask = Image.new("L", size, 0)
     draw = ImageDraw.Draw(mask)
