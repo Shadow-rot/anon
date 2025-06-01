@@ -59,7 +59,7 @@ wlcm = WelDatabase()
 class temp:
     MELCOW = {}
 
-def circle(pfp, size=(220, 220)):
+def circle(pfp, size=(300, 300)):
     pfp = pfp.resize(size, Image.LANCZOS).convert("RGBA")
     mask = Image.new("L", size, 0)
     draw = ImageDraw.Draw(mask)
@@ -74,7 +74,7 @@ def welcomepic(pic_path, user, chatname, user_id, uname):
     pfp = Image.open(pic_path).convert("RGBA")
 
     # New size to match white circle (estimated around 420x420)
-    circle_size = (220, 220)
+    circle_size = (300, 300)
     pfp = circle(pfp, size=circle_size)
 
     draw = ImageDraw.Draw(background)
