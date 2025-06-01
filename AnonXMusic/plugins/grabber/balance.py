@@ -1,27 +1,26 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from AnonXMusic.utils.data import users_col
-from AnonXMusic import app
+from datetime import datetime, timedelta
 import math
 import random
-from datetime import datetime, timedelta
 
-# Balance command
+from AnonXMusic import app
+from AnonXMusic.utils.data import users_col  # Make sure this points to your MongoDB collection
+
+# ========== BALANCE ==========
 @app.on_message(filters.command("bal"))
 async def balance(_, message: Message):
     user_id = message.from_user.id
-    user_data = await user_collection.find_one({'id': user_id})
-
+    user_data = await users_col.find_one({'id': user_id})
     if user_data:
         balance_amount = user_data.get('balance', 0)
         await message.reply_text(f"Your Current Balance Is :  $ `{balance_amount}` Gold coins!!")
     else:
         await message.reply_text("You are not eligible To be a Hunter 🍂")
 
-# Cooldown tracking
+# ========== PAY ==========
 pay_cooldown = {}
 
-# Pay command
 @app.on_message(filters.command("pay") & filters.reply)
 async def pay(_, message: Message):
     sender_id = message.from_user.id
@@ -34,23 +33,23 @@ async def pay(_, message: Message):
         last_time = pay_cooldown[sender_id]
         if (datetime.utcnow() - last_time) < timedelta(minutes=30):
             return await message.reply_text("You can pay /pay again after 30 Minutes!!...")
-    
+
     try:
         amount = int(message.command[1])
     except (IndexError, ValueError):
         return await message.reply_text("Invalid amount, use `/pay <amount>`")
 
-    if amount < 0:
+    if amount <= 0:
         return await message.reply_text("Amount must be positive BKL !!!")
-    elif amount > 1000000:
-        return await message.reply_text("You can pay upto $ `10,00,000` Gold coins in one payment !!")
+    elif amount > 1_000_000:
+        return await message.reply_text("You can pay up to $ `10,00,000` Gold coins in one payment !!")
 
-    sender_data = await user_collection.find_one({'id': sender_id})
+    sender_data = await users_col.find_one({'id': sender_id})
     if not sender_data or sender_data.get('balance', 0) < amount:
         return await message.reply_text("Insufficient amount to pay !!.")
 
-    await user_collection.update_one({'id': sender_id}, {'$inc': {'balance': -amount}})
-    await user_collection.update_one({'id': recipient.id}, {'$inc': {'balance': amount}})
+    await users_col.update_one({'id': sender_id}, {'$inc': {'balance': -amount}})
+    await users_col.update_one({'id': recipient.id}, {'$inc': {'balance': amount}}, upsert=True)
 
     pay_cooldown[sender_id] = datetime.utcnow()
     username = recipient.username or f"user{recipient.id}"
@@ -59,11 +58,11 @@ async def pay(_, message: Message):
         disable_web_page_preview=True
     )
 
-# Top Hunters
+# ========== TOP HUNTERS ==========
 @app.on_message(filters.command("Tophunters"))
 async def mtop(_, message: Message):
-    top_users = await user_collection.find({}, projection={'id': 1, 'first_name': 1, 'last_name': 1, 'balance': 1}) \
-                                     .sort('balance', -1).limit(10).to_list(10)
+    top_users = await users_col.find({}, projection={'id': 1, 'first_name': 1, 'last_name': 1, 'balance': 1}) \
+                               .sort('balance', -1).limit(10).to_list(10)
 
     text = "🏆 Top 10 Rich Hunters:\n\n"
     for i, user in enumerate(top_users, start=1):
@@ -79,28 +78,29 @@ async def mtop(_, message: Message):
         parse_mode="html"
     )
 
-# Claim daily reward
+# ========== CLAIM DAILY ==========
 @app.on_message(filters.command("claim"))
 async def daily_reward(_, message: Message):
     user_id = message.from_user.id
-    user_data = await user_collection.find_one({'id': user_id}, projection={'last_daily_reward': 1, 'balance': 1})
     now = datetime.utcnow()
 
-    if user_data and (last := user_data.get("last_daily_reward")):
-        if last.date() == now.date():
-            delta = timedelta(days=1) - (now - last)
-            hours, rem = divmod(delta.seconds, 3600)
-            mins, secs = divmod(rem, 60)
-            return await message.reply_text(f"Already claimed! Try again in `{hours}h {mins}m {secs}s`.")
+    user_data = await users_col.find_one({'id': user_id})
+    last_claim = user_data.get("last_daily_reward") if user_data else None
 
-    await user_collection.update_one(
+    if last_claim and last_claim.date() == now.date():
+        delta = timedelta(days=1) - (now - last_claim)
+        hours, rem = divmod(delta.seconds, 3600)
+        mins, secs = divmod(rem, 60)
+        return await message.reply_text(f"Already claimed! Try again in `{hours}h {mins}m {secs}s`.")
+
+    await users_col.update_one(
         {'id': user_id},
         {'$inc': {'balance': 2000}, '$set': {'last_daily_reward': now}},
         upsert=True
     )
     await message.reply_text("Congratulations! You claimed $ `2000` Gold coins as a daily reward.")
 
-# Roll (dice gamble)
+# ========== ROLL ==========
 @app.on_message(filters.command("roll"))
 async def roll(_, message: Message):
     user_id = message.from_user.id
@@ -110,10 +110,10 @@ async def roll(_, message: Message):
     except (IndexError, ValueError):
         return await message.reply_text("Usage: /roll <amount> <ODD/EVEN>")
 
-    if amount < 0:
+    if amount <= 0:
         return await message.reply_text("Amount must be positive.")
 
-    user_data = await user_collection.find_one({'id': user_id})
+    user_data = await users_col.find_one({'id': user_id})
     if not user_data:
         return await message.reply_text("User data not found.")
 
@@ -130,24 +130,24 @@ async def roll(_, message: Message):
     xp_change = 4 if choice == result else -2
     balance_change = amount if choice == result else -amount
 
-    await user_collection.update_one(
+    await users_col.update_one(
         {'id': user_id},
         {'$inc': {'balance': balance_change, 'user_xp': xp_change}}
     )
 
-    outcome_msg = f"Dice rolled: {value} ({result})\n"
+    outcome_msg = f"🎲 Dice rolled: {value} ({result})\n"
     if choice == result:
         outcome_msg += f"You won! Gained $ `{amount * 2}`."
     else:
         outcome_msg += f"You lost! Lost $ `{amount}`."
 
-    await message.reply_text(f"{outcome_msg}\nXP change: {xp_change}")
+    await message.reply_text(f"{outcome_msg}\nXP change: `{xp_change}`")
 
-# XP & Level
+# ========== XP ==========
 @app.on_message(filters.command("xp"))
 async def xp(_, message: Message):
     user_id = message.from_user.id
-    user_data = await user_collection.find_one({'id': user_id})
+    user_data = await users_col.find_one({'id': user_id})
 
     if not user_data:
         return await message.reply_text("User data not found.")
