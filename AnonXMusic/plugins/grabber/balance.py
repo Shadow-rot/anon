@@ -1,12 +1,13 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
 from AnonXMusic.utils.data import users_col
+from AnonXMusic import app
 import math
 import random
 from datetime import datetime, timedelta
 
 # Balance command
-@Client.on_message(filters.command("bal"))
+@app.on_message(filters.command("bal"))
 async def balance(_, message: Message):
     user_id = message.from_user.id
     user_data = await user_collection.find_one({'id': user_id})
@@ -21,7 +22,7 @@ async def balance(_, message: Message):
 pay_cooldown = {}
 
 # Pay command
-@Client.on_message(filters.command("pay") & filters.reply)
+@app.on_message(filters.command("pay") & filters.reply)
 async def pay(_, message: Message):
     sender_id = message.from_user.id
     recipient = message.reply_to_message.from_user
@@ -59,7 +60,7 @@ async def pay(_, message: Message):
     )
 
 # Top Hunters
-@Client.on_message(filters.command("Tophunters"))
+@app.on_message(filters.command("Tophunters"))
 async def mtop(_, message: Message):
     top_users = await user_collection.find({}, projection={'id': 1, 'first_name': 1, 'last_name': 1, 'balance': 1}) \
                                      .sort('balance', -1).limit(10).to_list(10)
@@ -79,7 +80,7 @@ async def mtop(_, message: Message):
     )
 
 # Claim daily reward
-@Client.on_message(filters.command("claim"))
+@app.on_message(filters.command("claim"))
 async def daily_reward(_, message: Message):
     user_id = message.from_user.id
     user_data = await user_collection.find_one({'id': user_id}, projection={'last_daily_reward': 1, 'balance': 1})
@@ -100,7 +101,7 @@ async def daily_reward(_, message: Message):
     await message.reply_text("Congratulations! You claimed $ `2000` Gold coins as a daily reward.")
 
 # Roll (dice gamble)
-@Client.on_message(filters.command("roll"))
+@app.on_message(filters.command("roll"))
 async def roll(_, message: Message):
     user_id = message.from_user.id
     try:
@@ -143,7 +144,7 @@ async def roll(_, message: Message):
     await message.reply_text(f"{outcome_msg}\nXP change: {xp_change}")
 
 # XP & Level
-@Client.on_message(filters.command("xp"))
+@app.on_message(filters.command("xp"))
 async def xp(_, message: Message):
     user_id = message.from_user.id
     user_data = await user_collection.find_one({'id': user_id})
