@@ -74,7 +74,7 @@ def welcomepic(pic_path, user, chatname, user_id, uname):
     pfp = Image.open(pic_path).convert("RGBA")
 
     # New size to match white circle (estimated around 420x420)
-    circle_size = (300, 300)
+    circle_size = (220, 220)
     pfp = circle(pfp, size=circle_size)
 
     draw = ImageDraw.Draw(background)
