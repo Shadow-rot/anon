@@ -14,7 +14,7 @@ async def balance(_, message: Message):
     user_data = await users_col.find_one({'id': user_id})
     if user_data:
         balance_amount = user_data.get('balance', 0)
-        await message.reply_text(f"Your Current Balance Is :  $ ` {balance_amount} ` Gold coins!!")
+        await message.reply_text(f"Your Current Balance Is :  $ `{balance_amount}` Gold coins!!")
     else:
         await message.reply_text("You are not eligible To be a Hunter 🍂")
 
@@ -59,9 +59,9 @@ async def pay(_, message: Message):
     )
 
 # Top Hunters
-@app.on_message(filters.command("Tophunters"))
+@app.on_message(filters.command("mtop"))
 async def mtop(_, message: Message):
-    top_users = await user_collection.find({}, projection={'id': 1, 'first_name': 1, 'last_name': 1, 'balance': 1}) \
+    top_users = await users_col.find({}, projection={'id': 1, 'first_name': 1, 'last_name': 1, 'balance': 1}) \
                                      .sort('balance', -1).limit(10).to_list(10)
 
     text = "🏆 Top 10 Rich Hunters:\n\n"
