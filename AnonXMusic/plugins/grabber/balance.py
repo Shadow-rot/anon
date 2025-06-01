@@ -109,10 +109,10 @@ async def roll(_, message: Message):
     except (IndexError, ValueError):
         return await message.reply_text("Usage: /roll <amount> <ODD/EVEN>")
 
-    if amount <= 0:
+    if amount < 0:
         return await message.reply_text("Amount must be positive.")
 
-    user_data = await users_col.find_one({'id': user_id})
+    user_data = await user_collection.find_one({'id': user_id})
     if not user_data:
         return await message.reply_text("User data not found.")
 
@@ -122,25 +122,26 @@ async def roll(_, message: Message):
     if amount < balance * 0.07:
         return await message.reply_text("You must bet more than 7% of your balance.")
 
-    dice = await message.chat.send_dice("🎲")
+    # FIXED: use message._client to send dice
+    dice = await message._client.send_dice(message.chat.id, "🎲")
     value = dice.dice.value
     result = "ODD" if value % 2 else "EVEN"
 
     xp_change = 4 if choice == result else -2
     balance_change = amount if choice == result else -amount
 
-    await users_col.update_one(
+    await user_collection.update_one(
         {'id': user_id},
         {'$inc': {'balance': balance_change, 'user_xp': xp_change}}
     )
 
-    outcome_msg = f"🎲 Dice rolled: {value} ({result})\n"
+    outcome_msg = f"Dice rolled: {value} ({result})\n"
     if choice == result:
         outcome_msg += f"You won! Gained $ `{amount * 2}`."
     else:
         outcome_msg += f"You lost! Lost $ `{amount}`."
 
-    await message.reply_text(f"{outcome_msg}\nXP change: `{xp_change}`")
+    await message.reply_text(f"{outcome_msg}\nXP change: {xp_change}")
 
 # ========== XP ==========
 @app.on_message(filters.command("xp"))
