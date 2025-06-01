@@ -14,7 +14,7 @@ async def balance(_, message: Message):
     user_data = await users_col.find_one({'id': user_id})
     if user_data:
         balance_amount = user_data.get('balance', 0)
-        await message.reply_text(f"Your Current Balance Is :  $ `{balance_amount}` Gold coins!!")
+        await message.reply_text(f"Your Current Balance Is :  $ ` {balance_amount} ` Gold coins!!")
     else:
         await message.reply_text("You are not eligible To be a Hunter 🍂")
 
@@ -58,11 +58,11 @@ async def pay(_, message: Message):
         disable_web_page_preview=True
     )
 
-# ========== TOP HUNTERS ==========
+# Top Hunters
 @app.on_message(filters.command("Tophunters"))
 async def mtop(_, message: Message):
-    top_users = await users_col.find({}, projection={'id': 1, 'first_name': 1, 'last_name': 1, 'balance': 1}) \
-                               .sort('balance', -1).limit(10).to_list(10)
+    top_users = await user_collection.find({}, projection={'id': 1, 'first_name': 1, 'last_name': 1, 'balance': 1}) \
+                                     .sort('balance', -1).limit(10).to_list(10)
 
     text = "🏆 Top 10 Rich Hunters:\n\n"
     for i, user in enumerate(top_users, start=1):
@@ -70,12 +70,11 @@ async def mtop(_, message: Message):
         if user.get("last_name"):
             name += f" {user['last_name']}"
         balance = user.get("balance", 0)
-        text += f"{i}. <a href='tg://user?id={user['id']}'>{name}</a> — $ `{balance}` Gold Coins\n"
+        text += f"{i}. {name} — $ {balance} Gold Coins\n"
 
     await message.reply_photo(
         photo="https://telegra.ph/file/07283c3102ae87f3f2833.png",
-        caption=text,
-        parse_mode="html"
+        caption=text  # parse_mode removed
     )
 
 # ========== CLAIM DAILY ==========
