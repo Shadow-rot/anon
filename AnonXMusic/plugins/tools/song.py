@@ -15,7 +15,7 @@ from AnonXMusic import app, YouTube
 from config import BANNED_USERS, SONG_DOWNLOAD_DURATION, SONG_DOWNLOAD_DURATION_LIMIT
 from ANNIEMUSIC.utils.decorators.language import language, languageCB
 from AnonXMusic.utils.formatters import convert_bytes
-from AnonXMusic.utils.inline.song import song_markup
+from AnonXMusic.utils.inline import song_markup
 
 cookies_file = "AnonXMusic/assets/cookies.txt"
 SONG_COMMAND = ["song"]
@@ -44,12 +44,8 @@ async def song_commad_private(client, message: Message, _):
             title, duration_min, duration_sec, thumbnail, vidid = await YouTube.details(url)
         except:
             return await mystic.edit_text(_["play_3"])
-
         if not duration_min or int(duration_sec) > SONG_DOWNLOAD_DURATION_LIMIT:
-            return await mystic.edit_text(
-                _["play_4"].format(SONG_DOWNLOAD_DURATION, duration_min or "Unknown")
-            )
-
+            return await mystic.edit_text(_["play_4"].format(SONG_DOWNLOAD_DURATION, duration_min or "Unknown"))
         buttons = song_markup(_, vidid)
         await mystic.delete()
         return await message.reply_photo(
@@ -65,12 +61,8 @@ async def song_commad_private(client, message: Message, _):
             title, duration_min, duration_sec, thumbnail, vidid = await YouTube.details(query)
         except:
             return await mystic.edit_text(_["play_3"])
-
         if not duration_min or int(duration_sec) > SONG_DOWNLOAD_DURATION_LIMIT:
-            return await mystic.edit_text(
-                _["play_6"].format(SONG_DOWNLOAD_DURATION, duration_min or "Unknown")
-            )
-
+            return await mystic.edit_text(_["play_6"].format(SONG_DOWNLOAD_DURATION, duration_min or "Unknown"))
         buttons = song_markup(_, vidid)
         await mystic.delete()
         return await message.reply_photo(
@@ -116,14 +108,12 @@ async def song_helper_cb(client, CallbackQuery, _):
                     continue
                 added.add(form)
                 sz = convert_bytes(x["filesize"])
-                buttons.append(
-                    [
-                        InlineKeyboardButton(
-                            text=f"{form} Quality Audio = {sz}",
-                            callback_data=f"song_download {stype}|{x['format_id']}|{vidid}",
-                        )
-                    ]
-                )
+                buttons.append([
+                    InlineKeyboardButton(
+                        text=f"{form} Quality Audio = {sz}",
+                        callback_data=f"song_download {stype}|{x['format_id']}|{vidid}",
+                    )
+                ])
     else:
         allowed = {160, 133, 134, 135, 136, 137, 298, 299, 264, 304, 266}
         for x in formats_available:
@@ -131,21 +121,17 @@ async def song_helper_cb(client, CallbackQuery, _):
                 continue
             sz = convert_bytes(x["filesize"])
             label = x["format"].split("-")[-1].strip()
-            buttons.append(
-                [
-                    InlineKeyboardButton(
-                        text=f"{label} = {sz}",
-                        callback_data=f"song_download {stype}|{x['format_id']}|{vidid}",
-                    )
-                ]
-            )
+            buttons.append([
+                InlineKeyboardButton(
+                    text=f"{label} = {sz}",
+                    callback_data=f"song_download {stype}|{x['format_id']}|{vidid}",
+                )
+            ])
 
-    buttons.append(
-        [
-            InlineKeyboardButton(text=_["BACK_BUTTON"], callback_data=f"song_back {stype}|{vidid}"),
-            InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close"),
-        ]
-    )
+    buttons.append([
+        InlineKeyboardButton(text=_["BACK_BUTTON"], callback_data=f"song_back {stype}|{vidid}"),
+        InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close"),
+    ])
 
     await CallbackQuery.edit_message_reply_markup(reply_markup=InlineKeyboardMarkup(buttons))
 
@@ -193,13 +179,15 @@ async def song_download_cb(client, CallbackQuery, _):
 
     try:
         if stype == "video":
+            width = getattr(CallbackQuery.message.photo, 'width', 1280)
+            height = getattr(CallbackQuery.message.photo, 'height', 720)
             media = InputMediaVideo(
                 media=file_path,
                 caption=title,
                 duration=duration,
                 thumb=thumb,
-                width=CallbackQuery.message.photo.width,
-                height=CallbackQuery.message.photo.height,
+                width=width,
+                height=height,
                 supports_streaming=True,
             )
         else:
