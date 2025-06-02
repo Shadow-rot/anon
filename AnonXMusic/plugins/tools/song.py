@@ -1,3 +1,4 @@
+"""
 import os
 import re
 from pyrogram import Client, filters
@@ -205,3 +206,4 @@ async def song_download_cb(client, CallbackQuery, _):
         return await mystic.edit_text(_["song_10"])
 
     os.remove(file_path)
+"""
