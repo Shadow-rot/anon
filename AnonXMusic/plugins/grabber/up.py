@@ -1,92 +1,115 @@
 import urllib.request
-from pymongo import ReturnDocument
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from config import LOGGER_ID
-from AnonXMusic import app
-from AnonXMusic.misc import SUDOERS
-from AnonXMusic.utils.data import collection, db
+from pymongo import ReturnDocument
 
-# Sequence generator
+from config import LOGGER_ID as CHARA_CHANNEL_ID
+from AnonXMusic import app, db, collection, SUDOERS
+
+
 async def get_next_sequence_number(sequence_name):
     sequence_collection = db.sequences
     sequence_document = await sequence_collection.find_one_and_update(
-        {"_id": sequence_name},
-        {"$inc": {"sequence_value": 1}},
-        return_document=ReturnDocument.AFTER,
+        {'_id': sequence_name},
+        {'$inc': {'sequence_value': 1}},
+        return_document=ReturnDocument.AFTER
     )
     if not sequence_document:
-        await sequence_collection.insert_one({"_id": sequence_name, "sequence_value": 0})
+        await sequence_collection.insert_one({'_id': sequence_name, 'sequence_value': 0})
         return 0
-    return sequence_document["sequence_value"]
+    return sequence_document['sequence_value']
 
-# /upload command
-@app.on_message(filters.command("upload") & SUDOERS)
+
+@app.on_message(filters.command("upload") & filters.user(SUDOERS))
 async def upload_character(_, message: Message):
+    args = message.text.split(maxsplit=4)
+    if len(args) != 5:
+        return await message.reply_text("""
+❌ Wrong format! Example:
+`/upload <Image_URL> <character-name> <anime-name> <rarity>`
+
+Example:
+`/upload https://files.catbox.moe/3joi8n.jpg muzan-kibutsuji demon-slayer 3`
+
+Use rarity number accordingly:
+1:🟢 Common
+2:🔵 Medium
+3:🟡 Rare
+4:🔴 Legendary
+5:💠 Special
+6:🔮 Limited
+7:❄️ Winter
+""")
+
+    img_url, name_raw, anime_raw, rarity_input = args[1:]
+
+    # Validate URL
+    valid_exts = [".jpg", ".jpeg", ".png", ".webp", ".gif"]
+    if not any(img_url.lower().endswith(ext) for ext in valid_exts):
+        return await message.reply_text("❌ Invalid image URL. Must end with .jpg, .png, .webp, etc.")
+
     try:
-        args = message.text.split(maxsplit=4)
-        if len(args) != 5:
-            await message.reply_text(
-                "**Wrong ❌️ format.**\n\n**Usage:** `/upload Img_URL muzan-kibutsuji demon-slayer 3`\n\n"
-                "**Format:** `img_url character-name anime-name rarity-number`\n\n"
-                "**Rarity Map:**\n"
-                "1: 🟢 Common\n2: 🔵 Medium\n3: 🟡 Rare\n4: 🔴 Legendary\n5: 💠 Special\n6: 🔮 Limited\n7: ❄️ Winter"
-            )
-            return
-
-        img_url, char_raw, anime_raw, rarity_input = args[1], args[2], args[3], args[4]
-
-        # Validate URL
-        try:
-            urllib.request.urlopen(img_url)
-        except:
-            await message.reply_text("Invalid image URL.")
-            return
-
-        character_name = char_raw.replace("-", " ").title()
-        anime = anime_raw.replace("-", " ").title()
-
-        rarity_map = {
-            1: "🟢 Common",
-            2: "🔵 Medium",
-            3: "🟡 Rare",
-            4: "🔴 Legendary",
-            5: "💠 Special",
-            6: "🔮 Limited",
-            7: "❄️ Winter",
-        }
-
-        try:
-            rarity = rarity_map[int(rarity_input)]
-        except KeyError:
-            await message.reply_text("Invalid rarity. Use 1-7 only.")
-            return
-
-        char_id = str(await get_next_sequence_number("character_id")).zfill(2)
-
-        character = {
-            "img_url": img_url,
-            "name": character_name,
-            "anime": anime,
-            "rarity": rarity,
-            "id": char_id,
-        }
-
-        caption = (
-            f"Waifu Name: {character_name}\n"
-            f"Anime Name: {anime}\n"
-            f"Quality: {rarity}\n"
-            f"ID: {char_id}\n"
-            f"Added by: {message.from_user.mention}"
-        )
-
-        sent = await app.send_photo(LOGGER_ID, photo=img_url, caption=caption)
-        character["message_id"] = sent.id
-
-        await collection.insert_one(character)
-        await message.reply_text("✅ Waifu added successfully.")
+        req = urllib.request.Request(img_url, headers={"User-Agent": "Mozilla/5.0"})
+        urllib.request.urlopen(req)
     except Exception as e:
-        await message.reply_text(f"Failed to upload character.\nError: `{e}`")
+        return await message.reply_text(f"❌ Couldn't access image URL:\n{e}")
+
+    # Format inputs
+    character_name = name_raw.replace("-", " ").title()
+    anime = anime_raw.replace("-", " ").title()
+
+    rarity_map = {
+        1: "🟢 𝘾𝙤𝙢𝙢𝙤𝙣",
+        2: "🔵 𝙈𝙚𝙙𝙞𝙪𝙢",
+        3: "🟡 𝙍𝙖𝙧𝙚",
+        4: "🔴 𝙇𝙚𝙜𝙚𝙣𝙙𝙖𝙧𝙮",
+        5: "💠 𝙎𝙥𝙚𝙘𝙞𝙖𝙡",
+        6: "🔮 𝙇𝙞𝙢𝙞𝙩𝙚𝙙",
+        7: "❄️ 𝙒𝙞𝙣𝙩𝙚𝙧"
+    }
+
+    try:
+        rarity = rarity_map[int(rarity_input)]
+    except (KeyError, ValueError):
+        return await message.reply_text("❌ Invalid rarity. Use numbers from 1 to 7.")
+
+    # Get next ID
+    char_id = str(await get_next_sequence_number("character_id")).zfill(2)
+
+    # Send photo to channel
+    try:
+        msg = await app.send_photo(
+            CHARA_CHANNEL_ID,
+            photo=img_url,
+            caption=(
+                f"<b>Waifu Name:</b> {character_name}\n"
+                f"<b>Anime Name:</b> {anime}\n"
+                f"<b>Quality:</b> {rarity}\n"
+                f"<b>ID:</b> {char_id}\n"
+                f"Added by <a href='tg://user?id={message.from_user.id}'>{message.from_user.first_name}</a>"
+            )
+        )
+    except Exception as e:
+        return await message.reply_text(f"❌ Failed to send photo: {e}")
+
+    # Save to DB
+    await collection.insert_one({
+        "id": char_id,
+        "img_url": img_url,
+        "name": character_name,
+        "anime": anime,
+        "rarity": rarity,
+        "message_id": msg.id
+    })
+
+    await message.reply_text("✅ Waifu successfully uploaded!")
+
+
+# Non-sudo users fallback
+@app.on_message(filters.command("upload"))
+async def no_access(_, message: Message):
+    if message.from_user.id not in SUDOERS:
+        await message.reply_text("🚫 Only my owner can upload waifus.")
 
 # /delete command
 @app.on_message(filters.command("delete") & SUDOERS)
