@@ -20,5 +20,9 @@ harem_col = db["harems"]
 store_col = db["store"]  # optional if used in grabber shop
 claimed_col = db["claimed"]  # optional if used in grabber logic
 daily_col = db["daily"]      # optional for daily reward logic
+collection = db['anime_characters']
+user_totals_collection = db['user_totals']
+group_user_totals_collection = db['group_user_total']
+top_global_groups_collection = db['top_global_groups']
 
 # Add other collections as needed for future features
