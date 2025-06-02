@@ -4,8 +4,9 @@ from pyrogram.types import Message
 from pymongo import ReturnDocument
 
 from config import LOGGER_ID as CHARA_CHANNEL_ID
-from AnonXMusic import app, db, collection, SUDOERS
-
+from AnonXMusic import app
+from AnonXMusic.utils.data import db, collection 
+from AnonXMusic.misc import SUDOERS
 
 async def get_next_sequence_number(sequence_name):
     sequence_collection = db.sequences
