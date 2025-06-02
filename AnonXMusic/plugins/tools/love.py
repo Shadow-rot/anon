@@ -1,56 +1,88 @@
 import random
-
 from pyrogram import filters
-
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from AnonXMusic import app
 
+LOVE_GIFS = [
+    "https://media.tenor.com/BuzXvIh2NUgAAAAC/anime-love.gif",
+    "https://media.tenor.com/jkP3zRP5yU8AAAAC/love-hearts.gif",
+    "https://media.tenor.com/XM59c1V50vMAAAAC/love-anime.gif",
+    "https://media.tenor.com/7yfpAmV4P1EAAAAC/couple-anime.gif",
+    "https://media.tenor.com/jk7JhYJJmPwAAAAC/anime-hug-love.gif"
+]
 
-def get_random_message(love_percentage):
+def get_random_message(love_percentage: int) -> str:
     if love_percentage <= 30:
-        return random.choice(
-            [
-                "Love is in the air but needs a little spark.",
-                "A good start but there's room to grow.",
-                "It's just the beginning of something beautiful.",
-            ]
-        )
+        return random.choice([
+            "💔 Lᴏᴠᴇ ɪs ɪɴ ᴛʜᴇ ᴀɪʀ, ʙᴜᴛ ɪᴛ ɴᴇᴇᴅs ᴀ ʟɪᴛᴛʟᴇ ꜱᴘᴀʀᴋ!",
+            "🌱 A ɢᴏᴏᴅ sᴛᴀʀᴛ, ʙᴜᴛ ᴛʜᴇʀᴇ's ʀᴏᴏᴍ ᴛᴏ ɢʀᴏᴡ.",
+            "💫 Jᴜsᴛ ᴛʜᴇ ʙᴇɢɪɴɴɪɴɢ ᴏғ sᴏᴍᴇᴛʜɪɴɢ ʙᴇᴀᴜᴛɪғᴜʟ.",
+        ])
     elif love_percentage <= 70:
-        return random.choice(
-            [
-                "A strong connection is there. Keep nurturing it.",
-                "You've got a good chance. Work on it.",
-                "Love is blossoming, keep going.",
-            ]
-        )
+        return random.choice([
+            "💖 A sᴛʀᴏɴɢ ᴄᴏɴɴᴇᴄᴛɪᴏɴ ɪs ᴛʜᴇʀᴇ. Kᴇᴇᴘ ɴᴜʀᴛᴜʀɪɴɢ ɪᴛ.",
+            "🪄 Yᴏᴜ'ᴠᴇ ɢᴏᴛ ᴀ ɢᴏᴏᴅ ᴄʜᴀɴᴄᴇ. Wᴏʀᴋ ᴏɴ ɪᴛ!",
+            "🌸 Lᴏᴠᴇ ɪs ʙʟᴏssᴏᴍɪɴɢ, ᴋᴇᴇᴘ ɢᴏɪɴɢ!",
+        ])
     else:
-        return random.choice(
+        return random.choice([
+            "💞 Wᴏᴡ! A ᴍᴀᴛᴄʜ ᴍᴀᴅᴇ ɪɴ ʜᴇᴀᴠᴇɴ!",
+            "💍 Pᴇʀғᴇᴄᴛ ᴍᴀᴛᴄʜ! Cʜᴇʀɪsʜ ᴛʜɪs ʙᴏɴᴅ.",
+            "💘 Dᴇsᴛɪɴᴇᴅ ᴛᴏ ʙᴇ ᴛᴏɢᴇᴛʜᴇʀ. Cᴏɴɢʀᴀᴛᴜʟᴀᴛɪᴏɴs!",
+        ])
+
+@app.on_message(filters.command("love", prefixes=["/", "!"]))
+async def love_command(_, message: Message):
+    args = message.text.split(maxsplit=2)
+    if len(args) < 3:
+        return await message.reply_text("❌ Please provide **two names**.\n\n**Usage:** `/love Alice Bob`")
+
+    name1 = args[1].strip()
+    name2 = args[2].strip()
+
+    if not name1 or not name2:
+        return await message.reply_text("❌ Both names must be valid.")
+
+    love_percentage = random.randint(10, 100)
+    love_message = get_random_message(love_percentage)
+    heart_bar = "❤️" * (love_percentage // 10) + "🤍" * ((100 - love_percentage) // 10)
+    gif = random.choice(LOVE_GIFS)
+
+    caption = f"""
+💞 <b>ʟᴏᴠᴇ ᴄᴀʟᴄᴜʟᴀᴛᴏʀ</b>
+
+<b>{name1}</b> + <b>{name2}</b> = <b>{love_percentage}%</b>
+
+{heart_bar}
+
+{love_message}
+
+<em>Message provided by <a href='https://t.me/siyaprobot'>Siya</a></em>
+""".strip()
+
+    buttons = InlineKeyboardMarkup(
+        [
             [
-                "Wow! It's a match made in heaven!",
-                "Perfect match! Cherish this bond.",
-                "Destined to be together. Congratulations!",
+                InlineKeyboardButton("🔄 Try Again", switch_inline_query_current_chat="/love "),
+                InlineKeyboardButton("💗 Share", switch_inline_query=f"/love {name1} {name2}")
             ]
-        )
+        ]
+    )
 
-
-@app.on_message(filters.command("love", prefixes="/"))
-def love_command(client, message):
-    command, *args = message.text.split(" ")
-    if len(args) >= 2:
-        name1 = args[0].strip()
-        name2 = args[1].strip()
-
-        love_percentage = random.randint(10, 100)
-        love_message = get_random_message(love_percentage)
-
-        response = f"{name1}💕 + {name2}💕 = {love_percentage}%\n\n{love_message}"
-    else:
-        response = "Please enter two names after /love command."
-    app.send_message(message.chat.id, response)
+    try:
+        await message.reply_animation(gif, caption=caption, reply_markup=buttons)
+    except Exception:
+        await message.reply_photo(gif, caption=caption, reply_markup=buttons)
 
 
 __MODULE__ = "Lᴏᴠᴇ"
 __HELP__ = """
-**ʟᴏᴠᴇ ᴄᴀʟᴄᴜʟᴀᴛᴏʀ:**
+**💘 ʟᴏᴠᴇ ᴄᴀʟᴄᴜʟᴀᴛᴏʀ**
 
-• `/love [name1] [name2]`: Cᴀʟᴄᴜʟᴀᴛᴇs ᴛʜᴇ ᴘᴇʀᴄᴇɴᴛᴀɢᴇ ᴏғ ʟᴏᴠᴇ ʙᴇᴛᴡᴇᴇɴ ᴛᴡᴏ ᴘᴇᴏᴘʟᴇ.
+➤ `/love [name1] [name2]`  
+ᴄᴀʟᴄᴜʟᴀᴛᴇ ᴛʜᴇ ʟᴏᴠᴇ ᴘᴇʀᴄᴇɴᴛᴀɢᴇ ʙᴇᴛᴡᴇᴇɴ ᴛᴡᴏ ɴᴀᴍᴇs 💑
+
+__Eɴᴊᴏʏ ғᴜɴ ᴀɴᴅ sᴘʀᴇᴀᴅ ʟᴏᴠᴇ! 💕__
+
+<b>💌 Message provided by</b> <a href="https://t.me/siyaprobot">Siya</a>
 """
