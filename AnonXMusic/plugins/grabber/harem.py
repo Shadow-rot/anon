@@ -41,16 +41,16 @@ async def show_harem(client, event, user_id: int, page: int = 0):
     total_pages = max(1, math.ceil(len(unique_characters) / 7))
     page = max(0, min(page, total_pages - 1))
 
-    harem_msg = f"<b>{event.from_user.first_name}'s Harem</b> - Page {page + 1}/{total_pages}\n"
+    harem_msg = f"{event.from_user.first_name}'s Harem - Page {page + 1}/{total_pages}\n"
     current_chars = unique_characters[page * 7:(page + 1) * 7]
     grouped = {k: list(v) for k, v in groupby(current_chars, key=lambda x: x['anime'])}
 
     for anime, group_chars in grouped.items():
         anime_total = await collection.count_documents({'anime': anime})
-        harem_msg += f"\n<b>⥱ {anime}</b> ({len(group_chars)}/{anime_total})\n"
+        harem_msg += f"\n⥱ {anime} ({len(group_chars)}/{anime_total})\n"
         for c in group_chars:
             count = character_counts.get(c['id'], 1)
-            harem_msg += f"➥ <code>{c['id']}</code> | {c['rarity']} | {c['name']} ×{count}\n"
+            harem_msg += f"➥ {c['id']} | {c['rarity']} | {c['name']} ×{count}\n"
 
     total_count = len(user['characters'])
     keyboard = [[
@@ -79,15 +79,15 @@ async def show_harem(client, event, user_id: int, page: int = 0):
 
     if isinstance(event, Message):
         if image_url:
-            await event.reply_photo(photo=image_url, caption=harem_msg, reply_markup=reply_markup, parse_mode="HTML")
+            await event.reply_photo(photo=image_url, caption=harem_msg, reply_markup=reply_markup)
         else:
-            await event.reply(harem_msg, reply_markup=reply_markup, parse_mode="HTML")
+            await event.reply(harem_msg, reply_markup=reply_markup)
     elif isinstance(event, CallbackQuery):
         try:
             if image_url:
-                media = InputMediaPhoto(media=image_url, caption=harem_msg, parse_mode="HTML")
+                media = InputMediaPhoto(media=image_url, caption=harem_msg)
                 await event.edit_message_media(media=media, reply_markup=reply_markup)
             else:
-                await event.edit_message_caption(caption=harem_msg, reply_markup=reply_markup, parse_mode="HTML")
+                await event.edit_message_caption(caption=harem_msg, reply_markup=reply_markup)
         except Exception:
-            await event.edit_message_text(harem_msg, reply_markup=reply_markup, parse_mode="HTML")
+            await event.edit_message_text(harem_msg, reply_markup=reply_markup)
