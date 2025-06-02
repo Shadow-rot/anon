@@ -1,3 +1,4 @@
+"""
 import random
 from datetime import datetime, timedelta
 from pyrogram import Client, filters
@@ -59,3 +60,5 @@ async def explore_command(client: Client, message: Message):
     scenario = random.choice(explore_scenarios)
 
     await message.reply_text(f"🗺️ You {scenario} and found 💰 {reward} tokens!")
+
+"""
