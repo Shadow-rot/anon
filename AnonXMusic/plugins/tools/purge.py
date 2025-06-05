@@ -2,96 +2,110 @@ from asyncio import sleep
 from pyrogram import filters
 from pyrogram.enums import ChatType
 from pyrogram.errors import MessageDeleteForbidden, RPCError
-from pyrogram.types import Message
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+
 from AnonXMusic import app
-
-# Define your bot owner(s)
-BOT_OWNER = [5147822244]  # Replace with your Telegram user ID(s)
-
-# Admin filter allowing bot owners
-class AdminOrOwnerFilter(filters.Filter):
-    async def __call__(self, _, __, message: Message):
-        if message.from_user and message.from_user.id in BOT_OWNER:
-            return True
-        if not message.chat:
-            return False
-        member = await message.chat.get_member(message.from_user.id)
-        return member.status in ("administrator", "creator")
-
-admin_filter = AdminOrOwnerFilter()
+from AnonXMusic.utils.admin_check import admin_check
+from config import OWNER_ID
 
 
-@app.on_message(filters.command("purge") & admin_filter)
-async def purge(app: app, msg: Message):
-    if msg.chat.type != ChatType.SUPERGROUP:
-        await msg.reply_text(text="**ɪ ᴄᴀɴ'ᴛ ᴘᴜʀɢᴇ ᴍᴇssᴀɢᴇs ɪɴ ᴀ ʙᴀsɪᴄ ɢʀᴏᴜᴘ. ᴄᴏɴᴠᴇʀᴛ ɪᴛ ᴛᴏ ᴀ sᴜᴘᴇʀɢʀᴏᴜᴘ.**")
-        return
+# Helper: split list into chunks of 100
+def divide_chunks(lst, n=100):
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
 
-    if msg.reply_to_message:
-        message_ids = list(range(msg.reply_to_message.id, msg.id))
 
-        def divide_chunks(l: list, n: int = 100):
-            for i in range(0, len(l), n):
-                yield l[i: i + n]
+def confirm_markup(cmd: str, user_id: int, from_id: int):
+    return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("✅ Confirm", callback_data=f"confirmpurge|{cmd}|{user_id}|{from_id}"),
+            InlineKeyboardButton("❌ Cancel", callback_data="cancelpurge")
+        ]
+    ])
 
-        m_list = list(divide_chunks(message_ids))
 
-        try:
-            for plist in m_list:
-                await app.delete_messages(chat_id=msg.chat.id, message_ids=plist, revoke=True)
-            await msg.delete()
-        except MessageDeleteForbidden:
-            await msg.reply_text("**ɪ ᴄᴀɴ'ᴛ ᴅᴇʟᴇᴛᴇ ᴀʟʟ ᴍᴇssᴀɢᴇs. ᴍᴇssᴀɢᴇs ᴍᴀʏ ʙᴇ ᴏʟᴅ, ᴏʀ ɴᴏ ᴘᴇʀᴍɪssɪᴏɴs.**")
-            return
-        except RPCError as ef:
-            await msg.reply_text(f"**ᴇʀʀᴏʀ:** <code>{ef}</code>")
-            return
+@app.on_message(filters.command("purge") & filters.group)
+async def purge_request(client, message: Message):
+    if message.chat.type != ChatType.SUPERGROUP:
+        return await message.reply("Only works in supergroups.")
 
-        count_del_msg = len(message_ids)
-        done = await msg.reply_text(f"ᴅᴇʟᴇᴛᴇᴅ <i>{count_del_msg}</i> ᴍᴇssᴀɢᴇs")
+    if not message.reply_to_message:
+        return await message.reply("Reply to a message to start purge.")
+
+    is_admin = await admin_check(message)
+    if message.from_user.id not in OWNER_ID and not is_admin:
+        return await message.reply("You're not an admin.")
+
+    await message.reply(
+        f"Delete messages from ID {message.reply_to_message.id} to {message.id}?",
+        reply_markup=confirm_markup("purge", message.reply_to_message.id, message.from_user.id)
+    )
+
+
+@app.on_message(filters.command("spurge") & filters.group)
+async def spurge_request(client, message: Message):
+    if message.chat.type != ChatType.SUPERGROUP:
+        return await message.reply("Only works in supergroups.")
+
+    if not message.reply_to_message:
+        return await message.reply("Reply to a message to start spurge.")
+
+    is_admin = await admin_check(message)
+    if message.from_user.id not in OWNER_ID and not is_admin:
+        return await message.reply("You're not an admin.")
+
+    await message.reply(
+        f"Silently delete messages from ID {message.reply_to_message.id} to {message.id}?",
+        reply_markup=confirm_markup("spurge", message.reply_to_message.id, message.from_user.id)
+    )
+
+
+@app.on_message(filters.command("del") & filters.group)
+async def del_message(client, message: Message):
+    if message.chat.type != ChatType.SUPERGROUP:
+        return await message.reply("Only works in supergroups.")
+
+    if not message.reply_to_message:
+        return await message.reply("Reply to a message to delete it.")
+
+    is_admin = await admin_check(message)
+    if message.from_user.id not in OWNER_ID and not is_admin:
+        return await message.reply("You're not an admin.")
+
+    try:
+        await client.delete_messages(message.chat.id, [message.reply_to_message.id, message.id])
+    except MessageDeleteForbidden:
+        await message.reply("Can't delete message. Missing permissions.")
+    except RPCError as e:
+        await message.reply(f"Error: {e}")
+
+
+@app.on_callback_query(filters.regex(r"^confirmpurge\|"))
+async def confirm_purge(client, query: CallbackQuery):
+    data = query.data.split("|")
+    cmd, start_id, expected_uid, user_id = data[1], int(data[2]), int(data[3]), query.from_user.id
+
+    if user_id != expected_uid:
+        return await query.answer("Not your purge request.", show_alert=True)
+
+    try:
+        message = query.message
+        end_id = message.reply_to_message.id if message.reply_to_message else message.id
+        ids = list(range(start_id, end_id))
+
+        for chunk in divide_chunks(ids):
+            await client.delete_messages(chat_id=message.chat.id, message_ids=chunk, revoke=True)
+
+        await message.edit_text(f"Deleted {len(ids)} messages.")
         await sleep(3)
-        await done.delete()
-    else:
-        await msg.reply_text("**ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴇssᴀɢᴇ ᴛᴏ sᴛᴀʀᴛ ᴘᴜʀɢᴇ !**")
+        await message.delete()
+
+    except MessageDeleteForbidden:
+        await query.message.edit_text("Can't delete messages. Missing permissions.")
+    except RPCError as e:
+        await query.message.edit_text(f"Error: {e}")
 
 
-@app.on_message(filters.command("spurge") & admin_filter)
-async def spurge(app: app, msg: Message):
-    if msg.chat.type != ChatType.SUPERGROUP:
-        await msg.reply_text(text="**ɪ ᴄᴀɴ'ᴛ ᴘᴜʀɢᴇ ᴍᴇssᴀɢᴇs ɪɴ ᴀ ʙᴀsɪᴄ ɢʀᴏᴜᴘ. ᴄᴏɴᴠᴇʀᴛ ɪᴛ ᴛᴏ ᴀ sᴜᴘᴇʀɢʀᴏᴜᴘ.**")
-        return
-
-    if msg.reply_to_message:
-        message_ids = list(range(msg.reply_to_message.id, msg.id))
-
-        def divide_chunks(l: list, n: int = 100):
-            for i in range(0, len(l), n):
-                yield l[i: i + n]
-
-        m_list = list(divide_chunks(message_ids))
-
-        try:
-            for plist in m_list:
-                await app.delete_messages(chat_id=msg.chat.id, message_ids=plist, revoke=True)
-            await msg.delete()
-        except MessageDeleteForbidden:
-            await msg.reply_text("**ɪ ᴄᴀɴ'ᴛ ᴅᴇʟᴇᴛᴇ ᴀʟʟ ᴍᴇssᴀɢᴇs. ᴍᴇssᴀɢᴇs ᴍᴀʏ ʙᴇ ᴏʟᴅ, ᴏʀ ɴᴏ ᴘᴇʀᴍɪssɪᴏɴs.**")
-            return
-        except RPCError as ef:
-            await msg.reply_text(f"**ᴇʀʀᴏʀ:** <code>{ef}</code>")
-            return
-    else:
-        await msg.reply_text("**ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴇssᴀɢᴇ ᴛᴏ sᴛᴀʀᴛ ᴘᴜʀɢᴇ !**")
-
-
-@app.on_message(filters.command("del") & admin_filter)
-async def del_msg(app: app, msg: Message):
-    if msg.chat.type != ChatType.SUPERGROUP:
-        await msg.reply_text(text="**ɪ ᴄᴀɴ'ᴛ ᴅᴇʟᴇᴛᴇ ɪɴ ᴀ ʙᴀsɪᴄ ɢʀᴏᴜᴘ. ᴄᴏɴᴠᴇʀᴛ ɪᴛ ᴛᴏ ᴀ sᴜᴘᴇʀɢʀᴏᴜᴘ.**")
-        return
-
-    if msg.reply_to_message:
-        await msg.delete()
-        await app.delete_messages(chat_id=msg.chat.id, message_ids=msg.reply_to_message.id)
-    else:
-        await msg.reply_text("**ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴇssᴀɢᴇ ᴛᴏ ᴅᴇʟᴇᴛᴇ.**")
+@app.on_callback_query(filters.regex(r"^cancelpurge$"))
+async def cancel_purge(client, query: CallbackQuery):
+    await query.message.edit_text("Purge cancelled.")
