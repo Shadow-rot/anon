@@ -1,27 +1,20 @@
-from pyrogram import Client, filters, enums
-from pyrogram.types import ChatPermissions, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from pyrogram.errors import ChatAdminRequired, UserAdminInvalid
+from pyrogram import filters, enums
+from pyrogram.types import (
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+    CallbackQuery,
+    Message,
+)
+from pyrogram.errors import ChatAdminRequired, UserAdminInvalid, RPCError
 import asyncio
-from functools import wraps
+
 from AnonXMusic import app
+from AnonXMusic.utils.admin_check import admin_check
+from config import OWNER_ID
 
-BOT_OWNER_ID = 5147822244  # Replace with your actual bot owner ID
 
-def admin_required(func):
-    @wraps(func)
-    async def wrapper(client, message):
-        if message.from_user.id == BOT_OWNER_ID:
-            return await func(client, message)
-        member = await message.chat.get_member(message.from_user.id)
-        if (
-            member.status in [enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER]
-            and member.privileges.can_restrict_members
-        ):
-            return await func(client, message)
-        await message.reply_text("You don't have permission to perform this action.")
-    return wrapper
-
-async def extract_user_and_reason(message, client):
+# Helper: Extract user and optional reason from message
+async def extract_user_and_reason(message: Message, client):
     args = message.text.split()
     reason = None
     user = None
@@ -29,7 +22,7 @@ async def extract_user_and_reason(message, client):
     if message.reply_to_message:
         user = message.reply_to_message.from_user
         if len(args) > 1:
-            reason = message.text.partition(args[1])[2].strip()
+            reason = message.text.partition(args[1])[2].strip() or None
     elif len(args) > 1:
         user_arg = args[1]
         reason = message.text.partition(args[1])[2].strip() or None
@@ -46,139 +39,261 @@ async def extract_user_and_reason(message, client):
         return None, None
     return user, reason
 
-@app.on_message(filters.command("ban"))
-@admin_required
-async def ban_command_handler(client, message):
+
+# BUTTONS FOR HELP MENU
+
+MODERATION_BUTTONS = InlineKeyboardMarkup(
+    [
+        [
+            InlineKeyboardButton("ban", callback_data="mod_ban"),
+            InlineKeyboardButton("unban", callback_data="mod_unban"),
+        ],
+        [
+            InlineKeyboardButton("mute", callback_data="mod_mute"),
+            InlineKeyboardButton("unmute", callback_data="mod_unmute"),
+        ],
+        [
+            InlineKeyboardButton("kick", callback_data="mod_kick"),
+        ],
+        [InlineKeyboardButton("close", callback_data="mod_close")],
+    ]
+)
+
+
+# --- Commands ---
+
+
+@app.on_message(filters.command("ban") & filters.group)
+async def ban_command(client, message: Message):
+    if not await admin_check(message) and message.from_user.id != OWNER_ID:
+        return await message.reply_text("You are not allowed to use this command.")
     user, reason = await extract_user_and_reason(message, client)
     if not user:
         return
     try:
         await client.ban_chat_member(message.chat.id, user.id)
-        msg = f"Banned ╰┈➤ {user.mention}\nbanned by ╰┈➤ {message.from_user.mention}"
+        text = f"Banned ╰┈➤ {user.mention}\nBanned by ╰┈➤ {message.from_user.mention}"
         if reason:
-            msg += f"\nReason: {reason}"
+            text += f"\nReason: {reason}"
 
-        keyboard = InlineKeyboardMarkup(
-            [[
-                InlineKeyboardButton(
-                    "Unban",
-                    callback_data=f"unban:{message.chat.id}:{user.id}"
-                )
-            ]]
+        buttons = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        "Unban",
+                        callback_data=f"unban:{message.chat.id}:{user.id}"
+                    )
+                ]
+            ]
         )
-
-        await message.reply_text(msg, reply_markup=keyboard)
+        await message.reply_text(text, reply_markup=buttons)
     except ChatAdminRequired:
-        await message.reply_text("I need to be an admin with ban permissions.")
+        await message.reply_text("I need admin rights with ban permissions to perform this action.")
     except UserAdminInvalid:
-        await message.reply_text("I cannot ban an admin.")
-    except Exception as e:
-        await message.reply_text(f"An error occurred: {e}")
+        await message.reply_text("Cannot ban an admin or the group owner.")
+    except RPCError as e:
+        await message.reply_text(f"Error: {e}")
+
 
 @app.on_callback_query(filters.regex(r"^unban:(-?\d+):(\d+)$"))
-async def unban_callback_handler(client, callback_query: CallbackQuery):
+async def unban_callback(client, callback_query: CallbackQuery):
     chat_id = int(callback_query.matches[0].group(1))
     user_id = int(callback_query.matches[0].group(2))
     from_user = callback_query.from_user
 
+    # Check if user is admin or OWNER
     try:
         member = await client.get_chat_member(chat_id, from_user.id)
         if not (
-            member.status in [enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER]
+            (member.status in [enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER])
             and member.privileges.can_restrict_members
+            or from_user.id == OWNER_ID
         ):
-            return await callback_query.answer("You're not allowed to unban.", show_alert=True)
+            return await callback_query.answer("You are not allowed to unban users.", show_alert=True)
 
         await client.unban_chat_member(chat_id, user_id)
-        await callback_query.message.edit_text(f"User [ID: {user_id}] has been unbanned by {from_user.mention}.")
+        await callback_query.message.edit_text(
+            f"User [ID: {user_id}] has been unbanned by {from_user.mention}."
+        )
     except ChatAdminRequired:
-        await callback_query.answer("I need unban permissions.", show_alert=True)
-    except Exception as e:
+        await callback_query.answer("I need admin rights with unban permissions.", show_alert=True)
+    except RPCError as e:
         await callback_query.answer(f"Error: {e}", show_alert=True)
 
-@app.on_message(filters.command("unban"))
-@admin_required
-async def unban_command_handler(client, message):
+
+@app.on_message(filters.command("unban") & filters.group)
+async def unban_command(client, message: Message):
+    if not await admin_check(message) and message.from_user.id != OWNER_ID:
+        return await message.reply_text("You are not allowed to use this command.")
     user, reason = await extract_user_and_reason(message, client)
     if not user:
         return
     try:
         await client.unban_chat_member(message.chat.id, user.id)
-        msg = f"{user.mention} was unbanned by {message.from_user.mention}"
+        text = f"{user.mention} was unbanned by {message.from_user.mention}"
         if reason:
-            msg += f"\nReason: {reason}"
-        await message.reply_text(msg)
+            text += f"\nReason: {reason}"
+        await message.reply_text(text)
     except ChatAdminRequired:
-        await message.reply_text("I need to be an admin with ban permissions.")
-    except Exception as e:
-        await message.reply_text(f"An error occurred: {e}")
+        await message.reply_text("I need admin rights with unban permissions to perform this action.")
+    except RPCError as e:
+        await message.reply_text(f"Error: {e}")
 
-@app.on_message(filters.command("mute"))
-@admin_required
-async def mute_command_handler(client, message):
+
+@app.on_message(filters.command("mute") & filters.group)
+async def mute_command(client, message: Message):
+    if not await admin_check(message) and message.from_user.id != OWNER_ID:
+        return await message.reply_text("You are not allowed to use this command.")
     user, reason = await extract_user_and_reason(message, client)
     if not user:
         return
     try:
-        await client.restrict_chat_member(message.chat.id, user.id, ChatPermissions())
-        msg = f"{user.mention} was muted by {message.from_user.mention}"
+        await client.restrict_chat_member(message.chat.id, user.id, enums.ChatPermissions())
+        text = f"{user.mention} was muted by {message.from_user.mention}"
         if reason:
-            msg += f"\nReason: {reason}"
-        await message.reply_text(msg)
+            text += f"\nReason: {reason}"
+        await message.reply_text(text)
     except ChatAdminRequired:
-        await message.reply_text("I need to be an admin with mute permissions.")
+        await message.reply_text("I need admin rights with mute permissions to perform this action.")
     except UserAdminInvalid:
-        await message.reply_text("I cannot mute an admin.")
-    except Exception as e:
-        await message.reply_text(f"An error occurred: {e}")
+        await message.reply_text("Cannot mute an admin or the group owner.")
+    except RPCError as e:
+        await message.reply_text(f"Error: {e}")
 
-@app.on_message(filters.command("unmute"))
-@admin_required
-async def unmute_command_handler(client, message):
+
+@app.on_message(filters.command("unmute") & filters.group)
+async def unmute_command(client, message: Message):
+    if not await admin_check(message) and message.from_user.id != OWNER_ID:
+        return await message.reply_text("You are not allowed to use this command.")
     user, reason = await extract_user_and_reason(message, client)
     if not user:
         return
     try:
-        await client.restrict_chat_member(
-            message.chat.id,
-            user.id,
-            ChatPermissions(
-                can_send_messages=True,
-                can_send_media_messages=True,
-                can_send_other_messages=True,
-                can_add_web_page_previews=True
-            )
+        permissions = enums.ChatPermissions(
+            can_send_messages=True,
+            can_send_media_messages=True,
+            can_send_other_messages=True,
+            can_add_web_page_previews=True,
         )
-        msg = f"{user.mention} was unmuted by {message.from_user.mention}"
+        await client.restrict_chat_member(message.chat.id, user.id, permissions)
+        text = f"{user.mention} was unmuted by {message.from_user.mention}"
         if reason:
-            msg += f"\nReason: {reason}"
-        await message.reply_text(msg)
+            text += f"\nReason: {reason}"
+        await message.reply_text(text)
     except ChatAdminRequired:
-        await message.reply_text("I need to be an admin with unmute permissions.")
-    except Exception as e:
-        await message.reply_text(f"An error occurred: {e}")
+        await message.reply_text("I need admin rights with unmute permissions to perform this action.")
+    except RPCError as e:
+        await message.reply_text(f"Error: {e}")
 
-@app.on_message(filters.command("kick"))
-@admin_required
-async def kick_command_handler(client, message):
+
+@app.on_message(filters.command("kick") & filters.group)
+async def kick_command(client, message: Message):
+    if not await admin_check(message) and message.from_user.id != OWNER_ID:
+        return await message.reply_text("You are not allowed to use this command.")
     user, reason = await extract_user_and_reason(message, client)
     if not user:
         return
     try:
         member = await client.get_chat_member(message.chat.id, user.id)
         if member.status in [enums.ChatMemberStatus.ADMINISTRATOR, enums.ChatMemberStatus.OWNER]:
-            await message.reply_text("I cannot kick an admin.")
-            return
+            return await message.reply_text("Cannot kick an admin or the group owner.")
+
         await client.ban_chat_member(message.chat.id, user.id)
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.1)  # short delay to allow ban to register
         await client.unban_chat_member(message.chat.id, user.id)
-        msg = f"{user.mention} was kicked by {message.from_user.mention}"
+        text = f"{user.mention} was kicked by {message.from_user.mention}"
         if reason:
-            msg += f"\nReason: {reason}"
-        await message.reply_text(msg)
+            text += f"\nReason: {reason}"
+        await message.reply_text(text)
     except ChatAdminRequired:
-        await message.reply_text("I need to be an admin with ban permissions.")
+        await message.reply_text("I need admin rights with ban permissions to perform this action.")
     except UserAdminInvalid:
-        await message.reply_text("I cannot kick an admin.")
-    except Exception as e:
-        await message.reply_text(f"An error occurred: {e}")
+        await message.reply_text("Cannot kick an admin or the group owner.")
+    except RPCError as e:
+        await message.reply_text(f"Error: {e}")
+
+
+# --- Help Menu ---
+
+
+HELP_TEXT = (
+    "<b>moderation commands help menu</b>\n\n"
+    "ban - ban a user\n"
+    "unban - unban a user\n"
+    "mute - mute a user\n"
+    "unmute - unmute a user\n"
+    "kick - kick a user\n\n"
+    "<b>usage:</b>\n"
+    "• reply to a user or specify by username/userid\n"
+    "• optionally add reason after command\n"
+    "example: /ban spamming\n\n"
+    "<b>note:</b> You must be admin or bot owner to use these commands."
+)
+
+
+@app.on_message(filters.command("modhelp") & filters.group)
+async def mod_help_command(client, message: Message):
+    await message.reply_text(
+        "<b>choose a command to view help:</b>",
+        reply_markup=MODERATION_BUTTONS
+    )
+
+
+@app.on_callback_query(filters.regex(r"^mod_(ban|unban|mute|unmute|kick|close)$"))
+async def mod_help_buttons(client, callback_query: CallbackQuery):
+    cmd = callback_query.data.split("_")[1]
+
+    if cmd == "close":
+        return await callback_query.message.delete()
+
+    help_texts = {
+        "ban": (
+            "<b>ban command help</b>\n\n"
+            "• Ban a user by replying or mentioning.\n"
+            "• Usage: /ban [reason]\n"
+            "• You must have ban rights."
+        ),
+        "unban": (
+            "<b>unban command help</b>\n\n"
+            "• Unban a user by replying or mentioning.\n"
+            "• Usage: /unban [reason]\n"
+            "• You must have unban rights."
+        ),
+        "mute": (
+            "<b>mute command help</b>\n\n"
+            "• Mute a user by replying or mentioning.\n"
+            "• Usage: /mute [reason]\n"
+            "• You must have mute rights."
+        ),
+        "unmute": (
+            "<b>unmute command help</b>\n\n"
+            "• Unmute a user by replying or mentioning.\n"
+            "• Usage: /unmute [reason]\n"
+            "• You must have unmute rights."
+        ),
+        "kick": (
+            "<b>kick command help</b>\n\n"
+            "• Kick a user by replying or mentioning.\n"
+            "• Usage: /kick [reason]\n"
+            "• You must have ban rights."
+        ),
+    }
+
+    text = help_texts.get(cmd, HELP_TEXT)
+    await callback_query.message.edit_text(
+        text,
+        reply_markup=InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton("Back", callback_data="mod_help")],
+                [InlineKeyboardButton("Close", callback_data="mod_close")],
+            ]
+        )
+    )
+
+
+@app.on_callback_query(filters.regex("mod_help"))
+async def mod_help_back(client, callback_query: CallbackQuery):
+    await callback_query.message.edit_text(
+        "<b>choose a command to view help:</b>",
+        reply_markup=MODERATION_BUTTONS
+    )
