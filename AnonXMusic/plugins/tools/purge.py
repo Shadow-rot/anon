@@ -7,18 +7,24 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, 
 from AnonXMusic import app
 from AnonXMusic.utils.admin_check import admin_check
 from config import OWNER_ID
+from collections.abc import Iterable
 
 
-# Helper: split list into chunks of 100
+# --- Helper to ensure OWNER_ID is iterable ---
+def is_owner(user_id: int) -> bool:
+    owners = OWNER_ID if isinstance(OWNER_ID, Iterable) and not isinstance(OWNER_ID, (str, bytes)) else [OWNER_ID]
+    return user_id in owners
+
+
 def divide_chunks(lst, n=100):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
 
-def confirm_markup(cmd: str, user_id: int, from_id: int):
+def confirm_markup(cmd: str, from_id: int, user_id: int):
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("✅ Confirm", callback_data=f"confirmpurge|{cmd}|{user_id}|{from_id}"),
+            InlineKeyboardButton("✅ Confirm", callback_data=f"confirmpurge|{cmd}|{from_id}|{user_id}"),
             InlineKeyboardButton("❌ Cancel", callback_data="cancelpurge")
         ]
     ])
@@ -33,7 +39,7 @@ async def purge_request(client, message: Message):
         return await message.reply("Reply to a message to start purge.")
 
     is_admin = await admin_check(message)
-    if message.from_user.id not in OWNER_ID and not is_admin:
+    if not is_owner(message.from_user.id) and not is_admin:
         return await message.reply("You're not an admin.")
 
     await message.reply(
@@ -51,7 +57,7 @@ async def spurge_request(client, message: Message):
         return await message.reply("Reply to a message to start spurge.")
 
     is_admin = await admin_check(message)
-    if message.from_user.id not in OWNER_ID and not is_admin:
+    if not is_owner(message.from_user.id) and not is_admin:
         return await message.reply("You're not an admin.")
 
     await message.reply(
@@ -69,7 +75,7 @@ async def del_message(client, message: Message):
         return await message.reply("Reply to a message to delete it.")
 
     is_admin = await admin_check(message)
-    if message.from_user.id not in OWNER_ID and not is_admin:
+    if not is_owner(message.from_user.id) and not is_admin:
         return await message.reply("You're not an admin.")
 
     try:
@@ -82,13 +88,13 @@ async def del_message(client, message: Message):
 
 @app.on_callback_query(filters.regex(r"^confirmpurge\|"))
 async def confirm_purge(client, query: CallbackQuery):
-    data = query.data.split("|")
-    cmd, start_id, expected_uid, user_id = data[1], int(data[2]), int(data[3]), query.from_user.id
-
-    if user_id != expected_uid:
-        return await query.answer("Not your purge request.", show_alert=True)
-
     try:
+        data = query.data.split("|")
+        cmd, start_id, expected_uid, user_id = data[1], int(data[2]), int(data[3]), query.from_user.id
+
+        if user_id != expected_uid:
+            return await query.answer("Not your purge request.", show_alert=True)
+
         message = query.message
         end_id = message.reply_to_message.id if message.reply_to_message else message.id
         ids = list(range(start_id, end_id))
