@@ -1,4 +1,6 @@
 from asyncio import sleep
+from datetime import datetime, timedelta
+
 from pyrogram import filters
 from pyrogram.enums import ChatType
 from pyrogram.errors import MessageDeleteForbidden, RPCError
@@ -7,122 +9,149 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, 
 from AnonXMusic import app
 from AnonXMusic.utils.admin_check import admin_check
 from config import OWNER_ID
-from collections.abc import Iterable
 
 
-# Helper: Check if user is owner (int or list)
-def is_owner(user_id: int) -> bool:
-    owners = OWNER_ID if isinstance(OWNER_ID, Iterable) and not isinstance(OWNER_ID, (str, bytes)) else [OWNER_ID]
-    return user_id in owners
-
-
-# Chunking for bulk delete
+# Split list into chunks of 100
 def divide_chunks(lst, n=100):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
 
-# Confirm Inline Markup
-def confirm_markup(cmd: str, from_id: int, user_id: int):
+def confirm_markup(cmd: str, start_id: int, from_id: int, reason: str = ""):
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("✅ Confirm", callback_data=f"confirmpurge|{cmd}|{from_id}|{user_id}"),
+            InlineKeyboardButton("✅ Confirm", callback_data=f"confirmpurge|{cmd}|{start_id}|{from_id}|{reason}"),
             InlineKeyboardButton("❌ Cancel", callback_data="cancelpurge")
         ]
     ])
 
 
-# ────────────────────────────── /purge ────────────────────────────── #
 @app.on_message(filters.command("purge") & filters.group)
 async def purge_request(client, message: Message):
     if message.chat.type != ChatType.SUPERGROUP:
-        return await message.reply("🚫 This command works only in supergroups.")
+        return await message.reply("❌ This command only works in supergroups.")
 
     if not message.reply_to_message:
-        return await message.reply("ℹ️ Reply to a message to start purging from that message to this one.")
+        return await message.reply("⚠️ Reply to a message to start purging.")
 
     is_admin = await admin_check(message)
-    if not is_owner(message.from_user.id) and not is_admin:
-        return await message.reply("❗ You must be an admin or owner to use this command.")
+    if message.from_user.id not in OWNER_ID and not is_admin:
+        return await message.reply("🔒 You're not an admin.")
+
+    # Extract optional reason
+    reason = " ".join(message.command[1:]) or "No reason provided"
+    start_id = message.reply_to_message.id
+    end_id = message.id
+    count = abs(end_id - start_id)
 
     await message.reply(
-        f"🧹 Do you want to delete messages from ID <code>{message.reply_to_message.id}</code> to <code>{message.id}</code>?\n\n"
-        "⚠️ Messages older than <b>2 days</b> can't be deleted due to Telegram limits.",
-        reply_markup=confirm_markup("purge", message.reply_to_message.id, message.from_user.id)
+        f"⚠️ Are you sure you want to delete **{count} messages** from ID `{start_id}` to `{end_id}`?\n\n"
+        f"📝 Reason: `{reason}`",
+        reply_markup=confirm_markup("purge", start_id, message.from_user.id, reason)
     )
 
 
-# ────────────────────────────── /spurge ────────────────────────────── #
 @app.on_message(filters.command("spurge") & filters.group)
 async def spurge_request(client, message: Message):
     if message.chat.type != ChatType.SUPERGROUP:
-        return await message.reply("🚫 This command works only in supergroups.")
+        return await message.reply("❌ This command only works in supergroups.")
 
     if not message.reply_to_message:
-        return await message.reply("ℹ️ Reply to a message to silently purge from that message to this one.")
+        return await message.reply("⚠️ Reply to a message to start silent purge.")
 
     is_admin = await admin_check(message)
-    if not is_owner(message.from_user.id) and not is_admin:
-        return await message.reply("❗ You must be an admin or owner to use this command.")
+    if message.from_user.id not in OWNER_ID and not is_admin:
+        return await message.reply("🔒 You're not an admin.")
+
+    reason = " ".join(message.command[1:]) or "No reason provided"
+    start_id = message.reply_to_message.id
+    end_id = message.id
+    count = abs(end_id - start_id)
 
     await message.reply(
-        f"🤫 Silent purge from message ID <code>{message.reply_to_message.id}</code> to <code>{message.id}</code>?\n\n"
-        "⚠️ Older messages (48h+) may not be deletable due to Telegram restrictions.",
-        reply_markup=confirm_markup("spurge", message.reply_to_message.id, message.from_user.id)
+        f"⚠️ Silently delete **{count} messages** from ID `{start_id}` to `{end_id}`?\n"
+        f"📝 Reason: `{reason}`",
+        reply_markup=confirm_markup("spurge", start_id, message.from_user.id, reason)
     )
 
 
-# ────────────────────────────── /del ────────────────────────────── #
 @app.on_message(filters.command("del") & filters.group)
 async def del_message(client, message: Message):
     if message.chat.type != ChatType.SUPERGROUP:
-        return await message.reply("🚫 This command works only in supergroups.")
-
+        return await message.reply("Only works in supergroups.")
     if not message.reply_to_message:
-        return await message.reply("ℹ️ Reply to the message you want to delete.")
+        return await message.reply("Reply to a message to delete it.")
 
     is_admin = await admin_check(message)
-    if not is_owner(message.from_user.id) and not is_admin:
-        return await message.reply("❗ Only admins or owners can use this command.")
+    if message.from_user.id not in OWNER_ID and not is_admin:
+        return await message.reply("You're not an admin.")
 
     try:
         await client.delete_messages(message.chat.id, [message.reply_to_message.id, message.id])
     except MessageDeleteForbidden:
-        await message.reply("🚫 I don't have permission to delete messages.")
+        await message.reply("⚠️ Can't delete message. Missing permissions.")
     except RPCError as e:
-        await message.reply(f"⚠️ Telegram error: {e}")
+        await message.reply(f"Error: {e}")
 
 
-# ─────────────────────── Confirmation Callback ─────────────────────── #
 @app.on_callback_query(filters.regex(r"^confirmpurge\|"))
 async def confirm_purge(client, query: CallbackQuery):
+    data = query.data.split("|")
+    cmd, start_id, expected_uid, reason = data[1], int(data[2]), int(data[3]), data[4]
+    user_id = query.from_user.id
+
+    if user_id != expected_uid:
+        return await query.answer("This isn't your purge request.", show_alert=True)
+
     try:
-        _, cmd, start_id, expected_uid = query.data.split("|")
-        start_id, expected_uid = int(start_id), int(expected_uid)
-        user_id = query.from_user.id
-
-        if user_id != expected_uid:
-            return await query.answer("❌ This isn't your purge request!", show_alert=True)
-
         message = query.message
         end_id = message.reply_to_message.id if message.reply_to_message else message.id
         ids = list(range(start_id, end_id))
 
-        # Telegram doesn’t allow deleting >100 or old messages
+        deleted = 0
         for chunk in divide_chunks(ids):
-            await client.delete_messages(chat_id=message.chat.id, message_ids=chunk, revoke=True)
+            # Only delete messages not older than 2 days
+            msgs = await client.get_messages(message.chat.id, chunk)
+            deletable_ids = [msg.id for msg in msgs if msg and (datetime.utcnow() - msg.date) < timedelta(days=2)]
 
-        await message.edit_text(f"✅ Successfully purged <b>{len(ids)}</b> messages.")
-        await sleep(3)
+            if deletable_ids:
+                await client.delete_messages(message.chat.id, deletable_ids, revoke=True)
+                deleted += len(deletable_ids)
+
+        await message.edit_text(
+            f"✅ Purge completed. Deleted **{deleted} messages**.\n📝 Reason: `{reason}`"
+        )
+        await sleep(5)
         await message.delete()
 
     except MessageDeleteForbidden:
-        await query.message.edit_text("🚫 I lack permission to delete some messages.")
+        await query.message.edit_text("⚠️ Can't delete messages. Missing permissions.")
     except RPCError as e:
-        await query.message.edit_text(f"⚠️ Telegram error: {e}")
+        await query.message.edit_text(f"❌ Error: {e}")
 
 
-# ─────────────────────── Cancel Callback ─────────────────────── #
 @app.on_callback_query(filters.regex(r"^cancelpurge$"))
 async def cancel_purge(client, query: CallbackQuery):
-    await query.message.edit_text("❎ Purge cancelled.")
+    await query.message.edit_text("❌ Purge cancelled.")
+
+
+# ================== HELP COMMAND ==================
+
+@app.on_message(filters.command("purgehelp"))
+async def purge_help(client, message: Message):
+    await message.reply(
+        "**🧹 Purge Help Menu**\n\n"
+        "`/purge [reason]` → Confirm before deleting messages from the replied message to yours.\n"
+        "`/spurge [reason]` → Silent version of purge (no messages shown).\n"
+        "`/del` → Delete a single replied message.\n\n"
+        "**🔒 Access**: Admins or Bot Owner only.\n"
+        "**📌 Notes:**\n"
+        "• You can use optional reason like `/purge spam`.\n"
+        "• Telegram restricts deletion of messages older than ~48 hours.\n"
+        "• Confirmation required before purge to avoid mistakes.\n\n"
+        "**Example:**\n"
+        "`Reply to message`\n"
+        "`/purge inappropriate content`\n\n"
+        "🧠 Purge Smart. Purge Safe.",
+        quote=True
+    )
