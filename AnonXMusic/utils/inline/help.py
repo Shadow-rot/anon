@@ -229,10 +229,11 @@ async def help_button_handler(_, query: CallbackQuery):
 ᴜsᴇ ᴛʜᴇsᴇ ᴄᴏᴍᴍᴀɴᴅs ᴛᴏ ᴍᴀɴᴀɢᴇ ᴜsᴇʀs ɪɴ ᴛʜᴇ ɢʀᴏᴜᴩ.
 
 /ban : ʙᴀɴ ᴀ ᴜsᴇʀ ғʀᴏᴍ ᴛʜᴇ ɢʀᴏᴜᴩ.
-
 /kick : ᴋɪᴄᴋ ᴀ ᴜsᴇʀ ғʀᴏᴍ ᴛʜᴇ ɢʀᴏᴜᴩ.
-
 /mute : ᴍᴜᴛᴇ ᴀ ᴜsᴇʀ ɪɴ ᴛʜᴇ ɢʀᴏᴜᴩ.
+/purge : deletes messages from the replied message up to your command message.
+<b><u>/purgehelp :</b></u> 
+use this to know more about purge
 """,
     "hb17": """<b><u>ᴛᴇxᴛ ᴇᴅɪᴛɪɴɢ :</b></u>
 
