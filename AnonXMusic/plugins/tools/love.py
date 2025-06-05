@@ -31,7 +31,7 @@ def get_random_message(love_percentage: int) -> str:
             "🔥 Tʜɪs ɪs ᴏɴ ғɪʀᴇ! A ᴛʀᴜᴇ ᴍᴀᴛᴄʜ!",
         ])
 
-@app.on_message(filters.command("ar", prefixes=["/", "!"]))
+@app.on_message(filters.command("love", prefixes=["/", "!"]))
 async def love_command(_, message: Message):
     args = message.text.split(maxsplit=2)
     if len(args) < 3:
