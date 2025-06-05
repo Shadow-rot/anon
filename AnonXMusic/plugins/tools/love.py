@@ -3,86 +3,79 @@ from pyrogram import filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from AnonXMusic import app
 
-LOVE_GIFS = [
-    "https://media.tenor.com/BuzXvIh2NUgAAAAC/anime-love.gif",
-    "https://media.tenor.com/jkP3zRP5yU8AAAAC/love-hearts.gif",
-    "https://media.tenor.com/XM59c1V50vMAAAAC/love-anime.gif",
-    "https://media.tenor.com/7yfpAmV4P1EAAAAC/couple-anime.gif",
-    "https://media.tenor.com/jk7JhYJJmPwAAAAC/anime-hug-love.gif"
+LOVE_MEDIA = [
+    "https://te.legra.ph/file/4ec5ae4381dffb039b4ef.jpg",
+    "https://files.catbox.moe/853x8v.jpg",
+    "https://files.catbox.moe/c9l8ze.jpg",
+    "https://files.catbox.moe/r6dwqd.jpg",
+    "https://files.catbox.moe/dodb0z.jpg",
 ]
 
 def get_random_message(love_percentage: int) -> str:
     if love_percentage <= 30:
         return random.choice([
-            "💔 Lᴏᴠᴇ ɪs ɪɴ ᴛʜᴇ ᴀɪʀ, ʙᴜᴛ ɪᴛ ɴᴇᴇᴅs ᴀ ʟɪᴛᴛʟᴇ ꜱᴘᴀʀᴋ!",
-            "🌱 A ɢᴏᴏᴅ sᴛᴀʀᴛ, ʙᴜᴛ ᴛʜᴇʀᴇ's ʀᴏᴏᴍ ᴛᴏ ɢʀᴏᴡ.",
-            "💫 Jᴜsᴛ ᴛʜᴇ ʙᴇɢɪɴɴɪɴɢ ᴏғ sᴏᴍᴇᴛʜɪɴɢ ʙᴇᴀᴜᴛɪғᴜʟ.",
+            "💔 Nᴏᴛ ᴍᴜᴄʜ sᴘᴀʀᴋ ʏᴇᴛ... Bᴜᴛ ʟᴏᴠᴇ ᴛᴀᴋᴇs ᴛɪᴍᴇ!",
+            "😅 Jᴜsᴛ ғʀɪᴇɴᴅs... ғᴏʀ ɴᴏᴡ.",
+            "🌧 A ʙɪᴛ ᴄʟᴏᴜᴅʏ, ʙᴜᴛ ᴛʜᴇ sᴜɴ ᴍɪɢʜᴛ sʜɪɴᴇ.",
         ])
     elif love_percentage <= 70:
         return random.choice([
-            "💖 A sᴛʀᴏɴɢ ᴄᴏɴɴᴇᴄᴛɪᴏɴ ɪs ᴛʜᴇʀᴇ. Kᴇᴇᴘ ɴᴜʀᴛᴜʀɪɴɢ ɪᴛ.",
-            "🪄 Yᴏᴜ'ᴠᴇ ɢᴏᴛ ᴀ ɢᴏᴏᴅ ᴄʜᴀɴᴄᴇ. Wᴏʀᴋ ᴏɴ ɪᴛ!",
-            "🌸 Lᴏᴠᴇ ɪs ʙʟᴏssᴏᴍɪɴɢ, ᴋᴇᴇᴘ ɢᴏɪɴɢ!",
+            "🌼 Sᴏᴍᴇᴛʜɪɴɢ ʙᴇᴀᴜᴛɪғᴜʟ ɪs ɢʀᴏᴡɪɴɢ!",
+            "💖 A ᴘʀᴏᴍɪsɪɴɢ ᴍᴀᴛᴄʜ. Kᴇᴇᴘ ɢᴏɪɴɢ!",
+            "🫶 Cᴏɴɴᴇᴄᴛɪᴏɴ ᴅᴇᴛᴇᴄᴛᴇᴅ — ɪɴᴠᴇsᴛ ᴛɪᴍᴇ 💕",
         ])
     else:
         return random.choice([
-            "💞 Wᴏᴡ! A ᴍᴀᴛᴄʜ ᴍᴀᴅᴇ ɪɴ ʜᴇᴀᴠᴇɴ!",
-            "💍 Pᴇʀғᴇᴄᴛ ᴍᴀᴛᴄʜ! Cʜᴇʀɪsʜ ᴛʜɪs ʙᴏɴᴅ.",
-            "💘 Dᴇsᴛɪɴᴇᴅ ᴛᴏ ʙᴇ ᴛᴏɢᴇᴛʜᴇʀ. Cᴏɴɢʀᴀᴛᴜʟᴀᴛɪᴏɴs!",
+            "💘 Sᴏᴜʟᴍᴀᴛᴇs ᴀʟᴇʀᴛ!",
+            "💍 Rɪɴɢs ɪɴ ʏᴏᴜʀ ғᴜᴛᴜʀᴇ?",
+            "🔥 Tʜɪs ɪs ᴏɴ ғɪʀᴇ! A ᴛʀᴜᴇ ᴍᴀᴛᴄʜ!",
         ])
 
-@app.on_message(filters.command("love", prefixes=["/", "!"]))
+@app.on_message(filters.command("ar", prefixes=["/", "!"]))
 async def love_command(_, message: Message):
     args = message.text.split(maxsplit=2)
     if len(args) < 3:
-        return await message.reply_text("❌ Please provide **two names**.\n\n**Usage:** `/love Alice Bob`")
+        return await message.reply_text(
+            "❌ <b>Pʟᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴛᴡᴏ ɴᴀᴍᴇs.</b>\n\n<u>Usage:</u> <code>/love Alice Bob</code>"
+        )
 
     name1 = args[1].strip()
     name2 = args[2].strip()
 
     if not name1 or not name2:
-        return await message.reply_text("❌ Both names must be valid.")
+        return await message.reply_text("❌ <b>Bᴏᴛʜ ɴᴀᴍᴇs ᴍᴜsᴛ ʙᴇ ᴠᴀʟɪᴅ.</b>")
 
     love_percentage = random.randint(10, 100)
     love_message = get_random_message(love_percentage)
-    heart_bar = "❤️" * (love_percentage // 10) + "🤍" * ((100 - love_percentage) // 10)
-    gif = random.choice(LOVE_GIFS)
+    
+    hearts = "❤️‍🔥" * (love_percentage // 20)
+    extras = "💌✨💞"
+    bar = f"{hearts}{random.choice(extras)}"
 
-    caption = f"""
-💞 <b>ʟᴏᴠᴇ ᴄᴀʟᴄᴜʟᴀᴛᴏʀ</b>
+    media = random.choice(LOVE_MEDIA)
 
+    caption = f"""<b>💘 ʟᴏᴠᴇ ᴄᴀʟᴄᴜʟᴀᴛɪᴏɴ</b>
 <b>{name1}</b> + <b>{name2}</b> = <b>{love_percentage}%</b>
-
-{heart_bar}
-
+{bar}
 {love_message}
+<a href="{media}">&#8205;</a>
+<em>Message provided by <a href='https://t.me/siyaprobot'>Siya</a></em>""".strip()
 
-<em>Message provided by <a href='https://t.me/siyaprobot'>Siya</a></em>
-""".strip()
-
-    buttons = InlineKeyboardMarkup(
+    buttons = InlineKeyboardMarkup([
         [
-            [
-                InlineKeyboardButton("🔄 Try Again", switch_inline_query_current_chat="/love "),
-                InlineKeyboardButton("💗 Share", switch_inline_query=f"/love {name1} {name2}")
-            ]
+            InlineKeyboardButton("🔄 Try Again", switch_inline_query_current_chat="/love "),
+            InlineKeyboardButton("💗 Share", switch_inline_query=f"/love {name1} {name2}")
         ]
-    )
+    ])
 
-    try:
-        await message.reply_animation(gif, caption=caption, reply_markup=buttons)
-    except Exception:
-        await message.reply_photo(gif, caption=caption, reply_markup=buttons)
+    await message.reply_text(caption, reply_markup=buttons)
 
+MODULE = "Lᴏᴠᴇ"
+HELP = """
+<b>💘 ʟᴏᴠᴇ ᴄᴀʟᴄᴜʟᴀᴛᴏʀ</b>
 
-__MODULE__ = "Lᴏᴠᴇ"
-__HELP__ = """
-**💘 ʟᴏᴠᴇ ᴄᴀʟᴄᴜʟᴀᴛᴏʀ**
-
-➤ `/love [name1] [name2]`  
-ᴄᴀʟᴄᴜʟᴀᴛᴇ ᴛʜᴇ ʟᴏᴠᴇ ᴘᴇʀᴄᴇɴᴛᴀɢᴇ ʙᴇᴛᴡᴇᴇɴ ᴛᴡᴏ ɴᴀᴍᴇs 💑
-
-__Eɴᴊᴏʏ ғᴜɴ ᴀɴᴅ sᴘʀᴇᴀᴅ ʟᴏᴠᴇ! 💕__
+➤ <code>/love [name1] [name2]</code>  
+ᴄᴀʟᴄᴜʟᴀᴛᴇ ʟᴏᴠᴇ ᴘᴇʀᴄᴇɴᴛᴀɢᴇ ʙᴇᴛᴡᴇᴇɴ ᴛᴡᴏ ɴᴀᴍᴇs 💑
 
 <b>💌 Message provided by</b> <a href="https://t.me/siyaprobot">Siya</a>
 """
