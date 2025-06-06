@@ -7,76 +7,75 @@ from AnonXMusic import app
 @app.on_message(filters.command("id"))
 async def get_ids(client, message: Message):
     reply = message.reply_to_message
-    text = ""
-
     chat = message.chat
     from_user = message.from_user
 
-    # Message and user info
-    text += f"Message ID: {message.id}\n"
+    text = "<b>ID Information:</b>\n\n"
+
+    # Message and sender info
     if from_user:
-        text += f"Your ID: {from_user.id} (tg://user?id={from_user.id})\n"
-        text += f"Is Bot: {from_user.is_bot}\n"
+        text += f"Your Name: {from_user.mention()}\n"
+        text += f"Your ID: <code>{from_user.id}</code>\n"
+        text += f"Bot: {'Yes' if from_user.is_bot else 'No'}\n"
+        text += f"Message ID: <code>{message.id}</code>\n\n"
 
-    # Chat Info
+    # Chat info
     if chat.type in [ChatType.GROUP, ChatType.SUPERGROUP, ChatType.CHANNEL]:
-        chat_link = f"https://t.me/{chat.username}" if chat.username else "Private"
-        text += f"Chat ID: {chat.id}\n"
         text += f"Chat Title: {chat.title}\n"
-        text += f"Chat Link: {chat_link}\n"
+        text += f"Chat ID: <code>{chat.id}</code>\n"
+        if chat.username:
+            text += f"Chat Username: @{chat.username}\n"
+    else:
+        text += f"Private Chat ID: <code>{chat.id}</code>\n"
 
-    elif chat.type == ChatType.PRIVATE:
-        text += f"Private Chat ID: {chat.id}\n"
-
-    # Replied Message Info
+    # Replied message info
     if reply:
-        if reply.from_user:
-            user = reply.from_user
-            text += "\nReplied Message:\n"
-            text += f"Name: {user.first_name}\n"
-            text += f"ID: {user.id}\n"
-            if user.username:
-                text += f"Username: @{user.username}\n"
-            text += f"Bot: {user.is_bot}\n"
-            text += f"Replied Message ID: {reply.id}\n"
+        user = reply.from_user or reply.sender_chat
+        if user:
+            text += "\n<b>Replied Message:</b>\n"
+            text += f"From: {user.mention() if hasattr(user, 'mention') else user.title}\n"
+            text += f"ID: <code>{user.id}</code>\n"
+            text += f"Message ID: <code>{reply.id}</code>\n"
 
         if reply.forward_from:
-            fwd_user = reply.forward_from
-            text += "\nForwarded From User:\n"
-            text += f"Name: {fwd_user.first_name}\n"
-            text += f"ID: {fwd_user.id}\n"
-            if fwd_user.username:
-                text += f"Username: @{fwd_user.username}\n"
+            fwd = reply.forward_from
+            text += "\n<b>Forwarded From User:</b>\n"
+            text += f"Name: {fwd.mention()}\n"
+            text += f"ID: <code>{fwd.id}</code>\n"
 
         elif reply.forward_from_chat:
             fwd_chat = reply.forward_from_chat
-            text += "\nForwarded From Channel/Group:\n"
+            text += "\n<b>Forwarded From Channel/Group:</b>\n"
             text += f"Title: {fwd_chat.title}\n"
-            text += f"ID: {fwd_chat.id}\n"
+            text += f"ID: <code>{fwd_chat.id}</code>\n"
             if fwd_chat.username:
                 text += f"Username: @{fwd_chat.username}\n"
 
         if reply.sender_chat:
             sender = reply.sender_chat
-            text += "\nSender Chat (Anonymous Admin / Channel):\n"
+            text += "\n<b>Sender Chat (Anonymous Admin or Channel):</b>\n"
             text += f"Title: {sender.title}\n"
-            text += f"ID: {sender.id}\n"
+            text += f"ID: <code>{sender.id}</code>\n"
 
-    # Optional: Check target from command
+    # Inline user check
     if len(message.command) > 1:
-        target = message.text.split(None, 1)[1]
+        user_input = message.text.split(None, 1)[1]
         try:
-            user = await client.get_users(target)
-            text += "\nTarget User from Command:\n"
-            text += f"Name: {user.first_name}\n"
-            text += f"ID: {user.id}\n"
-            if user.username:
-                text += f"Username: @{user.username}\n"
-            text += f"Bot: {user.is_bot}\n"
+            target = await client.get_users(user_input)
+            text += "\n<b>User from Command:</b>\n"
+            text += f"Name: {target.mention()}\n"
+            text += f"ID: <code>{target.id}</code>\n"
+            if target.username:
+                text += f"Username: @{target.username}\n"
+            text += f"Bot: {'Yes' if target.is_bot else 'No'}\n"
         except Exception:
-            text += f"\nFailed to fetch user '{target}'."
+            text += f"\nCould not find user: <code>{user_input}</code>\n"
 
     # Timestamp
-    text += f"\nTimestamp: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC\n"
+    text += f"\n<b>Timestamp:</b> <i>{datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC</i>"
 
-    await message.reply_text(text, parse_mode=ParseMode.DEFAULT, disable_web_page_preview=True)
+    await message.reply_text(
+        text,
+        parse_mode=ParseMode.HTML,
+        disable_web_page_preview=True
+    )
