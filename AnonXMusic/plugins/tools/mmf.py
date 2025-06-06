@@ -5,7 +5,6 @@ from pyrogram import filters
 from pyrogram.types import Message
 from AnonXMusic import app
 
-# Preload the font (load once)
 FONT_PATH = "./AnonXMusic/assets/default.ttf"
 FONT_CACHE = ImageFont.truetype(FONT_PATH, 40)
 
@@ -20,8 +19,10 @@ async def mmf(_, message: Message):
     msg = await message.reply_text("⚡ Processing...")
     text = message.text.split(None, 1)[1]
     
-    # Download and convert the file
+    # Download media
     media_path = await app.download_media(message.reply_to_message)
+    
+    # Create meme
     meme_path = await draw_text_fast(media_path, text)
     
     await message.reply_photo(photo=meme_path)
@@ -56,6 +57,6 @@ async def draw_text_fast(image_path, text):
     if bottom_text:
         draw_centered(bottom_text, height - 60)
 
-    out_path = "memified.webp"
-    img.save(out_path, "WEBP")
+    out_path = "memified.jpg"  # Use JPG
+    img.save(out_path, "JPEG")
     return out_path
