@@ -9,7 +9,8 @@ hachoir
 heroku3
 httpx[http2]==0.27.2
 motor
-moviepy
+moviepy==1.0.3
+imageio-ffmpeg==0.4.7
 pillow
 psutil
 py-tgcalls==0.9.7
