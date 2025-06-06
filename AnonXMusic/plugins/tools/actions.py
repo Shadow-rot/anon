@@ -149,7 +149,7 @@ async def mute_command(client, message: Message):
     if not user:
         return
     try:
-        await client.restrict_chat_member(message.chat.id, user.id, enums.ChatPermissions())
+        await client.restrict_chat_member(message.chat.id, user.id, ChatPermissions())
         text = f"{user.mention} was muted by {message.from_user.mention}"
         if reason:
             text += f"\nReason: {reason}"
