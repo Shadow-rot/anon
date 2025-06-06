@@ -1,60 +1,64 @@
 import datetime
+import ast
 from pyrogram import Client, filters
 from pyrogram.types import Message
 from AnonXMusic import app
 from config import OWNER_ID
 
-# Dictionary to store VC start times per chat
 vc_start_times = {}
 
+def smallcaps(text):
+    normal = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    small = "ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀꜱᴛᴜᴠᴡxʏᴢ" * 2
+    return text.translate(str.maketrans(normal, small))
+
 @app.on_message(filters.video_chat_started)
-async def brah(_, msg):
-    chat_id = msg.chat.id
-    vc_start_times[chat_id] = datetime.datetime.now()
-    await msg.reply("ᴠᴏɪᴄᴇ ᴄʜᴀᴛ sᴛᴀʀᴛᴇᴅ")
+async def on_vc_start(_, message: Message):
+    await message.reply(smallcaps("voice chat started"))
 
 @app.on_message(filters.video_chat_ended)
-async def brah2(_, msg):
-    chat_id = msg.chat.id
+async def on_vc_end(_, message: Message):
+    chat_id = message.chat.id
     start_time = vc_start_times.pop(chat_id, None)
+
     if start_time:
-        duration = datetime.datetime.now() - start_time
-        seconds = duration.total_seconds()
-        hours, remainder = divmod(int(seconds), 3600)
-        minutes, seconds = divmod(remainder, 60)
-        time_str = f"{hours}h {minutes}m {seconds}s"
-        await msg.reply(f"ᴠᴏɪᴄᴇ ᴄʜᴀᴛ ᴇɴᴅᴇᴅ\nᴅᴜʀᴀᴛɪᴏɴ: {time_str}")
+        duration = datetime.datetime.utcnow() - start_time
+        total = int(duration.total_seconds())
+        h, r = divmod(total, 3600)
+        m, s = divmod(r, 60)
+
+        duration_str = f"{h}h {m}m {s}s"
+        await message.reply(smallcaps(f"voice chat ended\nDuration: {duration_str}"))
     else:
-        await msg.reply("ᴠᴏɪᴄᴇ ᴄʜᴀᴛ ᴇɴᴅᴇᴅ\nᴅᴜʀᴀᴛɪᴏɴ: ᴜɴᴋɴᴏᴡɴ")
+        await message.reply(smallcaps("voice chat ended\nDuration: unknown"))
 
 @app.on_message(filters.video_chat_members_invited)
-async def brah3(app: Client, message: Message):
-    text = f"{message.from_user.mention} ɪɴᴠɪᴛᴇᴅ "
-    x = 0
-    for user in message.video_chat_members_invited.users:
-        try:
-            text += f"{user.mention} "
-            x += 1
-        except Exception:
-            pass
-    try:
-        await message.reply(f"{text} 😉")
-    except:
-        pass
+async def on_vc_invite(_, message: Message):
+    inviter = message.from_user.mention if message.from_user else "Someone"
+    invited = ", ".join([u.mention for u in message.video_chat_members_invited.users if u])
+    await message.reply(smallcaps(f"{inviter} invited: {invited}"))
 
-@app.on_message(filters.command("math", prefixes="/"))
-def calculate_math(client, message):   
-    expression = message.text.split("/math ", 1)[1]
-    try:        
-        result = eval(expression)
-        response = f"ᴛʜᴇ ʀᴇsᴜʟᴛ ɪs : {result}"
-    except:
-        response = "ɪɴᴠᴀʟɪᴅ ᴇxᴘʀᴇssɪᴏɴ"
-    message.reply(response)
+@app.on_message(filters.command("math"))
+async def math_solver(_, message: Message):
+    if len(message.command) < 2:
+        return await message.reply(smallcaps("send a valid expression like: /math 2 + 2"))
+
+    expression = message.text.split(maxsplit=1)[1]
+
+    try:
+        node = ast.parse(expression, mode="eval")
+        for subnode in ast.walk(node):
+            if not isinstance(subnode, (ast.Expression, ast.BinOp, ast.UnaryOp, ast.Num, ast.operator, ast.unaryop)):
+                raise ValueError("Unsafe expression")
+        result = eval(compile(node, "<string>", "eval"))
+        await message.reply(smallcaps(f"result: {result}"))
+    except Exception:
+        await message.reply(smallcaps("invalid expression or unsafe input"))
 
 @app.on_message(filters.command("leavegroup") & filters.user(OWNER_ID))
-async def bot_leave(_, message):
-    chat_id = message.chat.id
-    text = f"sᴜᴄᴄᴇssғᴜʟʟʏ   ʟᴇғᴛ  !!."
-    await message.reply_text(text)
-    await app.leave_chat(chat_id=chat_id, delete=True)
+async def leave_group(_, message: Message):
+    try:
+        await message.reply(smallcaps("leaving group..."))
+        await app.leave_chat(message.chat.id, delete=True)
+    except Exception as e:
+        await message.reply(smallcaps(f"failed to leave:\n{e}"))
