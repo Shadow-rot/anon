@@ -31,16 +31,10 @@ def PlayWrapper(command):
     async def wrapper(client, message):
         language = await get_lang(message.chat.id)
         _ = get_string(language)
+
         if message.sender_chat:
             upl = InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(
-                            text="ʜᴏᴡ ᴛᴏ ғɪx ?",
-                            callback_data="AnonymousAdmin",
-                        ),
-                    ]
-                ]
+                [[InlineKeyboardButton(text="ʜᴏᴡ ᴛᴏ ғɪx ?", callback_data="AnonymousAdmin")]]
             )
             return await message.reply_text(_["general_3"], reply_markup=upl)
 
@@ -66,46 +60,49 @@ def PlayWrapper(command):
             if message.reply_to_message
             else None
         )
+
         url = await YouTube.url(message)
+
         if audio_telegram is None and video_telegram is None and url is None:
             if not message.command or len(message.command) < 2:
-    if message.command and "stream" in message.command:
-        return await message.reply_text(_["str_1"])
-    buttons = botplaylist_markup(_)
-    return await message.reply_photo(
-        photo=PLAYLIST_IMG_URL,
-        caption=_["play_18"],
-        reply_markup=InlineKeyboardMarkup(buttons),
-    )
+                if message.command and "stream" in message.command:
+                    return await message.reply_text(_["str_1"])
+                buttons = botplaylist_markup(_)
+                return await message.reply_photo(
+                    photo=PLAYLIST_IMG_URL,
+                    caption=_["play_18"],
+                    reply_markup=InlineKeyboardMarkup(buttons),
+                )
+
         if message.command[0][0] == "c":
             chat_id = await get_cmode(message.chat.id)
             if chat_id is None:
                 return await message.reply_text(_["setting_7"])
             try:
                 chat = await app.get_chat(chat_id)
+                channel = chat.title
             except:
                 return await message.reply_text(_["cplay_4"])
-            channel = chat.title
         else:
             chat_id = message.chat.id
             channel = None
+
         playmode = await get_playmode(message.chat.id)
         playty = await get_playtype(message.chat.id)
+
         if playty != "Everyone":
             if message.from_user.id not in SUDOERS:
                 admins = adminlist.get(message.chat.id)
                 if not admins:
                     return await message.reply_text(_["admin_13"])
-                else:
-                    if message.from_user.id not in admins:
-                        return await message.reply_text(_["play_4"])
+                if message.from_user.id not in admins:
+                    return await message.reply_text(_["play_4"])
+
         if message.command[0][0] == "v":
             video = True
         else:
-            if "-v" in message.text:
-                video = True
-            else:
-                video = True if message.command[0][1] == "v" else None
+            video = True if "-v" in message.text or message.command[0][1] == "v" else None
+
         if message.command[0][-1] == "e":
             if not await is_active_chat(chat_id):
                 return await message.reply_text(_["play_16"])
@@ -120,14 +117,10 @@ def PlayWrapper(command):
                     get = await app.get_chat_member(chat_id, userbot.id)
                 except ChatAdminRequired:
                     return await message.reply_text(_["call_1"])
-                if (
-                    get.status == ChatMemberStatus.BANNED
-                    or get.status == ChatMemberStatus.RESTRICTED
-                ):
+
+                if get.status in [ChatMemberStatus.BANNED, ChatMemberStatus.RESTRICTED]:
                     return await message.reply_text(
-                                                                        _["call_2"].format(
-                            app.mention, userbot.id, userbot.name, userbot.username
-                        )
+                        _["call_2"].format(app.mention, userbot.id, userbot.name, userbot.username)
                     )
             except UserNotParticipant:
                 if chat_id in links:
@@ -150,10 +143,10 @@ def PlayWrapper(command):
                             )
 
                 if invitelink.startswith("https://t.me/+"):
-                    invitelink = invitelink.replace(
-                        "https://t.me/+", "https://t.me/joinchat/"
-                    )
+                    invitelink = invitelink.replace("https://t.me/+", "https://t.me/joinchat/")
+
                 myu = await message.reply_text(_["call_4"].format(app.mention))
+
                 try:
                     await asyncio.sleep(1)
                     await userbot.join_chat(invitelink)
