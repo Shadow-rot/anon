@@ -68,15 +68,15 @@ def PlayWrapper(command):
         )
         url = await YouTube.url(message)
         if audio_telegram is None and video_telegram is None and url is None:
-            if len(message.command) < 2:
-                if "stream" in message.command:
-                    return await message.reply_text(_["str_1"])
-                buttons = botplaylist_markup(_)
-                return await message.reply_photo(
-                    photo=PLAYLIST_IMG_URL,
-                    caption=_["play_18"],
-                    reply_markup=InlineKeyboardMarkup(buttons),
-                )
+            if not message.command or len(message.command) < 2:
+    if message.command and "stream" in message.command:
+        return await message.reply_text(_["str_1"])
+    buttons = botplaylist_markup(_)
+    return await message.reply_photo(
+        photo=PLAYLIST_IMG_URL,
+        caption=_["play_18"],
+        reply_markup=InlineKeyboardMarkup(buttons),
+    )
         if message.command[0][0] == "c":
             chat_id = await get_cmode(message.chat.id)
             if chat_id is None:
