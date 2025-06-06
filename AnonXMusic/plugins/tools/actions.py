@@ -1,4 +1,5 @@
 from pyrogram import filters, enums
+from pyrogram.types import ChatPermissions
 from pyrogram.types import (
     InlineKeyboardMarkup,
     InlineKeyboardButton,
@@ -169,12 +170,12 @@ async def unmute_command(client, message: Message):
     if not user:
         return
     try:
-        permissions = enums.ChatPermissions(
-            can_send_messages=True,
-            can_send_media_messages=True,
-            can_send_other_messages=True,
-            can_add_web_page_previews=True,
-        )
+        permissions = ChatPermissions(
+    can_send_messages=True,
+    can_send_media_messages=True,
+    can_send_other_messages=True,
+    can_add_web_page_previews=True,
+)
         await client.restrict_chat_member(message.chat.id, user.id, permissions)
         text = f"{user.mention} was unmuted by {message.from_user.mention}"
         if reason:
