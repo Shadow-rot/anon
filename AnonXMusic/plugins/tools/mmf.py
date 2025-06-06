@@ -1,161 +1,97 @@
 import os
 import textwrap
+import subprocess
 from PIL import Image, ImageDraw, ImageFont
 from pyrogram import filters
 from pyrogram.types import Message
 from AnonXMusic import app
 
+FONT_PATH = "./AnonXMusic/assets/default.ttf"  # fallback font
+
+def get_font(size: int):
+    try:
+        return ImageFont.truetype(FONT_PATH, size)
+    except:
+        return ImageFont.load_default()
+
+
 @app.on_message(filters.command("mmf"))
-async def mmf(_, message: Message):
-    chat_id = message.chat.id
-    reply_message = message.reply_to_message
+async def mmf_handler(_, message: Message):
+    if not message.reply_to_message:
+        return await message.reply_text("Reply to an image or video with `/mmf text`.", quote=True)
 
     if len(message.text.split()) < 2:
-        await message.reply_text("Give me text after /mmf to memify.")
-        return
+        return await message.reply("Provide some text after /mmf, like:\n`/mmf top;bottom`")
 
-    msg = await message.reply_text("🪐")
     text = message.text.split(None, 1)[1]
-    file = await app.download_media(reply_message)
+    reply = message.reply_to_message
 
-    meme = await drawText(file, text)
-    await app.send_document(chat_id, document=meme)
+    if not (reply.photo or reply.document or reply.video or reply.animation):
+        return await message.reply("Reply to a **photo or short video (MP4)**.")
 
-    await msg.delete()
+    temp_file = await app.download_media(reply, file_name="mmf_temp")
+    msg = await message.reply("Processing...")
 
-    os.remove(meme)
+    try:
+        image_path = await convert_to_image(temp_file)
+        meme_file = await draw_text_on_image(image_path, text)
+        await app.send_document(message.chat.id, document=meme_file)
+    except Exception as e:
+        await msg.edit(f"❌ Failed to memify:\n`{e}`")
+        return
+    finally:
+        await msg.delete()
+        for f in [temp_file, "frame.jpg", "memify.webp"]:
+            if os.path.exists(f):
+                os.remove(f)
 
 
-async def drawText(image_path, text):
-    img = Image.open(image_path)
+async def convert_to_image(path: str) -> str:
+    if path.endswith((".mp4", ".mkv", ".webm", ".mov")):
+        output_frame = "frame.jpg"
+        subprocess.run([
+            "ffmpeg", "-i", path, "-vf", "scale=512:-1", "-vframes", "1", output_frame,
+            "-y", "-loglevel", "quiet"
+        ])
+        return output_frame
+    else:
+        return path
 
-    os.remove(image_path)
 
+async def draw_text_on_image(image_path: str, text: str) -> str:
+    img = Image.open(image_path).convert("RGB")
     i_width, i_height = img.size
 
-    if os.name == "nt":
-        fnt = "arial.ttf"
-    else:
-        fnt = "./AnonXMusic/assets/default.ttf"
-
-    m_font = ImageFont.truetype(fnt, int((70 / 640) * i_width))
+    font = get_font(int((70 / 640) * i_width))
+    draw = ImageDraw.Draw(img)
 
     if ";" in text:
-        upper_text, lower_text = text.split(";")
+        upper_text, lower_text = text.split(";", 1)
     else:
-        upper_text = text
-        lower_text = ""
-
-    draw = ImageDraw.Draw(img)
+        upper_text, lower_text = text, ""
 
     current_h, pad = 10, 5
 
+    def draw_text_block(text, y_offset):
+        for line in textwrap.wrap(text, width=15):
+            bbox = font.getbbox(line)
+            u_width, u_height = bbox[2] - bbox[0], bbox[3] - bbox[1]
+            x = (i_width - u_width) / 2
+            y = y_offset
+
+            # Black border
+            for dx, dy in [(-2, 0), (2, 0), (0, -2), (0, 2)]:
+                draw.text((x + dx, y + dy), line, font=font, fill="black")
+            draw.text((x, y), line, font=font, fill="white")
+            y_offset += u_height + pad
+        return y_offset
+
     if upper_text:
-        for u_text in textwrap.wrap(upper_text, width=15):
-            uwl, uht, uwr, uhb = m_font.getbbox(u_text)
-            u_width, u_height = uwr - uwl, uhb - uht
-
-            draw.text(
-                xy=(((i_width - u_width) / 2) - 2, int((current_h / 640) * i_width)),
-                text=u_text,
-                font=m_font,
-                fill=(0, 0, 0),
-            )
-
-            draw.text(
-                xy=(((i_width - u_width) / 2) + 2, int((current_h / 640) * i_width)),
-                text=u_text,
-                font=m_font,
-                fill=(0, 0, 0),
-            )
-
-            draw.text(
-                xy=((i_width - u_width) / 2, int(((current_h / 640) * i_width)) - 2),
-                text=u_text,
-                font=m_font,
-                fill=(0, 0, 0),
-            )
-
-            draw.text(
-                xy=(((i_width - u_width) / 2), int(((current_h / 640) * i_width)) + 2),
-                text=u_text,
-                font=m_font,
-                fill=(0, 0, 0),
-            )
-
-            draw.text(
-                xy=((i_width - u_width) / 2, int((current_h / 640) * i_width)),
-                text=u_text,
-                font=m_font,
-                fill=(255, 255, 255),
-            )
-
-            current_h += u_height + pad
+        current_h = draw_text_block(upper_text, current_h)
 
     if lower_text:
-        for l_text in textwrap.wrap(lower_text, width=15):
-            uwl, uht, uwr, uhb = m_font.getbbox(l_text)
-            u_width, u_height = uwr - uwl, uhb - uht
+        draw_text_block(lower_text, i_height - int((100 / 640) * i_width))
 
-            draw.text(
-                xy=(
-                    ((i_width - u_width) / 2) - 2,
-                    i_height - u_height - int((20 / 640) * i_width),
-                ),
-                text=l_text,
-                font=m_font,
-                fill=(0, 0, 0),
-            )
-
-            draw.text(
-                xy=(
-                    ((i_width - u_width) / 2) + 2,
-                    i_height - u_height - int((20 / 640) * i_width),
-                ),
-                text=l_text,
-                font=m_font,
-                fill=(0, 0, 0),
-            )
-
-            draw.text(
-                xy=(
-                    (i_width - u_width) / 2,
-                    (i_height - u_height - int((20 / 640) * i_width)) - 2,
-                ),
-                text=l_text,
-                font=m_font,
-                fill=(0, 0, 0),
-            )
-
-            draw.text(
-                xy=(
-                    (i_width - u_width) / 2,
-                    (i_height - u_height - int((20 / 640) * i_width)) + 2,
-                ),
-                text=l_text,
-                font=m_font,
-                fill=(0, 0, 0),
-            )
-
-            draw.text(
-                xy=(
-                    (i_width - u_width) / 2,
-                    i_height - u_height - int((20 / 640) * i_width),
-                ),
-                text=l_text,
-                font=m_font,
-                fill=(255, 255, 255),
-            )
-
-            current_h += u_height + pad
-
-    image_name = "memify.webp"
-
-    webp_file = os.path.join(image_name)
-
-    img.save(webp_file, "webp")
-
-    return webp_file
-
-
-__mod_name__ = "mmf"
+    output_path = "memify.webp"
+    img.save(output_path, "webp")
+    return output_path
