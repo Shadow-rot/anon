@@ -1,97 +1,127 @@
 import os
 import textwrap
-import subprocess
 from PIL import Image, ImageDraw, ImageFont
 from pyrogram import filters
 from pyrogram.types import Message
 from AnonXMusic import app
-
-FONT_PATH = "./AnonXMusic/assets/default.ttf"  # fallback font
-
-def get_font(size: int):
-    try:
-        return ImageFont.truetype(FONT_PATH, size)
-    except:
-        return ImageFont.load_default()
-
+import io
 
 @app.on_message(filters.command("mmf"))
-async def mmf_handler(_, message: Message):
-    if not message.reply_to_message:
-        return await message.reply_text("Reply to an image or video with `/mmf text`.", quote=True)
+async def mmf(_, message: Message):
+    chat_id = message.chat.id
+    reply_message = message.reply_to_message
+
+    if not reply_message:
+        await message.reply_text("Please reply to an image, sticker, or mp4 sticker to memify.")
+        return
 
     if len(message.text.split()) < 2:
-        return await message.reply("Provide some text after /mmf, like:\n`/mmf top;bottom`")
-
-    text = message.text.split(None, 1)[1]
-    reply = message.reply_to_message
-
-    if not (reply.photo or reply.document or reply.video or reply.animation):
-        return await message.reply("Reply to a **photo or short video (MP4)**.")
-
-    temp_file = await app.download_media(reply, file_name="mmf_temp")
-    msg = await message.reply("Processing...")
-
-    try:
-        image_path = await convert_to_image(temp_file)
-        meme_file = await draw_text_on_image(image_path, text)
-        await app.send_document(message.chat.id, document=meme_file)
-    except Exception as e:
-        await msg.edit(f"❌ Failed to memify:\n`{e}`")
+        await message.reply_text("Give me text after /mmf to memify.")
         return
-    finally:
-        await msg.delete()
-        for f in [temp_file, "frame.jpg", "memify.webp"]:
-            if os.path.exists(f):
-                os.remove(f)
+
+    msg = await message.reply_text("Processing your meme... 🪐")
+    text = message.text.split(None, 1)[1]
+
+    # Download media
+    file_path = await app.download_media(reply_message)
+
+    # Open image depending on type
+    img = None
+    try:
+        # If it's an animated sticker or mp4 sticker, extract first frame as image
+        if reply_message.sticker and reply_message.sticker.is_animated:
+            # Animated webp sticker: extract first frame using PIL ImageSequence
+            im = Image.open(file_path)
+            img = next(iter(Image.ImageSequence.Iterator(im))).convert("RGBA")
+
+        elif reply_message.sticker and reply_message.sticker.is_video:
+            # mp4 sticker - use moviepy to extract first frame
+            from moviepy.editor import VideoFileClip
+
+            clip = VideoFileClip(file_path)
+            frame = clip.get_frame(0)  # first frame (numpy array)
+            img = Image.fromarray(frame).convert("RGBA")
+            clip.close()
+
+        else:
+            # Static image or static sticker
+            img = Image.open(file_path).convert("RGBA")
+
+    except Exception as e:
+        await msg.edit(f"Failed to process image/sticker: {e}")
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        return
+
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    # Now add text to img
+    meme_image_path = await drawTextOnImage(img, text)
+
+    await app.send_document(chat_id, document=meme_image_path)
+
+    await msg.delete()
+
+    os.remove(meme_image_path)
 
 
-async def convert_to_image(path: str) -> str:
-    if path.endswith((".mp4", ".mkv", ".webm", ".mov")):
-        output_frame = "frame.jpg"
-        subprocess.run([
-            "ffmpeg", "-i", path, "-vf", "scale=512:-1", "-vframes", "1", output_frame,
-            "-y", "-loglevel", "quiet"
-        ])
-        return output_frame
-    else:
-        return path
-
-
-async def draw_text_on_image(image_path: str, text: str) -> str:
-    img = Image.open(image_path).convert("RGB")
+async def drawTextOnImage(img: Image.Image, text: str) -> str:
     i_width, i_height = img.size
 
-    font = get_font(int((70 / 640) * i_width))
-    draw = ImageDraw.Draw(img)
+    # Choose font path (modify as per your font location)
+    if os.name == "nt":
+        fnt = "arial.ttf"
+    else:
+        fnt = "./AnonXMusic/assets/default.ttf"
+
+    m_font = ImageFont.truetype(fnt, int((70 / 640) * i_width))
 
     if ";" in text:
         upper_text, lower_text = text.split(";", 1)
     else:
-        upper_text, lower_text = text, ""
+        upper_text = text
+        lower_text = ""
 
+    draw = ImageDraw.Draw(img)
     current_h, pad = 10, 5
 
-    def draw_text_block(text, y_offset):
-        for line in textwrap.wrap(text, width=15):
-            bbox = font.getbbox(line)
-            u_width, u_height = bbox[2] - bbox[0], bbox[3] - bbox[1]
-            x = (i_width - u_width) / 2
-            y = y_offset
+    def draw_text_lines(lines, y_start):
+        nonlocal current_h
+        for line in lines:
+            uwl, uht, uwr, uhb = m_font.getbbox(line)
+            u_width, u_height = uwr - uwl, uhb - uht
 
-            # Black border
-            for dx, dy in [(-2, 0), (2, 0), (0, -2), (0, 2)]:
-                draw.text((x + dx, y + dy), line, font=font, fill="black")
-            draw.text((x, y), line, font=font, fill="white")
-            y_offset += u_height + pad
-        return y_offset
+            x = (i_width - u_width) / 2
+            y = y_start
+
+            # black outline
+            outline_range = [-2, 2]
+            for ox in outline_range:
+                for oy in outline_range:
+                    draw.text((x + ox, y + oy), line, font=m_font, fill=(0, 0, 0))
+
+            # white main text
+            draw.text((x, y), line, font=m_font, fill=(255, 255, 255))
+
+            y_start += u_height + pad
+        current_h = y_start
 
     if upper_text:
-        current_h = draw_text_block(upper_text, current_h)
+        upper_lines = textwrap.wrap(upper_text, width=15)
+        draw_text_lines(upper_lines, current_h)
 
     if lower_text:
-        draw_text_block(lower_text, i_height - int((100 / 640) * i_width))
+        lower_lines = textwrap.wrap(lower_text, width=15)
+        # Draw lower text near bottom
+        line_height = m_font.getbbox("Ay")[3] - m_font.getbbox("Ay")[1]
+        start_y = i_height - (line_height + pad) * len(lower_lines) - 10
+        draw_text_lines(lower_lines, start_y)
 
-    output_path = "memify.webp"
-    img.save(output_path, "webp")
+    # Save final image
+    output_path = "memified.webp"
+    img.save(output_path, "WEBP")
     return output_path
+
+
+__mod_name__ = "mmf"
