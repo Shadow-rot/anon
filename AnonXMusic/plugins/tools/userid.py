@@ -9,16 +9,17 @@ async def id_handler(client, message: Message):
     if reply and reply.from_user:
         user = reply.from_user
         return await message.reply_text(
-            f"User: {user.mention}\n"
-            f"ID:\n```{user.id}```"
+            f"**User:** {user.mention}\n"
+            f"**ID:**\n```{user.id}```",
+            parse_mode="Markdown"
         )
 
     user = message.from_user
     chat = message.chat
 
     text = (
-        f"You: {user.mention}\n"
-        f"Your ID:\n```{user.id}```\n"
-        f"Chat ID:\n```{chat.id}```"
+        f"**You:** {user.mention}\n"
+        f"**Your ID:**\n```{user.id}```\n"
+        f"**Chat ID:**\n```{chat.id}```"
     )
-    await message.reply_text(text)
+    await message.reply_text(text, parse_mode="Markdown")
