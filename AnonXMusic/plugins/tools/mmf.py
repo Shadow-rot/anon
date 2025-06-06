@@ -5,74 +5,57 @@ from pyrogram import filters
 from pyrogram.types import Message
 from AnonXMusic import app
 
-FONT_PATH = "./AnonXMusic/assets/default.ttf"  # Make sure this font exists
+# Preload the font (load once)
+FONT_PATH = "./AnonXMusic/assets/default.ttf"
+FONT_CACHE = ImageFont.truetype(FONT_PATH, 40)
 
 @app.on_message(filters.command("mmf"))
 async def mmf(_, message: Message):
-    reply = message.reply_to_message
-
-    if not reply or not (reply.photo or reply.document or reply.sticker):
-        return await message.reply_text("Reply to a PNG, JPG, or static sticker.")
+    if not message.reply_to_message or not message.reply_to_message.media:
+        return await message.reply_text("Reply to an image or static sticker.")
 
     if len(message.text.split()) < 2:
-        return await message.reply_text("Give some text to memify. Example:\n`/mmf hello;world`")
+        return await message.reply_text("Send text after /mmf like:\n`/mmf Hello;World`")
 
+    msg = await message.reply_text("⚡ Processing...")
     text = message.text.split(None, 1)[1]
+    
+    # Download and convert the file
+    media_path = await app.download_media(message.reply_to_message)
+    meme_path = await draw_text_fast(media_path, text)
+    
+    await message.reply_photo(photo=meme_path)
+    await msg.delete()
+    
+    os.remove(meme_path)
 
-    msg = await message.reply_text("Creating meme...")
 
-    try:
-        file_path = await app.download_media(reply)
-        meme_path = await draw_text(file_path, text)
-        await message.reply_document(meme_path)
-    except Exception as e:
-        await message.reply_text(f"Failed to create meme:\n`{e}`")
-    finally:
-        if os.path.exists(file_path):
-            os.remove(file_path)
-        if os.path.exists("memified.webp"):
-            os.remove("memified.webp")
-        await msg.delete()
-
-async def draw_text(image_path, text):
+async def draw_text_fast(image_path, text):
     img = Image.open(image_path).convert("RGB")
-    i_width, i_height = img.size
+    os.remove(image_path)
 
-    font_size = int((70 / 640) * i_width)
-    font = ImageFont.truetype(FONT_PATH, font_size)
+    width, height = img.size
     draw = ImageDraw.Draw(img)
+    font_size = int((40 / 640) * width)
+    font = FONT_CACHE.font_variant(size=font_size)
 
     if ";" in text:
-        upper_text, lower_text = text.split(";", 1)
+        top_text, bottom_text = text.split(";", 1)
     else:
-        upper_text, lower_text = text, ""
+        top_text, bottom_text = text, ""
 
-    current_h = 10
-    pad = 5
-
-    # Draw top text
-    for line in textwrap.wrap(upper_text, width=20):
-        w, h = draw.textsize(line, font=font)
-        x = (i_width - w) / 2
-        draw_text_with_outline(draw, x, current_h, line, font)
-        current_h += h + pad
-
-    # Draw bottom text
-    if lower_text:
-        for line in textwrap.wrap(lower_text, width=20):
+    def draw_centered(text_lines, y_start):
+        for line in textwrap.wrap(text_lines, width=20):
             w, h = draw.textsize(line, font=font)
-            x = (i_width - w) / 2
-            y = i_height - h - 20
-            draw_text_with_outline(draw, x, y, line, font)
+            x = (width - w) / 2
+            draw.text((x, y_start), line, font=font, fill="white")
+            y_start += h + 5
+        return y_start
 
-    output_path = "memified.webp"
-    img.save(output_path, "webp")
-    return output_path
+    draw_centered(top_text, 10)
+    if bottom_text:
+        draw_centered(bottom_text, height - 60)
 
-def draw_text_with_outline(draw, x, y, text, font):
-    outline_color = "black"
-    main_color = "white"
-    for dx in [-2, 2]:
-        for dy in [-2, 2]:
-            draw.text((x + dx, y + dy), text, font=font, fill=outline_color)
-    draw.text((x, y), text, font=font, fill=main_color)
+    out_path = "memified.webp"
+    img.save(out_path, "WEBP")
+    return out_path
