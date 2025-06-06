@@ -9,7 +9,8 @@ async def id_handler(client, message: Message):
     if reply and reply.from_user:
         user = reply.from_user
         return await message.reply_text(
-            f"User: {user.mention}\nID: `{user.id}`"
+            f"User: {user.mention}\n"
+            f"ID:\n```{user.id}```"
         )
 
     user = message.from_user
@@ -17,7 +18,7 @@ async def id_handler(client, message: Message):
 
     text = (
         f"You: {user.mention}\n"
-        f"Your ID: ` {user.id} `\n"
-        f"Chat ID: ` {chat.id} `"
+        f"Your ID:\n```{user.id}```\n"
+        f"Chat ID:\n```{chat.id}```"
     )
     await message.reply_text(text)
