@@ -227,7 +227,7 @@ async def help_button_handler(_, query: CallbackQuery):
     "hb16": """<b><u>ᴀᴄᴛɪᴏɴs :</b></u>
 
 ᴜsᴇ ᴛʜᴇsᴇ ᴄᴏᴍᴍᴀɴᴅs ᴛᴏ ᴍᴀɴᴀɢᴇ ᴜsᴇʀs ɪɴ ᴛʜᴇ ɢʀᴏᴜᴩ.
-
+/modhelp : to know more about the bans..mute! & kicks
 /ban : ʙᴀɴ ᴀ ᴜsᴇʀ ғʀᴏᴍ ᴛʜᴇ ɢʀᴏᴜᴩ.
 /kick : ᴋɪᴄᴋ ᴀ ᴜsᴇʀ ғʀᴏᴍ ᴛʜᴇ ɢʀᴏᴜᴩ.
 /mute : ᴍᴜᴛᴇ ᴀ ᴜsᴇʀ ɪɴ ᴛʜᴇ ɢʀᴏᴜᴩ.
