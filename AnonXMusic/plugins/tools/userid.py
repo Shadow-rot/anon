@@ -1,6 +1,6 @@
 from pyrogram import filters
 from pyrogram.types import Message
-from pyrogram.enums import ParseMode  # ✅ Correct import
+from pyrogram.enums import ParseMode
 from AnonXMusic import app
 
 @app.on_message(filters.command("id"))
@@ -10,17 +10,17 @@ async def id_handler(client, message: Message):
     if reply and reply.from_user:
         user = reply.from_user
         return await message.reply_text(
-            f"**User:** {user.mention}\n"
-            f"**ID:**\n```{user.id}```",
-            parse_mode=ParseMode.MARKDOWN
+            f"User: <a href='tg://user?id={user.id}'>{user.first_name}</a>\n"
+            f"User ID:\n<code>{user.id}</code>",
+            parse_mode=ParseMode.HTML
         )
 
     user = message.from_user
     chat = message.chat
 
     text = (
-        f"**You:** {user.mention}\n"
-        f"**Your ID:**\n```{user.id}```\n"
-        f"**Chat ID:**\n```{chat.id}```"
+        f"You: <a href='tg://user?id={user.id}'>{user.first_name}</a>\n"
+        f"Your ID:\n<code>{user.id}</code>\n"
+        f"Chat ID:\n<code>{chat.id}</code>"
     )
-    await message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
+    await message.reply_text(text, parse_mode=ParseMode.HTML)
