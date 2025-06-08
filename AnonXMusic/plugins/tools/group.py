@@ -70,7 +70,7 @@ async def on_vc_end(_, message: Message):
 async def on_vc_invite(_, message: Message):
     inviter = message.from_user.mention if message.from_user else "Someone"
     invited = ", ".join([u.mention for u in message.video_chat_members_invited.users if u])
-    await message.reply(smallcaps(f"{inviter} invited: {invited}"))
+    await message.reply(f"{inviter} invited: {invited}")
 
 @app.on_message(filters.command("math"))
 async def math_solver(_, message: Message):
