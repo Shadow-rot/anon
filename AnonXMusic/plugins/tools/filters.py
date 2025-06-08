@@ -9,7 +9,6 @@ from pyrogram import filters
 from pyrogram.enums import ChatMemberStatus
 from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
-
 @app.on_message(filters.command("filter") & admin_filter)
 @user_admin
 async def _filter(client, message):
@@ -26,7 +25,6 @@ async def _filter(client, message):
     content, text, data_type = await GetFIlterMessage(message)
     await add_filter_db(chat_id, filter_name=filter_name, content=content, text=text, data_type=data_type)
     await message.reply(f"Saved filter `{filter_name}`.")
-
 
 @app.on_message(~filters.bot & filters.group, group=4)
 async def FilterCheckker(client, message):
@@ -58,7 +56,6 @@ async def FilterCheckker(client, message):
                 data_type=data_type
             )
 
-
 @app.on_message(filters.command('filters') & filters.group)
 async def _filters(client, message):
     chat_id = message.chat.id
@@ -77,7 +74,6 @@ async def _filters(client, message):
 
     await message.reply(filters_list)
 
-
 @app.on_message(filters.command('stopall') & admin_filter)
 async def stopall(client, message):
     chat_id = message.chat.id
@@ -94,10 +90,9 @@ async def stopall(client, message):
     )
 
     await message.reply(
-        text=f'Are you sure you want to stop ALL filters in `{chat_title}`? This action is irreversible.',
+        text=f'Are you sure you want to stop **ALL** filters in `{chat_title}`? This action is irreversible.',
         reply_markup=KEYBOARD
     )
-
 
 @app.on_callback_query(filters.regex("^custfilters_"))
 async def stopall_callback(client, callback_query: CallbackQuery):
@@ -108,12 +103,11 @@ async def stopall_callback(client, callback_query: CallbackQuery):
     if user.status != ChatMemberStatus.OWNER:
         return await callback_query.answer("Only Owner Can Use This!!")
 
-if query_data == 'stopall':
+    if query_data == 'stopall':
         await stop_all_db(chat_id)
         await callback_query.edit_message_text(text="I've deleted all chat filters.")
     elif query_data == 'cancel':
         await callback_query.edit_message_text(text='Cancelled.')
-
 
 @app.on_message(filters.command('stopfilter') & admin_filter)
 @user_admin
