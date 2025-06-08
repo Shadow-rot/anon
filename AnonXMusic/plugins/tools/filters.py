@@ -6,8 +6,9 @@ from AnonXMusic import app
 from config import BOT_USERNAME
 from AnonXMusic.utils.shadwo_ban import admin_filter
 from AnonXMusic.utils.filtersdb import add_filter_db, get_filters_list, get_filter, stop_db, stop_all_db
-from AnonXMusic.utils.filters_func import GetFIlterMessage, get_text_reason, SendFilterMessage
+from AnonXMusic.utils.filters_func import GetFilterMessage, get_text_reason, SendFilterMessage
 from AnonXMusic.utils.yumidb import user_admin
+
 
 def validate_buttons(text):
     """Parse and validate multiple buttons from filter text."""
@@ -19,36 +20,41 @@ def validate_buttons(text):
         url = url.strip()
         if url.startswith(("http://", "https://", "tg://")):
             buttons.append(InlineKeyboardButton(text=name.strip(), url=url))
-    
-    # Remove the button markup from the message text
+
     clean_text = re.sub(pattern, "", text).strip()
     return clean_text, buttons
+
 
 @app.on_message(filters.command("filter") & admin_filter)
 @user_admin
 async def _filter(client, message):
     chat_id = message.chat.id
-    if message.reply_to_message and not len(message.command) == 2:
-        return await message.reply("You need to give the filter a name!")
+
+    if message.reply_to_message and len(message.command) < 2:
+        return await message.reply("Please provide a name for the filter.")
 
     filter_name, filter_reason = get_text_reason(message)
-    if message.reply_to_message and not filter_reason:
-        return await message.reply("You need to give the filter some content!")
 
-    content, text, data_type = await GetFIlterMessage(message)
+    if message.reply_to_message and not filter_reason:
+        return await message.reply("Please provide some content for the filter.")
+
+    content, text, data_type = await GetFilterMessage(message)
     await add_filter_db(chat_id, filter_name=filter_name, content=content, text=text, data_type=data_type)
-    await message.reply(f"Saved filter `{filter_name}`.")
+    await message.reply(f"Filter '{filter_name}' saved.")
+
 
 @app.on_message(~filters.bot & filters.group, group=4)
-async def FilterCheckker(client, message):
+async def FilterChecker(client, message):
     if not message.text:
         return
+
     text = message.text
     chat_id = message.chat.id
-    if len(await get_filters_list(chat_id)) == 0:
+    ALL_FILTERS = await get_filters_list(chat_id)
+
+    if not ALL_FILTERS:
         return
 
-    ALL_FILTERS = await get_filters_list(chat_id)
     for filter_ in ALL_FILTERS:
         pattern = r"( |^|[^\w])" + re.escape(filter_) + r"( |$|[^\w])"
         if re.search(pattern, text, flags=re.IGNORECASE):
@@ -61,8 +67,7 @@ async def FilterCheckker(client, message):
                     filter_name=filter_,
                     content=content,
                     text=clean_text,
-                    data_type=data_type,
-                    reply_markup=markup,
+                    data_type=data_type
                 )
             else:
                 await SendFilterMessage(
@@ -70,10 +75,10 @@ async def FilterCheckker(client, message):
                     filter_name=filter_,
                     content=content,
                     text=None,
-                    data_type=data_type,
-                    reply_markup=None,
+                    data_type=data_type
                 )
-            return  # Stop after first match
+            return
+
 
 @app.on_message(filters.command('filters') & filters.group)
 async def _filters(client, message):
@@ -82,31 +87,34 @@ async def _filters(client, message):
     FILTERS = await get_filters_list(chat_id)
 
     if not FILTERS:
-        return await message.reply(f'No filters set in {chat_title}.')
+        return await message.reply(f"No filters set in {chat_title}.")
 
-    filters_list = f'List of filters in {chat_title}:\n'
+    filters_list = f"Filters in {chat_title}:\n"
     for filter_ in FILTERS:
-        filters_list += f'- `{filter_}`\n'
+        filters_list += f"- `{filter_}`\n"
 
     await message.reply(filters_list)
+
 
 @app.on_message(filters.command('stopall') & admin_filter)
 async def stopall(client, message):
     chat_id = message.chat.id
     chat_title = message.chat.title or "Group"
     user = await client.get_chat_member(chat_id, message.from_user.id)
+
     if user.status != ChatMemberStatus.OWNER:
-        return await message.reply_text("Only the group owner can use this.")
+        return await message.reply("Only the group owner can do this.")
 
     KEYBOARD = InlineKeyboardMarkup([
-        [InlineKeyboardButton(text='✅ Delete all filters', callback_data='custfilters_stopall')],
-        [InlineKeyboardButton(text='❌ Cancel', callback_data='custfilters_cancel')]
+        [InlineKeyboardButton(text='Confirm delete all filters', callback_data='custfilters_stopall')],
+        [InlineKeyboardButton(text='Cancel', callback_data='custfilters_cancel')]
     ])
 
     await message.reply(
-        text=f'Are you sure you want to delete **all** filters in `{chat_title}`?',
+        text=f"Are you sure you want to delete all filters in '{chat_title}'?",
         reply_markup=KEYBOARD
     )
+
 
 @app.on_callback_query(filters.regex("^custfilters_"))
 async def stopall_callback(client, cb: CallbackQuery):
@@ -115,24 +123,50 @@ async def stopall_callback(client, cb: CallbackQuery):
 
     user = await client.get_chat_member(chat_id, cb.from_user.id)
     if user.status != ChatMemberStatus.OWNER:
-        return await cb.answer("Only the group owner can do this!")
+        return await cb.answer("Only the group owner can do this.")
 
     if action == "stopall":
         await stop_all_db(chat_id)
-        await cb.edit_message_text("✅ All filters have been deleted.")
+        await cb.edit_message_text("All filters have been deleted.")
     elif action == "cancel":
-        await cb.edit_message_text("❌ Cancelled.")
+        await cb.edit_message_text("Action cancelled.")
+
 
 @app.on_message(filters.command('stopfilter') & admin_filter)
 @user_admin
 async def stop_filter(client, message):
     chat_id = message.chat.id
+
     if len(message.command) < 2:
-        return await message.reply('Usage: /stopfilter <filter name>')
+        return await message.reply("Usage: /stopfilter <filter name>")
 
     filter_name = message.command[1]
     if filter_name not in await get_filters_list(chat_id):
-        return await message.reply("No such filter exists.")
+        return await message.reply("No such filter found.")
 
     await stop_db(chat_id, filter_name)
-    await message.reply(f"Stopped filter `{filter_name}`.")
+    await message.reply(f"Filter '{filter_name}' removed.")
+
+
+@app.on_message(filters.command("editfilter") & admin_filter)
+@user_admin
+async def edit_filter(client, message):
+    chat_id = message.chat.id
+
+    if message.reply_to_message and len(message.command) < 2:
+        return await message.reply("Please provide the filter name to edit.")
+
+    filter_name, filter_reason = get_text_reason(message)
+    if not filter_name:
+        return await message.reply("Please provide a valid filter name.")
+
+    existing_filters = await get_filters_list(chat_id)
+    if filter_name not in existing_filters:
+        return await message.reply("No such filter exists. Use /filter to create one.")
+
+    content, text, data_type = await GetFilterMessage(message)
+    if not content and not text:
+        return await message.reply("No valid message or media found to update.")
+
+    await add_filter_db(chat_id, filter_name=filter_name, content=content, text=text, data_type=data_type)
+    await message.reply(f"Filter '{filter_name}' updated.")
