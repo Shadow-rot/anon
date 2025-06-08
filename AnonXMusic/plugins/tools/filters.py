@@ -1,13 +1,9 @@
 import re
 from pyrogram import filters
-from pyrogram.enums import ChatMemberStatus
-from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from AnonXMusic import app
-from config import BOT_USERNAME
-from AnonXMusic.utils.shadwo_ban import admin_filter
-from AnonXMusic.utils.filtersdb import add_filter_db, get_filters_list, get_filter, stop_db, stop_all_db
+from AnonXMusic.utils.filtersdb import get_filters_list, get_filter
 from AnonXMusic.utils.filters_func import GetFilterMessage, get_text_reason, SendFilterMessage
-from AnonXMusic.utils.yumidb import user_admin
 
 
 def validate_buttons(text):
@@ -23,6 +19,44 @@ def validate_buttons(text):
 
     clean_text = re.sub(pattern, "", text).strip()
     return clean_text, buttons
+
+
+@app.on_message(~filters.bot & filters.group, group=4)
+async def FilterChecker(client, message):
+    if not message.text:
+        return
+
+    text = message.text
+    chat_id = message.chat.id
+    ALL_FILTERS = await get_filters_list(chat_id)
+
+    if not ALL_FILTERS:
+        return
+
+    for filter_ in ALL_FILTERS:
+        pattern = r"( |^|[^\w])" + re.escape(filter_) + r"( |$|[^\w])"
+        if re.search(pattern, text, flags=re.IGNORECASE):
+            filter_name, content, text, data_type = await get_filter(chat_id, filter_)
+            if text:
+                clean_text, buttons = validate_buttons(text)
+                markup = InlineKeyboardMarkup([buttons]) if buttons else None
+                await SendFilterMessage(
+                    message=message,
+                    filter_name=filter_,
+                    content=content,
+                    text=clean_text,
+                    data_type=data_type,
+                    reply_markup=markup  # Pass buttons markup here
+                )
+            else:
+                await SendFilterMessage(
+                    message=message,
+                    filter_name=filter_,
+                    content=content,
+                    text=None,
+                    data_type=data_type
+                )
+            return
 
 
 @app.on_message(filters.command("filter") & admin_filter)
