@@ -30,7 +30,7 @@ async def SendFilterMessage(
     message_id = message.id
 
     if text:
-        text = await NoteFillings(message, text)
+        text = NoteFillings(message, text)
 
     try:
         if data_type == FilterMessageTypeMap.text.value:
