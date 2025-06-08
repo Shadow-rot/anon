@@ -294,9 +294,20 @@ sᴇɴᴅ ᴀ ᴄᴜsᴛᴏᴍ ᴡᴇʟᴄᴏᴍᴇ ᴍᴇssᴀɢᴇ ᴛᴏ ɴ�
     "hb25": """<b>FILTERS</b>
 <b>/filter [keyword] [reply]</b> – ꜱᴇᴛ ᴀ ᴄᴜꜱᴛᴏᴍ ᴀᴜᴛᴏ-ʀᴇᴘʟʏ ꜰᴏʀ ᴛʜᴇ ɢɪᴠᴇɴ ᴋᴇʏᴡᴏʀᴅ.<br>
 <b>/filters</b> – ʟɪꜱᴛ ᴀʟʟ ᴀᴄᴛɪᴠᴇ ꜰɪʟᴛᴇʀꜱ ɪɴ ᴛʜɪꜱ ᴄʜᴀᴛ.<br>
-<b>stopfilter [keyword]</b> – ᴅᴇʟᴇᴛᴇ ᴛʜᴇ ꜱᴘᴇᴄɪꜰɪᴇᴅ ꜰɪʟᴛᴇʀ.<br>
+<b>/stopfilter [keyword]</b> – ᴅᴇʟᴇᴛᴇ ᴛʜᴇ ꜱᴘᴇᴄɪꜰɪᴇᴅ ꜰɪʟᴛᴇʀ.<br>
 <b>/stopall</b> – ʀᴇᴍᴏᴠᴇ ᴀʟʟ ꜰɪʟᴛᴇʀꜱ (ᴀᴅᴍɪɴ ᴏɴʟʏ).<br>
-<i>Note:</i> ꜰɪʟᴛᴇʀꜱ ᴛʀɪɢɢᴇʀ ᴏɴ ᴇxᴀᴄᴛ ᴡᴏʀᴅ ᴍᴀᴛᴄʜᴇꜱ.
+
+<i>Note:</i> ꜰɪʟᴛᴇʀꜱ ᴛʀɪɢɢᴇʀ ᴏɴ ᴇxᴀᴄᴛ ᴡᴏʀᴅ ᴍᴀᴛᴄʜᴇꜱ.<br><br>
+
+<b>🔘 How to add buttons in a filter:</b><br>
+Use this format in your message:<br>
+<code>[Button Text](buttonurl:https://example.com)</code><br><br>
+
+<b>📌 Example:</b><br>
+<code>/filter welcome<br>
+Welcome to our group!<br>
+[Channel](buttonurl:https://t.me/siya_infoo)<br>
+[Group](buttonurl:https://t.me/+Yavzkol8U24wNzA1)</code>
 """,
     "hb26": """<b><u>ᴄʜᴀᴛɢᴘᴛ :</b></u>
 
