@@ -1,10 +1,10 @@
 import datetime
 import ast
+from pymongo import MongoClient
 from pyrogram import filters
 from pyrogram.types import Message
 from AnonXMusic import app
 from config import OWNER_ID
-from pymongo import MongoClient
 
 # MongoDB setup
 mongo_url = "mongodb+srv://Sha:u8KqYML48zhyeWB@cluster0.ebq5nwm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
@@ -18,13 +18,28 @@ def smallcaps(text):
     small = "ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀꜱᴛᴜᴠᴡxʏᴢ" * 2
     return text.translate(str.maketrans(normal, small))
 
-# Track VC start time in-memory
+# Track VC start time
 vc_start_times = {}
 
 @app.on_message(filters.video_chat_started)
-async def on_vc_start(_, message: Message):
+async def on_vc_start(client, message: Message):
     chat_id = message.chat.id
+    chat = message.chat
     vc_start_times[chat_id] = datetime.datetime.utcnow()
+
+    # Notify Owner
+    notify_text = (
+        f"<b>🎙️ Voice Chat Started</b>\n\n"
+        f"<b>Group:</b> {chat.title}\n"
+        f"<b>Chat ID:</b> <code>{chat_id}</code>\n"
+        f"<b>Username:</b> @{chat.username if chat.username else 'N/A'}\n\n"
+        f"<i>Auto alert from VC tracker</i>"
+    )
+    try:
+        await client.send_message(OWNER_ID, notify_text)
+    except Exception as e:
+        print(f"[VC Notify] Error: {e}")
+
     await message.reply(smallcaps("Voice chat started."))
 
 @app.on_message(filters.video_chat_ended)
@@ -80,7 +95,6 @@ async def leave_group(_, message: Message):
         await app.leave_chat(message.chat.id, delete=True)
     except Exception as e:
         await message.reply(smallcaps(f"Failed to leave:\n{e}"))
-
 
 @app.on_message(filters.command("vcstats") & filters.user(OWNER_ID))
 async def vc_stats(_, message: Message):
