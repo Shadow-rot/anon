@@ -24,92 +24,99 @@ async def SendFilterMessage(
     content: str,
     text: str,
     data_type: int,
-    reply_markup=None
+    reply_markup=None,  # Added this
 ):
     chat_id = message.chat.id
     message_id = message.id
 
-    if text:
-        text = NoteFillings(message, text)
+    # Parse buttons if any, only if no reply_markup passed (optional)
+    if text and reply_markup is None:
+        text, buttons = button_markdown_parser(text)
+        text = await NoteFillings(message, text) if callable(getattr(NoteFillings, "__await__", None)) else NoteFillings(message, text)
+        reply_markup = InlineKeyboardMarkup(buttons) if buttons else None
 
-    try:
-        if data_type == FilterMessageTypeMap.text.value:
-            await app.send_message(
-                chat_id=chat_id,
-                text=text,
-                reply_to_message_id=message_id,
-                reply_markup=reply_markup
-            )
+    if data_type == FilterMessageTypeMap.text.value:
+        await app.send_message(
+            chat_id=chat_id,
+            text=text,
+            reply_to_message_id=message_id,
+            reply_markup=reply_markup,
+            parse_mode="html"
+        )
 
-        elif data_type == FilterMessageTypeMap.sticker.value:
-            await app.send_sticker(
-                chat_id=chat_id,
-                sticker=content,
-                reply_to_message_id=message_id
-            )
+    elif data_type == FilterMessageTypeMap.sticker.value:
+        await app.send_sticker(
+            chat_id=chat_id,
+            sticker=content,
+            reply_to_message_id=message_id
+        )
 
-        elif data_type == FilterMessageTypeMap.animation.value:
-            await app.send_animation(
-                chat_id=chat_id,
-                animation=content,
-                caption=text,
-                reply_to_message_id=message_id,
-                reply_markup=reply_markup
-            )
+    elif data_type == FilterMessageTypeMap.animation.value:
+        await app.send_animation(
+            chat_id=chat_id,
+            animation=content,
+            caption=text,
+            reply_to_message_id=message_id,
+            reply_markup=reply_markup,
+            parse_mode="html"
+        )
 
-        elif data_type == FilterMessageTypeMap.document.value:
-            await app.send_document(
-                chat_id=chat_id,
-                document=content,
-                caption=text,
-                reply_to_message_id=message_id,
-                reply_markup=reply_markup
-            )
+    elif data_type == FilterMessageTypeMap.document.value:
+        await app.send_document(
+            chat_id=chat_id,
+            document=content,
+            caption=text,
+            reply_to_message_id=message_id,
+            reply_markup=reply_markup,
+            parse_mode="html"
+        )
 
-        elif data_type == FilterMessageTypeMap.photo.value:
-            await app.send_photo(
-                chat_id=chat_id,
-                photo=content,
-                caption=text,
-                reply_to_message_id=message_id,
-                reply_markup=reply_markup
-            )
+    elif data_type == FilterMessageTypeMap.photo.value:
+        await app.send_photo(
+            chat_id=chat_id,
+            photo=content,
+            caption=text,
+            reply_to_message_id=message_id,
+            reply_markup=reply_markup,
+            parse_mode="html"
+        )
 
-        elif data_type == FilterMessageTypeMap.audio.value:
-            await app.send_audio(
-                chat_id=chat_id,
-                audio=content,
-                caption=text,
-                reply_to_message_id=message_id,
-                reply_markup=reply_markup
-            )
+    elif data_type == FilterMessageTypeMap.audio.value:
+        await app.send_audio(
+            chat_id=chat_id,
+            audio=content,
+            caption=text,
+            reply_to_message_id=message_id,
+            reply_markup=reply_markup,
+            parse_mode="html"
+        )
 
-        elif data_type == FilterMessageTypeMap.voice.value:
-            await app.send_voice(
-                chat_id=chat_id,
-                voice=content,
-                caption=text,
-                reply_to_message_id=message_id,
-                reply_markup=reply_markup
-            )
+    elif data_type == FilterMessageTypeMap.voice.value:
+        await app.send_voice(
+            chat_id=chat_id,
+            voice=content,
+            caption=text,
+            reply_to_message_id=message_id,
+            reply_markup=reply_markup,
+            parse_mode="html"
+        )
 
-        elif data_type == FilterMessageTypeMap.video.value:
-            await app.send_video(
-                chat_id=chat_id,
-                video=content,
-                caption=text,
-                reply_to_message_id=message_id,
-                reply_markup=reply_markup
-            )
+    elif data_type == FilterMessageTypeMap.video.value:
+        await app.send_video(
+            chat_id=chat_id,
+            video=content,
+            caption=text,
+            reply_to_message_id=message_id,
+            reply_markup=reply_markup,
+            parse_mode="html"
+        )
 
-        elif data_type == FilterMessageTypeMap.video_note.value:
-            await app.send_video_note(
-                chat_id=chat_id,
-                video_note=content,
-                reply_to_message_id=message_id
-            )
-    except Exception as e:
-        await message.reply(f"❌ Failed to send filter message: `{e}`")
+    elif data_type == FilterMessageTypeMap.video_note.value:
+        await app.send_video_note(
+            chat_id=chat_id,
+            video_note=content,
+            reply_to_message_id=message_id
+        )
 
 
 async def GetFilterMessage(message: Message):
@@ -119,7 +126,10 @@ async def GetFilterMessage(message: Message):
 
     raw_text = message.text or message.caption or ""
 
-    if len(raw_text.split()) >= 3 and not message.reply_to_message:
+    if (
+        len(raw_text.split()) >= 3
+        and not message.reply_to_message
+    ):
         text = " ".join(raw_text.split()[2:])
         data_type = FilterMessageTypeMap.text.value
 
@@ -166,6 +176,7 @@ async def GetFilterMessage(message: Message):
 
         elif r.video_note:
             content = r.video_note.file_id
+            text = ""
             data_type = FilterMessageTypeMap.video_note.value
 
     return content, text, data_type
@@ -179,11 +190,7 @@ def get_text_reason(message: Message):
         query = text[index_finder[0] + 1:index_finder[1]]
         reason = text[index_finder[1] + 2:].strip() or None
     else:
-        try:
-            query = message.command[1]
-            reason = ' '.join(message.command[2:]).strip() or None
-        except IndexError:
-            query = None
-            reason = None
+        query = message.command[1]
+        reason = ' '.join(message.command[2:]).strip() or None
 
     return query, reason
