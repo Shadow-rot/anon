@@ -1,6 +1,6 @@
 import re
 from pyrogram import filters
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, ChatMemberStatus
 from AnonXMusic import app
 from AnonXMusic.utils.filtersdb import get_filters_list, get_filter
 from AnonXMusic.utils.filters_func import GetFilterMessage, get_text_reason, SendFilterMessage
@@ -75,43 +75,6 @@ async def _filter(client, message):
     content, text, data_type = await GetFilterMessage(message)
     await add_filter_db(chat_id, filter_name=filter_name, content=content, text=text, data_type=data_type)
     await message.reply(f"Filter '{filter_name}' saved.")
-
-
-@app.on_message(~filters.bot & filters.group, group=4)
-async def FilterChecker(client, message):
-    if not message.text:
-        return
-
-    text = message.text
-    chat_id = message.chat.id
-    ALL_FILTERS = await get_filters_list(chat_id)
-
-    if not ALL_FILTERS:
-        return
-
-    for filter_ in ALL_FILTERS:
-        pattern = r"( |^|[^\w])" + re.escape(filter_) + r"( |$|[^\w])"
-        if re.search(pattern, text, flags=re.IGNORECASE):
-            filter_name, content, text, data_type = await get_filter(chat_id, filter_)
-            if text:
-                clean_text, buttons = validate_buttons(text)
-                markup = InlineKeyboardMarkup([buttons]) if buttons else None
-                await SendFilterMessage(
-                    message=message,
-                    filter_name=filter_,
-                    content=content,
-                    text=clean_text,
-                    data_type=data_type
-                )
-            else:
-                await SendFilterMessage(
-                    message=message,
-                    filter_name=filter_,
-                    content=content,
-                    text=None,
-                    data_type=data_type
-                )
-            return
 
 
 @app.on_message(filters.command('filters') & filters.group)
