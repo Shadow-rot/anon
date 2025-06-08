@@ -61,7 +61,7 @@ async def FilterChecker(client, message):
             filter_name, content, text, data_type = await get_filter(chat_id, filter_)
             if text:
                 clean_text, buttons = validate_buttons(text)
-                markup = InlineKeyboardMarkup.from_button(buttons) if buttons else None
+                markup = InlineKeyboardMarkup([buttons]) if buttons else None
                 await SendFilterMessage(
                     message=message,
                     filter_name=filter_,
