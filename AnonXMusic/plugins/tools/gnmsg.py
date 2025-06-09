@@ -2,11 +2,13 @@ import re
 from pyrogram import filters
 import random
 from AnonXMusic import app
+from AnonXMusic.utils.autofix import auto_fix_handler
 
 
 
 ######### GOOD NIGHT 
 @app.on_message(filters.command(["n","oodnight",], prefixes=["g","G"]))
+@auto_fix_handler
 def goodnight_command_handler(_, message):
     sender = message.from_user.mention
     send_sticker = random.choice([True, False])
