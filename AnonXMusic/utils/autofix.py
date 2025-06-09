@@ -1,4 +1,3 @@
-"""
 import asyncio
 import traceback
 from pyrogram.errors import (
@@ -93,4 +92,3 @@ def auto_fix_handler(func):
         return None
 
     return wrapper
-"""
