@@ -2,12 +2,10 @@ import re
 from pyrogram import filters
 import random
 from AnonXMusic import app
-from AnonXMusic.utils.autofix import auto_fix_handler
 
 
  
 @app.on_message(filters.command(["m","goodmorning"], prefixes=["g","G","morning"]))
-@auto_fix_handler
 def goodnight_command_handler(_, message):
     sender = message.from_user.mention
     send_video = random.choice([True, False])
