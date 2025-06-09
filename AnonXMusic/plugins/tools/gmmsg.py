@@ -1,17 +1,19 @@
 import re
-from pyrogram import filters
 import random
+from pyrogram import filters
 from AnonXMusic import app
+from AnonXMusic.utils.autofix import auto_fix_handler  # Import the AutoFix wrapper
 
 
- 
-@app.on_message(filters.command(["m","goodmorning"], prefixes=["g","G","morning"]))
-def goodnight_command_handler(_, message):
+# AutoFix-protected handler
+@app.on_message(filters.command(["m", "goodmorning"], prefixes=["g", "G", "morning"]))
+@auto_fix_handler
+def goodmorning_command_handler(_, message):
     sender = message.from_user.mention
     send_video = random.choice([True, False])
     if send_video:
-        video_id = get_random_video()
-        app.send_video(message.chat.id, video_id)
+        video_url = get_random_video()
+        app.send_video(message.chat.id, video_url)
         message.reply_text(f"Good Morning, {sender}! Wakeup fast. 🥰 Babe")
     else:
         emoji = get_random_emoji()
@@ -20,19 +22,13 @@ def goodnight_command_handler(_, message):
 
 
 def get_random_video():
-    videos = [
-        "https://files.catbox.moe/aaf374.mp4", # video 1
-        "https://files.catbox.moe/ydjas6.mp4", # video 2
-        "https://files.catbox.moe/sm4i57.mp4", # video 3
+    return random.choice([
+        "https://files.catbox.moe/aaf374.mp4",
+        "https://files.catbox.moe/ydjas6.mp4",
+        "https://files.catbox.moe/sm4i57.mp4",
         "https://telegra.ph/file/941f1237d433974398b12.mp4",
-    ]
-    return random.choice(videos)
+    ])
 
 
 def get_random_emoji():
-    emojis = [
-        "🥰",
-        "🥱",
-        "🤗",
-    ]
-    return random.choice(emojis)
+    return random.choice(["🥰", "🥱", "🤗"])
