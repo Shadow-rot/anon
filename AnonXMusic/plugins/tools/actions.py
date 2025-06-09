@@ -11,7 +11,6 @@ import asyncio
 
 from AnonXMusic import app
 from AnonXMusic.utils.admin_check import admin_check
-from AnonXMusic.utils.autofix import auto_fix_handler  # <-- add this line
 from config import OWNER_ID
 
 
@@ -66,7 +65,6 @@ MODERATION_BUTTONS = InlineKeyboardMarkup(
 
 
 @app.on_message(filters.command("ban") & filters.group)
-@auto_fix_handler
 async def ban_command(client, message: Message):
     if not await admin_check(message) and message.from_user.id != OWNER_ID:
         return await message.reply_text("You are not allowed to use this command.")
@@ -99,7 +97,6 @@ async def ban_command(client, message: Message):
 
 
 @app.on_callback_query(filters.regex(r"^unban:(-?\d+):(\d+)$"))
-@auto_fix_handler
 async def unban_callback(client, callback_query: CallbackQuery):
     chat_id = int(callback_query.matches[0].group(1))
     user_id = int(callback_query.matches[0].group(2))
@@ -126,7 +123,6 @@ async def unban_callback(client, callback_query: CallbackQuery):
 
 
 @app.on_message(filters.command("unban") & filters.group)
-@auto_fix_handler
 async def unban_command(client, message: Message):
     if not await admin_check(message) and message.from_user.id != OWNER_ID:
         return await message.reply_text("You are not allowed to use this command.")
@@ -146,7 +142,6 @@ async def unban_command(client, message: Message):
 
 
 @app.on_message(filters.command("mute") & filters.group)
-@auto_fix_handler
 async def mute_command(client, message: Message):
     if not await admin_check(message) and message.from_user.id != OWNER_ID:
         return await message.reply_text("You are not allowed to use this command.")
@@ -168,7 +163,6 @@ async def mute_command(client, message: Message):
 
 
 @app.on_message(filters.command("unmute") & filters.group)
-@auto_fix_handler
 async def unmute_command(client, message: Message):
     if not await admin_check(message) and message.from_user.id != OWNER_ID:
         return await message.reply_text("You are not allowed to use this command.")
@@ -177,11 +171,11 @@ async def unmute_command(client, message: Message):
         return
     try:
         permissions = ChatPermissions(
-            can_send_messages=True,
-            can_send_media_messages=True,
-            can_send_other_messages=True,
-            can_add_web_page_previews=True,
-        )
+    can_send_messages=True,
+    can_send_media_messages=True,
+    can_send_other_messages=True,
+    can_add_web_page_previews=True,
+)
         await client.restrict_chat_member(message.chat.id, user.id, permissions)
         text = f"{user.mention} was unmuted by {message.from_user.mention}"
         if reason:
@@ -194,7 +188,6 @@ async def unmute_command(client, message: Message):
 
 
 @app.on_message(filters.command("kick") & filters.group)
-@auto_fix_handler
 async def kick_command(client, message: Message):
     if not await admin_check(message) and message.from_user.id != OWNER_ID:
         return await message.reply_text("You are not allowed to use this command.")
@@ -240,7 +233,6 @@ HELP_TEXT = (
 
 
 @app.on_message(filters.command("modhelp") & filters.group)
-@auto_fix_handler
 async def mod_help_command(client, message: Message):
     await message.reply_text(
         "<b>choose a command to view help:</b>",
@@ -249,7 +241,6 @@ async def mod_help_command(client, message: Message):
 
 
 @app.on_callback_query(filters.regex(r"^mod_(ban|unban|mute|unmute|kick|close)$"))
-@auto_fix_handler
 async def mod_help_buttons(client, callback_query: CallbackQuery):
     cmd = callback_query.data.split("_")[1]
 
@@ -302,7 +293,6 @@ async def mod_help_buttons(client, callback_query: CallbackQuery):
 
 
 @app.on_callback_query(filters.regex("mod_help"))
-@auto_fix_handler
 async def mod_help_back(client, callback_query: CallbackQuery):
     await callback_query.message.edit_text(
         "<b>choose a command to view help:</b>",
