@@ -1,4 +1,3 @@
-"""
 import asyncio
 import random
 from pyrogram import Client, filters
@@ -353,8 +352,10 @@ TAG_ALL = [
            " 𝐀𝐚𝐣 𝐓𝐮𝐦 𝐟𝐢𝐧𝐠𝐞𝐫 𝐬𝐞 𝐡𝐢 𝐤𝐚𝐚𝐦 𝐜𝐡𝐚𝐥𝐚𝐨. 𝐆𝐡𝐚𝐫 𝐦𝐞 𝐛𝐚𝐢𝐠𝐚𝐧 𝐨𝐫 𝐦𝐮𝐤𝐢 𝐤𝐡𝐚𝐭𝐚𝐦 𝐡𝐨 𝐠𝐲𝐞 𝐡𝐚𝐢 😁🥰 ",
            " 𝐍𝐚 𝐉𝐚𝐦𝐢𝐧 𝐏𝐞 𝐍𝐚 𝐀𝐬𝐡𝐦𝐚𝐧 𝐩𝐞 𝐓𝐞𝐫𝐢 𝐆𝐝 𝐦𝐚𝐫𝐮𝐧𝐠𝐚 𝐚𝐩𝐧𝐞 𝐁𝐡𝐚𝐢 𝐤𝐞 𝐦𝐚𝐤𝐚𝐧 𝐩𝐞😜** ",
            " 𝐎𝐲𝐲 𝐢𝐭𝐧𝐚 𝐡𝐨𝐭 𝐤𝐲𝐮 𝐡𝐨 𝐭𝐮𝐦 𝐝𝐞𝐤𝐡 𝐤𝐞 𝐤𝐡𝐚𝐝𝐚 𝐡𝐨 𝐣𝐚𝐭𝐚 𝐡𝐚𝐢 😂 𝐑𝐨𝐧𝐠𝐭𝐞😁😁😁🥰 ",
-        ]
+       
 
+
+# Your import for app, GN_MESSAGES, spam_chats, etc. goes here
 
 async def is_user_admin(client, chat_id, user_id):
     try:
@@ -363,184 +364,170 @@ async def is_user_admin(client, chat_id, user_id):
     except UserNotParticipant:
         return False
 
-
+# GN TAG
 @app.on_message(filters.command(["gntag"], prefixes=["/", "!"]))
 async def mention_all_gn(client, message):
     chat_id = message.chat.id
     if message.chat.type == ChatType.PRIVATE:
         return await message.reply("๏ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ᴏɴʟʏ ғᴏʀ ɢʀᴏᴜᴘs.")
-
     if not await is_user_admin(client, chat_id, message.from_user.id):
-        return await message.reply("๏ ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴅᴍɪɴ ʙᴀʙʏ, ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ ᴛᴀɢ ᴍᴇᴍʙᴇʀs.")
-
+        return await message.reply("๏ ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴅᴍɪɴ.")
     if chat_id in spam_chats:
-        return await message.reply("๏ ᴘʟᴇᴀsᴇ ᴀᴛ ғɪʀsᴛ sᴛᴏᴘ ʀᴜɴɴɪɴɢ ᴍᴇɴᴛɪᴏɴ ᴘʀᴏᴄᴇss...")
-
+        return await message.reply("๏ ꜱᴛᴏᴘ ᴘʀᴏᴄᴇss ᴏɴɢᴏɪɴɢ...")
     spam_chats.append(chat_id)
     try:
         async for member in client.get_chat_members(chat_id):
-            if not chat_id in spam_chats:
+            if chat_id not in spam_chats:
                 break
             if member.user.is_bot:
                 continue
             await client.send_message(
                 chat_id,
-                f"[{member.user.first_name}](tg://user?id={member.user.id}) {random.choice(GN_MESSAGES)}"
+                f"{member.user.mention} {random.choice(GN_MESSAGES)}",
+                parse_mode=ParseMode.HTML
             )
             await asyncio.sleep(4)
     finally:
         if chat_id in spam_chats:
             spam_chats.remove(chat_id)
 
+# GM TAG
 @app.on_message(filters.command(["gmtag"], prefixes=["/", "!"]))
 async def mention_all_gm(client, message):
     chat_id = message.chat.id
     if message.chat.type == ChatType.PRIVATE:
         return await message.reply("๏ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ᴏɴʟʏ ғᴏʀ ɢʀᴏᴜᴘs.")
-
     if not await is_user_admin(client, chat_id, message.from_user.id):
-        return await message.reply("๏ ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴅᴍɪɴ ʙᴀʙʏ, ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ ᴛᴀɢ ᴍᴇᴍʙᴇʀs.")
-
+        return await message.reply("๏ ɴᴏᴛ ᴀᴅᴍɪɴ.")
     if chat_id in spam_chats:
-        return await message.reply("๏ ᴘʟᴇᴀsᴇ ᴀᴛ ғɪʀsᴛ sᴛᴏᴘ ʀᴜɴɴɪɴɢ ᴍᴇɴᴛɪᴏɴ ᴘʀᴏᴄᴇss...")
-
+        return await message.reply("๏ ꜱᴛᴏᴘ ᴘʀᴏᴄᴇss ʀᴜɴɴɪɴɢ...")
     spam_chats.append(chat_id)
     try:
         async for member in client.get_chat_members(chat_id):
-            if not chat_id in spam_chats:
+            if chat_id not in spam_chats:
                 break
             if member.user.is_bot:
                 continue
             await client.send_message(
                 chat_id,
-                f"[{member.user.first_name}](tg://user?id={member.user.id}) {random.choice(GM_MESSAGES)}"
+                f"{member.user.mention} {random.choice(GM_MESSAGES)}",
+                parse_mode=ParseMode.HTML
             )
             await asyncio.sleep(4)
     finally:
-        if chat_id in spam_chats:
-            spam_chats.remove(chat_id)
+        spam_chats.remove(chat_id)
 
+# HI TAG
 @app.on_message(filters.command(["hitag"], prefixes=["/", "!"]))
 async def mention_all_hi(client, message):
     chat_id = message.chat.id
     if message.chat.type == ChatType.PRIVATE:
-        return await message.reply("๏ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ᴏɴʟʏ ғᴏʀ ɢʀᴏᴜᴘs.")
-
+        return await message.reply("๏ ᴏɴʟʏ ɪɴ ɢʀᴏᴜᴘ.")
     if not await is_user_admin(client, chat_id, message.from_user.id):
-        return await message.reply("๏ ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴅᴍɪɴ ʙᴀʙʏ, ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ ᴛᴀɢ ᴍᴇᴍʙᴇʀs.")
-
+        return await message.reply("๏ ɴᴏᴛ ᴀᴅᴍɪɴ.")
     if chat_id in spam_chats:
-        return await message.reply("๏ ᴘʟᴇᴀsᴇ ᴀᴛ ғɪʀsᴛ sᴛᴏᴘ ʀᴜɴɴɪɴɢ ᴍᴇɴᴛɪᴏɴ ᴘʀᴏᴄᴇss...")
-
+        return await message.reply("๏ ᴘʀᴏᴄᴇss ᴀʟʀᴇᴀᴅʏ ʀᴜɴɴɪɴɢ...")
     spam_chats.append(chat_id)
     try:
         async for member in client.get_chat_members(chat_id):
-            if not chat_id in spam_chats:
+            if chat_id not in spam_chats:
                 break
             if member.user.is_bot:
                 continue
             await client.send_message(
                 chat_id,
-                f"[{member.user.first_name}](tg://user?id={member.user.id}) {random.choice(HI_MESSAGES)}"
+                f"{member.user.mention} {random.choice(HI_MESSAGES)}",
+                parse_mode=ParseMode.HTML
             )
             await asyncio.sleep(4)
     finally:
-        if chat_id in spam_chats:
-            spam_chats.remove(chat_id)
+        spam_chats.remove(chat_id)
 
+# LIFE QUOTES TAG
 @app.on_message(filters.command(["lifetag"], prefixes=["/", "!"]))
 async def mention_all_quotes(client, message):
     chat_id = message.chat.id
     if message.chat.type == ChatType.PRIVATE:
-        return await message.reply("๏ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ᴏɴʟʏ ғᴏʀ ɢʀᴏᴜᴘs.")
-
+        return await message.reply("๏ ᴘʀɪᴠᴀᴛᴇ ɴᴏᴛ ᴀʟʟᴏᴡᴇᴅ.")
     if not await is_user_admin(client, chat_id, message.from_user.id):
-        return await message.reply("๏ ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴅᴍɪɴ ʙᴀʙʏ, ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ ᴛᴀɢ ᴍᴇᴍʙᴇʀs.")
-
+        return await message.reply("๏ ɴᴏᴛ ᴀᴅᴍɪɴ.")
     if chat_id in spam_chats:
-        return await message.reply("๏ ᴘʟᴇᴀsᴇ ᴀᴛ ғɪʀsᴛ sᴛᴏᴘ ʀᴜɴɴɪɴɢ ᴍᴇɴᴛɪᴏɴ ᴘʀᴏᴄᴇss...")
-
+        return await message.reply("๏ ᴘʀᴏᴄᴇss ᴀʟʀᴇᴀᴅʏ ɪɴ ᴘʟᴀᴄᴇ.")
     spam_chats.append(chat_id)
     try:
         async for member in client.get_chat_members(chat_id):
-            if not chat_id in spam_chats:
+            if chat_id not in spam_chats:
                 break
             if member.user.is_bot:
                 continue
             await client.send_message(
                 chat_id,
-                f"[{member.user.first_name}](tg://user?id={member.user.id}) {random.choice(QUOTES)}"
+                f"{member.user.mention} {random.choice(QUOTES)}",
+                parse_mode=ParseMode.HTML
             )
             await asyncio.sleep(4)
     finally:
-        if chat_id in spam_chats:
-            spam_chats.remove(chat_id)
+        spam_chats.remove(chat_id)
 
+# SHAYARI TAG
 @app.on_message(filters.command(["shayari"], prefixes=["/", "!"]))
 async def mention_all_shayari(client, message):
     chat_id = message.chat.id
     if message.chat.type == ChatType.PRIVATE:
-        return await message.reply("๏ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ᴏɴʟʏ ғᴏʀ ɢʀᴏᴜᴘs.")
-
+        return await message.reply("๏ ᴏɴʟʏ ɪɴ ɢʀᴏᴜᴘ.")
     if not await is_user_admin(client, chat_id, message.from_user.id):
-        return await message.reply("๏ ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴅᴍɪɴ ʙᴀʙʏ, ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ ᴛᴀɢ ᴍᴇᴍʙᴇʀs.")
-
+        return await message.reply("๏ ɴᴏᴛ ᴀᴅᴍɪɴ.")
     if chat_id in spam_chats:
-        return await message.reply("๏ ᴘʟᴇᴀsᴇ ᴀᴛ ғɪʀsᴛ sᴛᴏᴘ ʀᴜɴɴɪɴɢ ᴍᴇɴᴛɪᴏɴ ᴘʀᴏᴄᴇss...")
-
+        return await message.reply("๏ ᴘʀᴏᴄᴇss ᴀʟʀᴇᴀᴅʏ ʀᴜɴɴɪɴɢ...")
     spam_chats.append(chat_id)
     try:
         async for member in client.get_chat_members(chat_id):
-            if not chat_id in spam_chats:
+            if chat_id not in spam_chats:
                 break
             if member.user.is_bot:
                 continue
             await client.send_message(
                 chat_id,
-                f"[{member.user.first_name}](tg://user?id={member.user.id}) {random.choice(SHAYARI)}"
+                f"{member.user.mention} {random.choice(SHAYARI)}",
+                parse_mode=ParseMode.HTML
             )
             await asyncio.sleep(4)
     finally:
-        if chat_id in spam_chats:
-            spam_chats.remove(chat_id)
+        spam_chats.remove(chat_id)
 
+# TAGALL
 @app.on_message(filters.command(["tagall"], prefixes=["/", "!"]))
 async def mention_all_tagall(client, message):
     chat_id = message.chat.id
     if message.chat.type == ChatType.PRIVATE:
-        return await message.reply("๏ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ᴏɴʟʏ ғᴏʀ ɢʀᴏᴜᴘs.")
-
+        return await message.reply("๏ ᴏɴʟʏ ɪɴ ɢʀᴏᴜᴘ.")
     if not await is_user_admin(client, chat_id, message.from_user.id):
-        return await message.reply("๏ ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴅᴍɪɴ ʙᴀʙʏ, ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ ᴛᴀɢ ᴍᴇᴍʙᴇʀs.")
-
+        return await message.reply("๏ ɴᴏᴛ ᴀᴅᴍɪɴ.")
     if chat_id in spam_chats:
-        return await message.reply("๏ ᴘʟᴇᴀsᴇ ᴀᴛ ғɪʀsᴛ sᴛᴏᴘ ʀᴜɴɴɪɴɢ ᴍᴇɴᴛɪᴏɴ ᴘʀᴏᴄᴇss...")
-
+        return await message.reply("๏ ᴘʀᴏᴄᴇss ᴀʟʀᴇᴀᴅʏ ʀᴜɴɴɪɴɢ...")
     spam_chats.append(chat_id)
     try:
         async for member in client.get_chat_members(chat_id):
-            if not chat_id in spam_chats:
+            if chat_id not in spam_chats:
                 break
             if member.user.is_bot:
                 continue
             await client.send_message(
                 chat_id,
-                f"[{member.user.first_name}](tg://user?id={member.user.id}) {random.choice(TAG_ALL)}"
+                f"{member.user.mention} {random.choice(TAG_ALL)}",
+                parse_mode=ParseMode.HTML
             )
             await asyncio.sleep(4)
     finally:
-        if chat_id in spam_chats:
-            spam_chats.remove(chat_id)
+        spam_chats.remove(chat_id)
 
+# STOP TAGGING
 @app.on_message(filters.command(["gmstop", "gnstop", "histop", "lifestop", "shayarioff", "tagoff", "tagstop"], prefixes=["/", "!"]))
 async def cancel_mention(client, message):
     chat_id = message.chat.id
-    if not chat_id in spam_chats:
-        return await message.reply("๏ ᴄᴜʀʀᴇɴᴛʟʏ ɪ'ᴍ ɴᴏᴛ ᴛᴀɢɢɪɴɢ ʙᴀʙʏ.")
-
+    if chat_id not in spam_chats:
+        return await message.reply("๏ ɴᴏ ᴛᴀɢɢɪɴɢ ɪɴ ᴘʀᴏɢʀᴇss.")
     if not await is_user_admin(client, chat_id, message.from_user.id):
-        return await message.reply("๏ ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴅᴍɪɴ ʙᴀʙʏ, ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ ᴛᴀɢ ᴍᴇᴍʙᴇʀs.")
-
+        return await message.reply("๏ ᴏɴʟʏ ᴀᴅᴍɪɴ ᴄᴀɴ sᴛᴏᴘ.")
     spam_chats.remove(chat_id)
-    await message.reply("๏ 🦋ᴍᴇɴᴛɪᴏɴ ʀᴏᴋɴᴇ ᴡᴀʟᴇ ᴋɪ ᴍᴀᴀ ᴋᴀ ʙʜᴀʀᴏsᴀ ᴊᴇᴇᴛᴜ.....🫠 ๏")
-"""
+    await message.reply("๏ 🦋ᴍᴇɴᴛɪᴏɴ ꜱᴛᴏᴘᴘᴇᴅ ʙᴀʙʏ...🫠 ๏")
