@@ -1,3 +1,4 @@
+"""
 import asyncio
 import logging
 from datetime import datetime, timedelta
@@ -51,3 +52,4 @@ def add_retryfix_command(app: Client):
             return await message.reply_text(f"✅ Plugin `{plugin}` has been re-enabled.")
         else:
             return await message.reply_text(f"⚠️ Plugin `{plugin}` is not disabled.")
+"""
