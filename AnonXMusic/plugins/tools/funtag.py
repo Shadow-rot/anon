@@ -1,3 +1,4 @@
+"""
 import asyncio
 import random
 from pyrogram import Client, filters
@@ -542,3 +543,4 @@ async def cancel_mention(client, message):
 
     spam_chats.remove(chat_id)
     await message.reply("๏ 🦋ᴍᴇɴᴛɪᴏɴ ʀᴏᴋɴᴇ ᴡᴀʟᴇ ᴋɪ ᴍᴀᴀ ᴋᴀ ʙʜᴀʀᴏsᴀ ᴊᴇᴇᴛᴜ.....🫠 ๏")
+"""
