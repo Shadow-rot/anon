@@ -3,6 +3,7 @@ from pyrogram.types import ChatPrivileges, InlineKeyboardMarkup, InlineKeyboardB
 from pyrogram.errors import ChatAdminRequired
 from functools import wraps
 from AnonXMusic import app
+from AnonXMusic.utils.autofix import auto_fix_handler  # <-- add this line
 
 # Mention helper (uses Pyrogram's built-in .mention)
 def admin_required(*privileges):
@@ -76,6 +77,7 @@ INLINE_PROMOTE_BUTTON = InlineKeyboardMarkup(
 )
 
 @app.on_callback_query(filters.regex("promote_help_info"))
+@auto_fix_handler
 async def promote_help_popup(client, callback_query):
     await callback_query.answer(
         "Usage:\n/promote @user [title]\nYou can also reply to a user.\n\nAuto-title = Moderator (if not given)",
@@ -84,6 +86,7 @@ async def promote_help_popup(client, callback_query):
 
 @app.on_message(filters.command("promote"))
 @admin_required("can_promote_members")
+@auto_fix_handler
 async def promote_command_handler(client, message):
     user_id, first_name, title = await extract_user_and_title(message, client)
     if not user_id:
@@ -131,6 +134,7 @@ async def promote_command_handler(client, message):
 
 @app.on_message(filters.command("fullpromote"))
 @admin_required("can_promote_members")
+@auto_fix_handler
 async def fullpromote_command_handler(client, message):
     user_id, first_name, title = await extract_user_and_title(message, client)
     if not user_id:
@@ -177,6 +181,7 @@ async def fullpromote_command_handler(client, message):
 
 @app.on_message(filters.command("demote"))
 @admin_required("can_promote_members")
+@auto_fix_handler
 async def demote_command_handler(client, message):
     user_id, first_name, _ = await extract_user_and_title(message, client)
     if not user_id:
