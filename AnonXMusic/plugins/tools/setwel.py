@@ -1,154 +1,163 @@
+# welcome.py
+
 import re
 from pyrogram import filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-from pyrogram.enums import ParseMode
-from motor.motor_asyncio import AsyncIOMotorClient
+from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram.enums import ParseMode, ChatPermissions
 from AnonXMusic import app
 from AnonXMusic.utils.admin_check import admin_check
+from motor.motor_asyncio import AsyncIOMotorClient
 
-# MongoDB Setup
 MONGO_URI = "mongodb+srv://Sha:u8KqYML48zhyeWB@cluster0.ebq5nwm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-client = AsyncIOMotorClient(MONGO_URI)
-db = client["AnonXMusic"]["welcome"]
+mongo_client = AsyncIOMotorClient(MONGO_URI)
+db = mongo_client["anonxmusic"]["welcome"]
 
-# Format placeholders
-def format_text(text: str, user, chat):
-    return text.format(
-        mention=user.mention,
-        first_name=user.first_name,
-        last_name=user.last_name or "",
-        full_name=f"{user.first_name} {(user.last_name or '')}".strip(),
-        username=f"@{user.username}" if user.username else user.first_name,
-        chat_title=chat.title
-    )
+def parse_variables(text: str, user, chat):
+    variables = {
+        "{first}": user.first_name or "",
+        "{last}": user.last_name or user.first_name or "",
+        "{fullname}": f"{user.first_name or ''} {user.last_name or ''}".strip(),
+        "{mention}": user.mention,
+        "{username}": f"@{user.username}" if user.username else user.mention,
+        "{id}": str(user.id),
+        "{chatname}": chat.title,
+        "{count}": str(chat.members_count) if hasattr(chat, 'members_count') else "N/A",
+    }
+    for key, value in variables.items():
+        text = text.replace(key, value)
+    return text
 
+
+def extract_buttons(text: str):
+    pattern = r"(.*?)buttonurl://(.*?)(:same)?"
+    matches = re.findall(pattern, text)
+    buttons = []
+    current_row = []
+
+    for match in matches:
+        label, url, same = match
+        btn = InlineKeyboardButton(label, url=url)
+        if same:
+            current_row.append(btn)
+        else:
+            if current_row:
+                buttons.append(current_row)
+            current_row = [btn]
+
+    if current_row:
+        buttons.append(current_row)
+
+    clean_text = re.sub(pattern, "", text).strip()
+    return clean_text, buttons
 # Set welcome
 @app.on_message(filters.command("setwelcome") & filters.group)
 @admin_check
-async def set_welcome(app, message: Message):
+async def set_welcome(_, message: Message):
     chat_id = message.chat.id
+    bot_member = await app.get_chat_member(chat_id, "me")
 
-    if not await is_bot_admin(chat_id):
-        return await message.reply("🚫 I need to be admin to save welcome messages.")
+    if not bot_member.can_send_messages:
+        return await message.reply("I don't have permission to send messages in this group.")
 
-    if message.reply_to_message:
-        content_type = "media" if message.reply_to_message.media else "text"
-        msg_id = message.reply_to_message.id
-        text = message.reply_to_message.caption or message.reply_to_message.text or "Welcome {mention}"
-    elif len(message.command) > 1:
-        content_type = "text"
-        msg_id = None
-        text = message.text.split(None, 1)[1]
-    else:
-        return await message.reply("📌 Reply to a message or provide text after the command.")
+    reply = message.reply_to_message
+    if not reply:
+        return await message.reply("Reply to a text/media to set as welcome.")
 
-    reply_markup = message.reply_to_message.reply_markup if message.reply_to_message else None
-    buttons = []
-    if reply_markup:
-        for row in reply_markup.inline_keyboard:
-            for btn in row:
-                if btn.url:
-                    buttons.append([btn.text, btn.url])
+    file_id = None
+    media_type = None
+    if reply.photo:
+        file_id, media_type = reply.photo.file_id, "photo"
+    elif reply.video:
+        file_id, media_type = reply.video.file_id, "video"
+    elif reply.audio:
+        file_id, media_type = reply.audio.file_id, "audio"
+    elif reply.voice:
+        file_id, media_type = reply.voice.file_id, "voice"
+    elif reply.document:
+        file_id, media_type = reply.document.file_id, "document"
+    elif reply.text:
+        media_type = "text"
 
-    await db.update_one(
-        {"chat_id": chat_id},
-        {"$set": {
-            "type": content_type,
-            "msg_id": msg_id,
+    raw_text = reply.caption if media_type != "text" else reply.text
+    text, buttons = extract_buttons(raw_text or "")
+
+    await db.update_one({"chat_id": chat_id}, {
+        "$set": {
             "text": text,
+            "media_type": media_type,
+            "file_id": file_id,
             "buttons": buttons
-        }},
-        upsert=True
-    )
-    await message.reply("✅ Welcome message saved!", parse_mode=ParseMode.HTML)
+        }
+    }, upsert=True)
+
+    await message.reply("✅ Welcome message has been set successfully.")
 
 # Delete welcome
 @app.on_message(filters.command("delwelcome") & filters.group)
 @admin_check
-async def del_welcome(app, message: Message):
-    result = await db.delete_one({"chat_id": message.chat.id})
-    if result.deleted_count:
-        await message.reply("❌ Welcome message deleted.", parse_mode=ParseMode.HTML)
-    else:
-        await message.reply("⚠️ No welcome message was set.", parse_mode=ParseMode.HTML)
-
-# Send welcome when member joins
-@app.on_message(filters.new_chat_members)
-async def welcome_new_member(app, message: Message):
-    new_user = message.new_chat_members[0]
+async def delete_welcome(_, message: Message):
     chat_id = message.chat.id
-
-    welcome = await db.find_one({"chat_id": chat_id})
-    if not welcome:
-        return
-
-    text = format_text(welcome.get("text", "Welcome {mention}"), new_user, message.chat)
-    buttons = [[InlineKeyboardButton(text=b[0], url=b[1])] for b in welcome.get("buttons", [])]
-
-    if welcome["type"] == "media" and welcome.get("msg_id"):
-        try:
-            await app.copy_message(
-                chat_id=chat_id,
-                from_chat_id=chat_id,
-                message_id=welcome["msg_id"],
-                caption=text,
-                reply_markup=InlineKeyboardMarkup(buttons) if buttons else None,
-            )
-        except Exception:
-            await message.reply(text, reply_markup=InlineKeyboardMarkup(buttons) if buttons else None)
+    deleted = await db.delete_one({"chat_id": chat_id})
+    if deleted.deleted_count:
+        await message.reply("✅ Welcome message deleted.")
     else:
-        await message.reply(text, reply_markup=InlineKeyboardMarkup(buttons) if buttons else None)
+        await message.reply("No welcome message was set.")
 
-# Help module
-@app.on_message(filters.command("welcomehelp") & filters.group)
-@admin_check
-async def welcome_help(app, message: Message):
-    help_text = (
-        "<b>👋 Welcome System Help</b>\n\n"
-        "📌 To set welcome:\n"
-        "• <code>/setwelcome Your text here</code>\n"
-        "• Or reply to any message (media/text) with <code>/setwelcome</code>\n\n"
-        "🧩 Variables:\n"
-        "• <code>{mention}</code> - Mention user\n"
-        "• <code>{first_name}</code>, <code>{last_name}</code>\n"
-        "• <code>{full_name}</code>, <code>{username}</code>\n"
-        "• <code>{chat_title}</code> - Group name\n\n"
-        "🗑 To delete:\n"
-        "<code>/delwelcome</code>"
+@app.on_message(filters.command("welcomehelp"))
+async def welcome_help(_, message: Message):
+    text = (
+        "<b>👋 Welcome Module Help</b>\n\n"
+        "<b>Commands:</b>\n"
+        "• <code>/setwelcome</code> - Reply to any message or text to set it as welcome.\n"
+        "• <code>/delwelcome</code> - Delete current welcome.\n"
+        "• <code>/welcomehelp</code> - Show this help.\n\n"
+        "<b>Supported Variables:</b>\n"
+        "• {first} - First name\n"
+        "• {last} - Last name\n"
+        "• {fullname} - Full name\n"
+        "• {username} - Username or mention\n"
+        "• {mention} - Mention\n"
+        "• {id} - User ID\n"
+        "• {chatname} - Chat title\n"
+        "• {count} - Member count\n\n"
+        "<b>Formatting:</b>\n"
+        "• <code>*bold*</code>, <code>_italic_</code>, <code>__underline__</code>\n"
+        "• <code>[text](buttonurl://link)</code> - Button\n"
+        "• <code>:same</code> - Add button to same row\n"
+        "• Reply with any media to set media-based welcome.\n\n"
+        "Example:\n<code>Hello {mention}, welcome to {chatname}!</code>\n"
+        "[Rules](buttonurl://t.me/yourruleslink)\n\n"
+        "➕ Buttons, Markdown, media all are supported!"
     )
 
     keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🎯 How to Set", callback_data="help_set"),
-         InlineKeyboardButton("🗑 Delete", callback_data="help_del")],
-        [InlineKeyboardButton("🧩 Variables", callback_data="help_vars")]
+        [InlineKeyboardButton("Back to Group", url=f"https://t.me/{app.me.username}?startgroup=true")],
     ])
 
-    await message.reply(help_text, reply_markup=keyboard, parse_mode=ParseMode.HTML)
+    await message.reply(text, reply_markup=keyboard, parse_mode=ParseMode.HTML)
 
-# Help buttons
-@app.on_callback_query(filters.regex("help_"))
-async def on_help_button(app, callback):
-    data = callback.data
+@app.on_message(filters.new_chat_members)
+async def welcome_new_member(_, message: Message):
+    chat_id = message.chat.id
+    data = await db.find_one({"chat_id": chat_id})
+    if not data:
+        return
 
-    if data == "help_set":
-        await callback.message.edit_text(
-            "To set welcome:\n\n"
-            "• /setwelcome Welcome {mention} to {chat_title}\n"
-            "• Or reply to a media/text with /setwelcome\n\n"
-            "Supports buttons and variables.",
-            parse_mode=ParseMode.HTML)
-    elif data == "help_del":
-        await callback.message.edit_text(
-            "To delete welcome message:\n\n"
-            "<code>/delwelcome</code>",
-            parse_mode=ParseMode.HTML)
-    elif data == "help_vars":
-        await callback.message.edit_text(
-            "Available variables:\n\n"
-            "• {mention} - User mention\n"
-            "• {first_name}, {last_name}\n"
-            "• {full_name}, {username}\n"
-            "• {chat_title} - Group name",
-            parse_mode=ParseMode.HTML)
+    for user in message.new_chat_members:
+        text = parse_variables(data.get("text", "Welcome {mention}!"), user, message.chat)
+        buttons = InlineKeyboardMarkup(data.get("buttons", [])) if data.get("buttons") else None
 
-    await callback.answer()
+        if data["media_type"] == "text":
+            await message.reply(text, reply_markup=buttons, parse_mode=ParseMode.MARKDOWN)
+        else:
+            send_kwargs = dict(chat_id=chat_id, caption=text, reply_markup=buttons, parse_mode=ParseMode.MARKDOWN)
+            if data["media_type"] == "photo":
+                await app.send_photo(data["file_id"], **send_kwargs)
+            elif data["media_type"] == "video":
+                await app.send_video(data["file_id"], **send_kwargs)
+            elif data["media_type"] == "audio":
+                await app.send_audio(data["file_id"], **send_kwargs)
+            elif data["media_type"] == "voice":
+                await app.send_voice(data["file_id"], **send_kwargs)
+            elif data["media_type"] == "document":
+                await app.send_document(data["file_id"], **send_kwargs)
