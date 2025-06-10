@@ -51,9 +51,10 @@ def extract_buttons(text: str):
 async def set_welcome(_, message: Message):
     chat_id = message.chat.id
     bot_member = await app.get_chat_member(chat_id, "me")
-if bot_member.status in ("administrator", "owner"):
-    if not getattr(bot_member.privileges, "can_send_messages", True):
-        return await message.reply("❌ I can't send messages here.")
+    
+    if bot_member.status in ("administrator", "owner"):
+        if not getattr(bot_member.privileges, "can_send_messages", True):
+            return await message.reply("❌ I can't send messages here.")
 
     reply = message.reply_to_message
     if not reply:
@@ -61,6 +62,7 @@ if bot_member.status in ("administrator", "owner"):
 
     file_id = None
     media_type = None
+
     if reply.photo:
         file_id, media_type = reply.photo.file_id, "photo"
     elif reply.video:
@@ -77,14 +79,18 @@ if bot_member.status in ("administrator", "owner"):
     raw_text = reply.caption if media_type != "text" else reply.text
     text, buttons = extract_buttons(raw_text or "")
 
-    await db.update_one({"chat_id": chat_id}, {
-        "$set": {
-            "text": text,
-            "media_type": media_type,
-            "file_id": file_id,
-            "buttons": buttons
-        }
-    }, upsert=True)
+    await db.update_one(
+        {"chat_id": chat_id},
+        {
+            "$set": {
+                "text": text,
+                "media_type": media_type,
+                "file_id": file_id,
+                "buttons": buttons,
+            }
+        },
+        upsert=True,
+    )
 
     await message.reply("✅ Welcome message has been set.")
 
