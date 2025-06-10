@@ -5,7 +5,6 @@ from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMa
 
 from AnonXMusic import app
 from config import BOT_USERNAME
-from AnonXMusic.utils.autofix import auto_fix_handler  # ✅ Auto error handler
 from AnonXMusic.utils.shadwo_ban import admin_filter
 from AnonXMusic.utils.filtersdb import (
     add_filter_db,
@@ -43,7 +42,6 @@ async def _filter(client, message):
 
 
 @app.on_message(~filters.bot & filters.group, group=4)
-@auto_fix_handler
 async def FilterCheckker(client, message):
     if not message.text:
         return
@@ -78,7 +76,6 @@ async def FilterCheckker(client, message):
 
 
 @app.on_message(filters.command('filters') & filters.group)
-@auto_fix_handler
 async def _filters(client, message):
     chat_id = message.chat.id
     chat_title = message.chat.title or "local"
@@ -102,7 +99,6 @@ async def _filters(client, message):
 
 
 @app.on_message(filters.command('stopall') & admin_filter)
-@auto_fix_handler
 async def stopall(client, message):
     chat_id = message.chat.id
     chat_title = message.chat.title or "Group"
@@ -124,7 +120,6 @@ async def stopall(client, message):
 
 
 @app.on_callback_query(filters.regex("^custfilters_"))
-@auto_fix_handler
 async def stopall_callback(client, callback_query: CallbackQuery):
     chat_id = callback_query.message.chat.id
     query_data = callback_query.data.split('_')[1]
@@ -142,7 +137,6 @@ async def stopall_callback(client, callback_query: CallbackQuery):
 
 @app.on_message(filters.command('stopfilter') & admin_filter)
 @user_admin
-@auto_fix_handler
 async def stop(client, message):
     chat_id = message.chat.id
 
