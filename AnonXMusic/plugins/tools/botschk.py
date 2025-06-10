@@ -5,13 +5,14 @@ from pyrogram import filters
 
 from AnonXMusic import app
 from AnonXMusic.utils.database import get_assistant
-
+from AnonXMusic.utils.autofix import auto_fix_handler  # ✅ AutoFix decorator
 # Assuming Userbot is defined elsewhere
 
 last_checked_time = None
 
 
 @app.on_message(filters.command("botschk"))
+@auto_fix_handler
 async def check_bots_command(client, message):
     global last_checked_time
     try:
