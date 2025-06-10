@@ -4,9 +4,11 @@ from gtts import gTTS
 from pyrogram import filters
 
 from AnonXMusic import app
+from AnonXMusic.utils.autofix import auto_fix_handler  # <-- add this line
 
 
 @app.on_message(filters.command("tts"))
+@auto_fix_handler
 async def text_to_speech(client, message):
     if len(message.command) < 2:
         return await message.reply_text(
