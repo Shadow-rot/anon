@@ -5,8 +5,10 @@ from bing_image_downloader import downloader
 from pyrogram import Client, filters
 from pyrogram.types import InputMediaPhoto, Message
 from AnonXMusic import app
+from AnonXMusic.utils.autofix import auto_fix_handler  # <-- add this line
 
 @app.on_message(filters.command(["img", "image"], prefixes=["/", "!", "."]))
+@auto_fix_handler
 async def google_img_search(client: Client, message: Message):
     chat_id = message.chat.id
 
