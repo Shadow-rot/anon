@@ -9,6 +9,7 @@ from pyrogram.enums import ChatAction
 from lexica import AsyncClient, languageModels, Messages
 
 from AnonXMusic import app
+from AnonXMusic.utils.autofix import auto_fix_handler  # ✅ AutoFix decorator
 
 
 def get_prompt(message: Message):
@@ -47,6 +48,7 @@ def format_response(model_name: str, response_content: str) -> str:
 
 
 @app.on_message(filters.command("bard"))
+@auto_fix_handler
 async def bard_handler(client: Client, message: Message):
     prompt = get_prompt(message)
     if not prompt:
@@ -70,6 +72,7 @@ async def bard_handler(client: Client, message: Message):
 
 
 @app.on_message(filters.command("gemini"))
+@auto_fix_handler
 async def gemini_handler(client: Client, message: Message):
     prompt = get_prompt(message)
     if not prompt:
@@ -94,6 +97,7 @@ async def gemini_handler(client: Client, message: Message):
 
 
 @app.on_message(filters.command("gpt"))
+@auto_fix_handler
 async def gpt_handler(client: Client, message: Message):
     prompt = get_prompt(message)
     if not prompt:
@@ -118,6 +122,7 @@ async def gpt_handler(client: Client, message: Message):
 
 
 @app.on_message(filters.command("llama"))
+@auto_fix_handler
 async def llama_handler(client: Client, message: Message):
     prompt = get_prompt(message)
     if not prompt:
@@ -142,6 +147,7 @@ async def llama_handler(client: Client, message: Message):
 
 
 @app.on_message(filters.command("mistral"))
+@auto_fix_handler
 async def mistral_handler(client: Client, message: Message):
     prompt = get_prompt(message)
     if not prompt:
@@ -166,6 +172,7 @@ async def mistral_handler(client: Client, message: Message):
 
 
 @app.on_message(filters.command("geminivision"))
+@auto_fix_handler
 async def geminivision_handler(client: Client, message: Message):
     if message.reply_to_message and message.reply_to_message.photo:
         prompt = get_prompt(message)
@@ -210,6 +217,7 @@ async def geminivision_handler(client: Client, message: Message):
 
 
 @app.on_message(filters.command("enhance"))
+@auto_fix_handler
 async def upscale_handler(client: Client, message: Message):
     if message.reply_to_message and message.reply_to_message.photo:
         photo = message.reply_to_message.photo
