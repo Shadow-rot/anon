@@ -4,9 +4,10 @@ from pyrogram import enums, filters
 from pyrogram.errors import FloodWait
 
 from AnonXMusic import app
-
+from AnonXMusic.utils.autofix import auto_fix_handler  # ✅ AutoFix decorator
 
 @app.on_message(filters.command("bots") & filters.group)
+@auto_fix_handler
 async def bots(client, message):
     try:
         botList = []
