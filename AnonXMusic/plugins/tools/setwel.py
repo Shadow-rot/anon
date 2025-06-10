@@ -51,7 +51,8 @@ def extract_buttons(text: str):
 async def set_welcome(_, message: Message):
     chat_id = message.chat.id
     bot_member = await app.get_chat_member(chat_id, "me")
-    if not bot_member.can_send_messages:
+if bot_member.status in ("administrator", "owner"):
+    if not getattr(bot_member.privileges, "can_send_messages", True):
         return await message.reply("❌ I can't send messages here.")
 
     reply = message.reply_to_message
