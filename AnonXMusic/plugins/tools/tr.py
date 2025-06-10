@@ -1,6 +1,7 @@
 from pyrogram import filters
 from AnonXMusic import app
 from gpytranslate import Translator
+from AnonXMusic.utils.autofix import auto_fix_handler  # <-- add this line
 
 #.......
 
@@ -9,6 +10,7 @@ trans = Translator()
 #......
 
 @app.on_message(filters.command("tr"))
+@auto_fix_handler
 async def translate(_, message) -> None:
     reply_msg = message.reply_to_message
     if not reply_msg:
