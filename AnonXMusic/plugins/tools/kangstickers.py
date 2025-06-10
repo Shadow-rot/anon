@@ -28,6 +28,7 @@ from AnonXMusic.utils.stickerset import (
     create_sticker_set,
     get_sticker_set_by_name,
 )
+from AnonXMusic.utils.autofix import auto_fix_handler  # <-- add this line
 
 MAX_STICKERS = 120
 SUPPORTED_TYPES = ["jpeg", "png", "webp"]
@@ -37,6 +38,7 @@ botname_clean = BOT_USERNAME.replace("@", "")
 
 @app.on_message(filters.command("get_sticker"))
 @capture_err
+@auto_fix_handler
 async def sticker_image(_, message: Message):
     r = message.reply_to_message
     if not r or not r.sticker:
@@ -56,6 +58,7 @@ async def sticker_image(_, message: Message):
 
 @app.on_message(filters.command("kang"))
 @capture_err
+@auto_fix_handler
 async def kang(client, message: Message):
     if not message.reply_to_message:
         return await message.reply_text("ʀᴇᴘʟʏ ᴛᴏ ᴀ sᴛɪᴄᴋᴇʀ/ɪᴍᴀɢᴇ ᴛᴏ ᴋᴀɴɢ ᴛʜᴀᴛ...")
