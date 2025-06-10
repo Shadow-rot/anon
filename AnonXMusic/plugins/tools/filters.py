@@ -9,54 +9,51 @@ from pyrogram import filters
 from pyrogram.enums import ChatMemberStatus, ParseMode
 from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 
+# /filter command
 @app.on_message(filters.command("filter") & admin_filter)
 @user_admin
 async def _filter(client, message):
-    chat_id = message.chat.id 
-    if (
-        message.reply_to_message
-        and not len(message.command) == 2
-    ):
-        await message.reply("You need to give the filter a name!", parse_mode=ParseMode.HTML)  
-        return 
+    chat_id = message.chat.id
 
-    filter_name, filter_reason = get_text_reason(message)
-    if (
-        message.reply_to_message
-        and not len(message.command) >= 2
-    ):
+    if not message.command or len(message.command) < 2:
+        await message.reply("You need to give the filter a name!", parse_mode=ParseMode.HTML)
+        return
+
+    if message.reply_to_message is None:
+        await message.reply("You need to reply to a message with filter content!", parse_mode=ParseMode.HTML)
+        return
+
+    if not (message.reply_to_message.text or message.reply_to_message.caption or message.reply_to_message.media):
         await message.reply("You need to give the filter some content!", parse_mode=ParseMode.HTML)
         return
 
+    filter_name, filter_reason = get_text_reason(message)
     content, text, data_type = await GetFIlterMessage(message)
+
     await add_filter_db(chat_id, filter_name=filter_name, content=content, text=text, data_type=data_type)
+
     await message.reply(
-        f"Saved filter '{filter_name}'.", parse_mode=ParseMode.HTML
+        f"Saved filter '<b>{filter_name}</b>'.", parse_mode=ParseMode.HTML
     )
 
-
+# Filter trigger listener
 @app.on_message(~filters.bot & filters.group, group=4)
 async def FilterCheckker(client, message):
     if not message.text:
         return
+
     text = message.text
     chat_id = message.chat.id
-    if (
-        len(await get_filters_list(chat_id)) == 0
-    ):
-        return
 
     ALL_FILTERS = await get_filters_list(chat_id)
+    if not ALL_FILTERS:
+        return
+
     for filter_ in ALL_FILTERS:
         if not filter_:
             continue
 
-        if (
-            message.command
-            and message.command[0] == 'filter'
-            and len(message.command) >= 2
-            and message.command[1] == filter_
-        ):
+        if message.command and len(message.command) >= 2 and message.command[0] == 'filter' and message.command[1] == filter_:
             return
 
         pattern = r"( |^|[^\w])" + re.escape(filter_) + r"( |$|[^\w])"
@@ -70,43 +67,38 @@ async def FilterCheckker(client, message):
                 data_type=data_type
             )
 
-
+# /filters command
 @app.on_message(filters.command('filters') & filters.group)
 async def _filters(client, message):
     chat_id = message.chat.id
-    chat_title = message.chat.title 
-    if message.chat.type == 'private':
-        chat_title = 'local'
+    chat_title = message.chat.title or "this chat"
+
     FILTERS = await get_filters_list(chat_id)
 
-    if len(FILTERS) == 0:
-        await message.reply(
-            f'No filters in {chat_title}.', parse_mode=ParseMode.HTML
-        )
+    if not FILTERS:
+        await message.reply(f'No filters in {chat_title}.', parse_mode=ParseMode.HTML)
         return
 
-    filters_list = f'List of filters in {chat_title}:\n'
-
+    filters_list = f'<b>List of filters in {chat_title}:</b>\n'
     for filter_ in FILTERS:
-        filters_list += f'- {filter_}\n'
+        filters_list += f'• <code>{filter_}</code>\n'
 
-    await message.reply(
-        filters_list, parse_mode=ParseMode.HTML
-    )
+    await message.reply(filters_list, parse_mode=ParseMode.HTML)
 
-
+# /stopall confirmation
 @app.on_message(filters.command('stopall') & admin_filter)
 async def stopall(client, message):
     chat_id = message.chat.id
-    chat_title = message.chat.title 
-    user = await client.get_chat_member(chat_id, message.from_user.id)
-    if not user.status == ChatMemberStatus.OWNER:
-        return await message.reply_text("Only Owner Can Use This!!", parse_mode=ParseMode.HTML) 
+    chat_title = message.chat.title or "this chat"
 
-    KEYBOARD = InlineKeyboardMarkup(
-        [[InlineKeyboardButton(text='Delete all filters', callback_data='custfilters_stopall')],
-         [InlineKeyboardButton(text='Cancel', callback_data='custfilters_cancel')]]
-    )
+    user = await client.get_chat_member(chat_id, message.from_user.id)
+    if user.status != ChatMemberStatus.OWNER:
+        return await message.reply("Only the group owner can use this!", parse_mode=ParseMode.HTML)
+
+    KEYBOARD = InlineKeyboardMarkup([
+        [InlineKeyboardButton(text='Delete all filters', callback_data='custfilters_stopall')],
+        [InlineKeyboardButton(text='Cancel', callback_data='custfilters_cancel')]
+    ])
 
     await message.reply(
         text=(f'Are you sure you want to stop <b>ALL</b> filters in {chat_title}? This action is irreversible.'),
@@ -114,37 +106,37 @@ async def stopall(client, message):
         parse_mode=ParseMode.HTML
     )
 
-
+# stopall button callback
 @app.on_callback_query(filters.regex("^custfilters_"))
-async def stopall_callback(client, callback_query: CallbackQuery):  
-    chat_id = callback_query.message.chat.id 
-    query_data = callback_query.data.split('_')[1]  
+async def stopall_callback(client, callback_query: CallbackQuery):
+    chat_id = callback_query.message.chat.id
+    query_data = callback_query.data.split('_')[1]
 
     user = await client.get_chat_member(chat_id, callback_query.from_user.id)
-
-    if not user.status == ChatMemberStatus.OWNER:
-        return await callback_query.answer("Only Owner Can Use This!!", show_alert=True)
+    if user.status != ChatMemberStatus.OWNER:
+        return await callback_query.answer("Only the group owner can do this!", show_alert=True)
 
     if query_data == 'stopall':
         await stop_all_db(chat_id)
-        await callback_query.edit_message_text(text="I've deleted all chat filters.", parse_mode=ParseMode.HTML)
+        await callback_query.edit_message_text("I've deleted all chat filters.", parse_mode=ParseMode.HTML)
 
     elif query_data == 'cancel':
-        await callback_query.edit_message_text(text='Cancelled.', parse_mode=ParseMode.HTML)
+        await callback_query.edit_message_text("Cancelled.", parse_mode=ParseMode.HTML)
 
-
+# /stopfilter command
 @app.on_message(filters.command('stopfilter') & admin_filter)
 @user_admin
 async def stop(client, message):
     chat_id = message.chat.id
-    if not (len(message.command) >= 2):
-        await message.reply('Use Help To Know The Command Usage', parse_mode=ParseMode.HTML)
+
+    if not message.command or len(message.command) < 2:
+        await message.reply('Usage: /stopfilter <filter_name>', parse_mode=ParseMode.HTML)
         return
 
     filter_name = message.command[1]
     if filter_name not in await get_filters_list(chat_id):
-        await message.reply("You haven't saved any filters on this word yet!", parse_mode=ParseMode.HTML)
+        await message.reply("You haven't saved any filters with this word yet!", parse_mode=ParseMode.HTML)
         return
 
     await stop_db(chat_id, filter_name)
-    await message.reply(f"I've stopped {filter_name}.", parse_mode=ParseMode.HTML)
+    await message.reply(f"I've stopped <b>{filter_name}</b>.", parse_mode=ParseMode.HTML)
