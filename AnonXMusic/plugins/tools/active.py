@@ -10,9 +10,11 @@ from AnonXMusic.utils.database import (
     remove_active_chat,
     remove_active_video_chat,
 )
+from AnonXMusic.utils.autofix import auto_fix_handler  # ✅ Import the decorator
 
 
 @app.on_message(filters.command(["activevc", "activevoice"]) & SUDOERS)
+@auto_fix_handler  # ✅ Apply decorator here
 async def activevc(_, message: Message):
     mystic = await message.reply_text("» ɢᴇᴛᴛɪɴɢ ᴀᴄᴛɪᴠᴇ ᴠᴏɪᴄᴇ ᴄʜᴀᴛs ʟɪsᴛ...")
     served_chats = await get_active_chats()
@@ -45,6 +47,7 @@ async def activevc(_, message: Message):
 
 
 @app.on_message(filters.command(["activev", "activevideo"]) & SUDOERS)
+@auto_fix_handler  # ✅ Apply decorator here
 async def activevi_(_, message: Message):
     mystic = await message.reply_text("» ɢᴇᴛᴛɪɴɢ ᴀᴄᴛɪᴠᴇ ᴠɪᴅᴇᴏ ᴄʜᴀᴛs ʟɪsᴛ...")
     served_chats = await get_active_video_chats()
