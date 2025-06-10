@@ -4,6 +4,7 @@ import requests
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from AnonXMusic import app
+from AnonXMusic.utils.autofix import auto_fix_handler  # <-- add this line
 
 def upload_file(file_path):
     url = "https://catbox.moe/user/api.php"
@@ -12,6 +13,7 @@ def upload_file(file_path):
     return (response.status_code == 200, response.text.strip() if response.status_code == 200 else f"Error: {response.status_code} - {response.text}")
 
 @app.on_message(filters.command(["tgm", "tgt", "telegraph"]))
+@auto_fix_handler
 async def get_link_group(client, message):
     if not message.reply_to_message:
         return await message.reply_text("❍ Please reply to a media to upload on Telegraph.")
