@@ -91,10 +91,10 @@ async def SendFilterMessage(message: Message, filter_name: str, content: str, te
     chat_id = message.chat.id
     reply_id = message.id
 
-    text, buttons = button_markdown_parser(text or "")
+    text = text or ""
+    text, buttons = button_markdown_parser(text)
     text = NoteFillings(message, text)
 
-    # Validate buttons to avoid BUTTON_URL_INVALID
     valid_buttons = []
     for row in buttons:
         filtered_row = []
