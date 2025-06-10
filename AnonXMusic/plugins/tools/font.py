@@ -3,6 +3,7 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQ
 
 from AnonXMusic.utils.shadwo_font import Fonts
 from AnonXMusic import app
+from AnonXMusic.utils.autofix import auto_fix_handler  # <-- add this line
 
 
 def get_main_buttons():
@@ -89,6 +90,7 @@ def get_next_buttons():
 
 
 @app.on_message(filters.command(["font", "fonts"]))
+@auto_fix_handler
 async def style_buttons(c, m, cb=False):
     try:
         text = m.text.split(' ', 1)[1]
@@ -105,6 +107,7 @@ async def style_buttons(c, m, cb=False):
 
 
 @app.on_callback_query(filters.regex("^nxt$"))
+@auto_fix_handler
 async def next_fonts(c, m: CallbackQuery):
     buttons = get_next_buttons()
     await m.answer()
@@ -112,6 +115,7 @@ async def next_fonts(c, m: CallbackQuery):
 
 
 @app.on_callback_query(filters.regex("^nxt\\+0$"))
+@auto_fix_handler
 async def back_fonts(c, m: CallbackQuery):
     buttons = get_main_buttons()
     await m.answer()
@@ -119,6 +123,7 @@ async def back_fonts(c, m: CallbackQuery):
 
 
 @app.on_callback_query(filters.regex("^style"))
+@auto_fix_handler
 async def style(c, m: CallbackQuery):
     await m.answer()
     _, style = m.data.split('+')
