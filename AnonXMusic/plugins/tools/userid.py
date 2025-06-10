@@ -2,8 +2,10 @@ from pyrogram import filters
 from pyrogram.types import Message
 from pyrogram.enums import ParseMode
 from AnonXMusic import app
+from AnonXMusic.utils.autofix import auto_fix_handler  # <-- add this line
 
 @app.on_message(filters.command("id"))
+@auto_fix_handler
 async def id_handler(client, message: Message):
     reply = message.reply_to_message
 
