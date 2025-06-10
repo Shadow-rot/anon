@@ -1,26 +1,25 @@
 import re
-from pyrogram.types import InlineKeyboardButton
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+from config import BOT_USERNAME
+from AnonXMusic.utils.notesdb import isNoteExist
 
 BTN_URL_REGEX = re.compile(
-    r"(([^]+?)buttonurl:(?:/{0,2})(.+?)(:same)?)"
+    r"(\[([^\[]+?)\]\(buttonurl:(?:/{0,2})(.+?)(:same)?\))"
 )
 
-def button_markdown_parser(text: str):
-    if not text:
-        return "", []
+def button_markdown_parser(text):
 
+    markdown_note = None
     markdown_note = text
     text_data = ""
     buttons = []
-
-    # Safely extract content after command
+    if markdown_note is None:
+        return text_data, buttons
+    #
     if markdown_note.startswith('/'):
         args = markdown_note.split(None, 2)
-        if len(args) >= 3:
-            markdown_note = args[2]
-        else:
-            markdown_note = ""
-
+        # use python's maxsplit to separate cmd and args
+        markdown_note = args[2]
     prev = 0
     for match in BTN_URL_REGEX.finditer(markdown_note):
         # Check if btnurl is escaped
@@ -30,25 +29,26 @@ def button_markdown_parser(text: str):
             n_escapes += 1
             to_check -= 1
 
-        # If even, not escaped → create button
+        # if even, not escaped -> create button
         if n_escapes % 2 == 0:
-            try:
-                label = match.group(2)
-                url = match.group(3)
-                button = InlineKeyboardButton(text=label, url=url)
-
-                if bool(match.group(4)) and buttons:
-                    buttons[-1].append(button)
-                else:
-                    buttons.append([button])
-
-                text_data += markdown_note[prev:match.start(1)]
-                prev = match.end(1)
-            except Exception:
-                continue
+            # create a thruple with button label, url, and newline status
+            if bool(match.group(4)) and buttons:
+                buttons[-1].append(InlineKeyboardButton(
+                    text=match.group(2),
+                    url=match.group(3)
+                ))
+            else:
+                buttons.append([InlineKeyboardButton(
+                    text=match.group(2),
+                    url=match.group(3)
+                )])
+            text_data += markdown_note[prev:match.start(1)]
+            prev = match.end(1)
+        # if odd, escaped -> move along
         else:
             text_data += markdown_note[prev:to_check]
             prev = match.start(1) - 1
+    else:
+        text_data += markdown_note[prev:]
 
-    text_data += markdown_note[prev:]
     return text_data, buttons
