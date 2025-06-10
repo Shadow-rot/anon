@@ -3,7 +3,7 @@
 import re
 from pyrogram import filters
 from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
-from pyrogram.enums import ParseMode, ChatPermissions
+from pyrogram.enums import ParseMode
 from AnonXMusic import app
 from AnonXMusic.utils.admin_check import admin_check
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -12,13 +12,14 @@ MONGO_URI = "mongodb+srv://Sha:u8KqYML48zhyeWB@cluster0.ebq5nwm.mongodb.net/?ret
 mongo_client = AsyncIOMotorClient(MONGO_URI)
 db = mongo_client["anonxmusic"]["welcome"]
 
+# Variable parser
 def parse_variables(text: str, user, chat):
     variables = {
         "{first}": user.first_name or "",
         "{last}": user.last_name or user.first_name or "",
         "{fullname}": f"{user.first_name or ''} {user.last_name or ''}".strip(),
-        "{mention}": user.mention,
-        "{username}": f"@{user.username}" if user.username else user.mention,
+        "{mention}": f'<a href="tg://user?id={user.id}">{user.first_name}</a>',
+        "{username}": f"@{user.username}" if user.username else f'<a href="tg://user?id={user.id}">{user.first_name}</a>',
         "{id}": str(user.id),
         "{chatname}": chat.title,
         "{count}": str(chat.members_count) if hasattr(chat, 'members_count') else "N/A",
@@ -27,29 +28,29 @@ def parse_variables(text: str, user, chat):
         text = text.replace(key, value)
     return text
 
-
+# Button parser
 def extract_buttons(text: str):
     pattern = r"(.*?)buttonurl://(.*?)(:same)?"
     matches = re.findall(pattern, text)
     buttons = []
     current_row = []
 
-    for match in matches:
-        label, url, same = match
-        btn = InlineKeyboardButton(label, url=url)
+    for label, url, same in matches:
+        button = InlineKeyboardButton(label, url=url)
         if same:
-            current_row.append(btn)
+            current_row.append(button)
         else:
             if current_row:
                 buttons.append(current_row)
-            current_row = [btn]
+            current_row = [button]
 
     if current_row:
         buttons.append(current_row)
 
     clean_text = re.sub(pattern, "", text).strip()
     return clean_text, buttons
-# Set welcome
+
+# /setwelcome command
 @app.on_message(filters.command("setwelcome") & filters.group)
 @admin_check
 async def set_welcome(_, message: Message):
@@ -61,7 +62,7 @@ async def set_welcome(_, message: Message):
 
     reply = message.reply_to_message
     if not reply:
-        return await message.reply("Reply to a text/media to set as welcome.")
+        return await message.reply("Reply to a message (text/media) to set as welcome.")
 
     file_id = None
     media_type = None
@@ -92,7 +93,7 @@ async def set_welcome(_, message: Message):
 
     await message.reply("✅ Welcome message has been set successfully.")
 
-# Delete welcome
+# /delwelcome command
 @app.on_message(filters.command("delwelcome") & filters.group)
 @admin_check
 async def delete_welcome(_, message: Message):
@@ -103,6 +104,7 @@ async def delete_welcome(_, message: Message):
     else:
         await message.reply("No welcome message was set.")
 
+# /welcomehelp command
 @app.on_message(filters.command("welcomehelp"))
 async def welcome_help(_, message: Message):
     text = (
@@ -121,21 +123,22 @@ async def welcome_help(_, message: Message):
         "• {chatname} - Chat title\n"
         "• {count} - Member count\n\n"
         "<b>Formatting:</b>\n"
-        "• <code>*bold*</code>, <code>_italic_</code>, <code>__underline__</code>\n"
-        "• <code>[text](buttonurl://link)</code> - Button\n"
-        "• <code>:same</code> - Add button to same row\n"
-        "• Reply with any media to set media-based welcome.\n\n"
-        "Example:\n<code>Hello {mention}, welcome to {chatname}!</code>\n"
+        "• Use HTML formatting: <code>&lt;b&gt;bold&lt;/b&gt;</code>, <code>&lt;i&gt;italic&lt;/i&gt;</code>, etc.\n"
+        "• Buttons: <code>[Text](buttonurl://https://link.com)</code>\n"
+        "• Use <code>:same</code> to place buttons in same row.\n\n"
+        "<b>Example:</b>\n"
+        "<code>Hello {mention}, welcome to {chatname}!</code>\n"
         "[Rules](buttonurl://t.me/yourruleslink)\n\n"
-        "➕ Buttons, Markdown, media all are supported!"
+        "✅ Media + Buttons + Variables are all supported!"
     )
 
     keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("Back to Group", url=f"https://t.me/{app.me.username}?startgroup=true")],
+        [InlineKeyboardButton("➕ Add Me To Group", url=f"https://t.me/{app.me.username}?startgroup=true")]
     ])
 
     await message.reply(text, reply_markup=keyboard, parse_mode=ParseMode.HTML)
 
+# Auto welcome handler
 @app.on_message(filters.new_chat_members)
 async def welcome_new_member(_, message: Message):
     chat_id = message.chat.id
@@ -148,16 +151,17 @@ async def welcome_new_member(_, message: Message):
         buttons = InlineKeyboardMarkup(data.get("buttons", [])) if data.get("buttons") else None
 
         if data["media_type"] == "text":
-            await message.reply(text, reply_markup=buttons, parse_mode=ParseMode.MARKDOWN)
+            await message.reply(text, reply_markup=buttons, parse_mode=ParseMode.HTML)
         else:
-            send_kwargs = dict(chat_id=chat_id, caption=text, reply_markup=buttons, parse_mode=ParseMode.MARKDOWN)
+            send_kwargs = dict(chat_id=chat_id, caption=text, reply_markup=buttons, parse_mode=ParseMode.HTML)
+            file_id = data["file_id"]
             if data["media_type"] == "photo":
-                await app.send_photo(data["file_id"], **send_kwargs)
+                await app.send_photo(chat_id, file_id, **send_kwargs)
             elif data["media_type"] == "video":
-                await app.send_video(data["file_id"], **send_kwargs)
+                await app.send_video(chat_id, file_id, **send_kwargs)
             elif data["media_type"] == "audio":
-                await app.send_audio(data["file_id"], **send_kwargs)
+                await app.send_audio(chat_id, file_id, **send_kwargs)
             elif data["media_type"] == "voice":
-                await app.send_voice(data["file_id"], **send_kwargs)
+                await app.send_voice(chat_id, file_id, **send_kwargs)
             elif data["media_type"] == "document":
-                await app.send_document(data["file_id"], **send_kwargs)
+                await app.send_document(chat_id, file_id, **send_kwargs)
