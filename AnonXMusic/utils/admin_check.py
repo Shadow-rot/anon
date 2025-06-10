@@ -1,150 +1,82 @@
-import re
+from pyrogram.types import Message
 from pyrogram import filters
-from pyrogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
-from pyrogram.enums import ParseMode
-from AnonXMusic import app
-from AnonXMusic.utils.admin_check import admin_filter  # Ensure this is defined correctly
-from motor.motor_asyncio import AsyncIOMotorClient
+from pyrogram.enums import ChatType, ChatMemberStatus
 
-MONGO_URI = "mongodb+srv://Sha:u8KqYML48zhyeWB@cluster0.ebq5nwm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-mongo_client = AsyncIOMotorClient(MONGO_URI)
-db = mongo_client["anonxmusic"]["welcome"]
 
-def parse_variables(text: str, user, chat):
-    variables = {
-        "{first}": user.first_name or "",
-        "{last}": user.last_name or user.first_name or "",
-        "{fullname}": f"{user.first_name or ''} {user.last_name or ''}".strip(),
-        "{mention}": user.mention,
-        "{username}": f"@{user.username}" if user.username else user.mention,
-        "{id}": str(user.id),
-        "{chatname}": chat.title,
-        "{count}": str(chat.members_count) if hasattr(chat, 'members_count') else "N/A",
-    }
-    for key, value in variables.items():
-        text = text.replace(key, value)
-    return text
+async def admin_check(message: Message) -> bool:
+    if not message.from_user:
+        return False
 
-def extract_buttons(text: str):
-    pattern = r"(.*?)buttonurl://(.*?)(:same)?"
-    matches = re.findall(pattern, text)
-    buttons = []
-    current_row = []
+    if message.chat.type not in [ChatType.SUPERGROUP, ChatType.CHANNEL]:
+        return False
 
-    for match in matches:
-        label, url, same = match
-        btn = InlineKeyboardButton(label, url=url)
-        if same:
-            current_row.append(btn)
-        else:
-            if current_row:
-                buttons.append(current_row)
-            current_row = [btn]
+    if message.from_user.id in [
+        777000,  # Telegram Service Notifications
+        1087968824,  # GroupAnonymousBot
+    ]:
+        return True
 
-    if current_row:
-        buttons.append(current_row)
-
-    clean_text = re.sub(pattern, "", text).strip()
-    return clean_text, buttons
-
-@app.on_message(filters.command("setwelcome") & filters.group & admin_filter)
-async def set_welcome(_, message: Message):
+    client = message._client
     chat_id = message.chat.id
-    bot_member = await app.get_chat_member(chat_id, "me")
-    if not bot_member.can_send_messages:
-        return await message.reply("❌ I can't send messages here.")
+    user_id = message.from_user.id
 
-    reply = message.reply_to_message
-    if not reply:
-        return await message.reply("❗Reply to any message (text/media) to set as welcome.")
-
-    file_id = None
-    media_type = None
-    if reply.photo:
-        file_id, media_type = reply.photo.file_id, "photo"
-    elif reply.video:
-        file_id, media_type = reply.video.file_id, "video"
-    elif reply.audio:
-        file_id, media_type = reply.audio.file_id, "audio"
-    elif reply.voice:
-        file_id, media_type = reply.voice.file_id, "voice"
-    elif reply.document:
-        file_id, media_type = reply.document.file_id, "document"
-    elif reply.text:
-        media_type = "text"
-
-    raw_text = reply.caption if media_type != "text" else reply.text
-    text, buttons = extract_buttons(raw_text or "")
-
-    await db.update_one({"chat_id": chat_id}, {
-        "$set": {
-            "text": text,
-            "media_type": media_type,
-            "file_id": file_id,
-            "buttons": buttons
-        }
-    }, upsert=True)
-
-    await message.reply("✅ Welcome message has been set.")
-
-@app.on_message(filters.command("delwelcome") & filters.group & admin_filter)
-async def del_welcome(_, message: Message):
-    chat_id = message.chat.id
-    deleted = await db.delete_one({"chat_id": chat_id})
-    if deleted.deleted_count:
-        await message.reply("✅ Welcome message deleted.")
+    check_status = await client.get_chat_member(chat_id=chat_id, user_id=user_id)
+    if check_status.status not in [
+        ChatMemberStatus.OWNER,
+        ChatMemberStatus.ADMINISTRATOR
+    ]:
+        return False
     else:
-        await message.reply("⚠️ No welcome message was set.")
+        return True
 
-@app.on_message(filters.command("welcomehelp"))
-async def welcome_help(_, message: Message):
-    help_text = (
-        "<b>👋 Welcome System Help</b>\n\n"
-        "<b>Commands:</b>\n"
-        "• <code>/setwelcome</code> - Reply to a message to set welcome.\n"
-        "• <code>/delwelcome</code> - Delete welcome.\n"
-        "• <code>/welcomehelp</code> - Show this help.\n\n"
-        "<b>Supported Variables:</b>\n"
-        "{first}, {last}, {fullname}, {mention}, {username}, {id}, {chatname}, {count}\n\n"
-        "<b>Button Format:</b>\n"
-        "<code>[Label](buttonurl://link)</code>\n"
-        "Use <code>:same</code> to keep button on same row.\n\n"
-        "Example:\n"
-        "<code>Hello {mention}, welcome to {chatname}!</code>\n"
-        "<code>[Rules](buttonurl://t.me/yourrules)</code>\n"
-        "<code>[Help](buttonurl://t.me/yourhelp:same)</code>"
+
+#-------------------------------+ADMIN+FILTER+------------------------------#
+
+
+USE_AS_BOT = True
+
+def f_sudo_filter(filt, client, message):
+    return bool(
+        (
+            (message.from_user and message.from_user.id in SUDO_USERS)
+            or (message.sender_chat and message.sender_chat.id in SUDO_USERS)
+        )
+        and
+        # t, lt, fl 2013
+        not message.edit_date
     )
-    keyboard = InlineKeyboardMarkup(
-        [[InlineKeyboardButton("➕ Add to Group", url=f"https://t.me/{app.me.username}?startgroup=true")]]
+
+
+sudo_filter = filters.create(func=f_sudo_filter, name="SudoFilter")
+
+
+def onw_filter(filt, client, message):
+    if USE_AS_BOT:
+        return bool(
+            True
+            and  # message.from_user.id in SUDO_USERS
+            # t, lt, fl 2013
+            not message.edit_date
+        )
+    else:
+        return bool(
+            message.from_user
+            and message.from_user.is_self
+            and
+            # t, lt, fl 2013
+            not message.edit_date
+        )
+
+
+f_onw_fliter = filters.create(func=onw_filter, name="OnwFilter")
+
+
+async def admin_filter_f(filt, client, message):
+    return (
+        # t, lt, fl 2013
+        not message.edit_date
+        and await admin_check(message)
     )
-    await message.reply(help_text, reply_markup=keyboard, parse_mode=ParseMode.HTML)
 
-@app.on_message(filters.new_chat_members)
-async def welcome_new_member(_, message: Message):
-    chat_id = message.chat.id
-    data = await db.find_one({"chat_id": chat_id})
-    if not data:
-        return
 
-    for user in message.new_chat_members:
-        text = parse_variables(data.get("text", "👋 Welcome {mention}!"), user, message.chat)
-        buttons = InlineKeyboardMarkup(data.get("buttons", [])) if data.get("buttons") else None
-
-        kwargs = {
-            "caption": text,
-            "reply_markup": buttons,
-            "parse_mode": ParseMode.HTML,
-        }
-
-        if data["media_type"] == "text":
-            await message.reply(text, reply_markup=buttons, parse_mode=ParseMode.HTML)
-        elif data["media_type"] == "photo":
-            await app.send_photo(chat_id, data["file_id"], **kwargs)
-        elif data["media_type"] == "video":
-            await app.send_video(chat_id, data["file_id"], **kwargs)
-        elif data["media_type"] == "audio":
-            await app.send_audio(chat_id, data["file_id"], **kwargs)
-        elif data["media_type"] == "voice":
-            await app.send_voice(chat_id, data["file_id"], **kwargs)
-        elif data["media_type"] == "document":
-            await app.send_document(chat_id, data["file_id"], **kwargs)
+admin_filter = filters.create(func=admin_filter_f, name="AdminFilter")
