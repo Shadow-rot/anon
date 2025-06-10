@@ -7,6 +7,7 @@ from pyrogram.enums import ChatAction
 
 from lexica import AsyncClient, languageModels, Messages
 from AnonXMusic import app
+from AnonXMusic.utils.autofix import auto_fix_handler  # <-- add this line
 
 def extract_content(response):
     if isinstance(response, dict):
@@ -14,6 +15,7 @@ def extract_content(response):
     return str(response)
 
 @app.on_message(filters.command(["hadwo"], prefixes=["s", "S"]))
+@auto_fix_handler
 async def gpt_handler(client: Client, message: Message):
     try:
         await client.send_chat_action(message.chat.id, ChatAction.TYPING)
@@ -40,6 +42,7 @@ async def gpt_handler(client: Client, message: Message):
         await message.reply_text(f"An unexpected error occurred: {e}")
 
 @app.on_message(filters.command(["chatgpt", "ai", "ask", "Master"], prefixes=["+", ".", "/", "-", "?", "$", "#", "&"]))
+@auto_fix_handler
 async def chat_gpt(client: Client, message: Message):
     try:
         await client.send_chat_action(message.chat.id, ChatAction.TYPING)
@@ -66,6 +69,7 @@ async def chat_gpt(client: Client, message: Message):
         await message.reply_text(f"An unexpected error occurred: {e}")
 
 @app.on_message(filters.command(["oya"], prefixes=["j", "J"]))
+@auto_fix_handler
 async def chat_annie(client: Client, message: Message):
     try:
         await client.send_chat_action(message.chat.id, ChatAction.RECORD_AUDIO)
