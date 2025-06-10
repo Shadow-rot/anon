@@ -25,11 +25,12 @@ def get_text_reason(message: Message):
     index_finder = [i for i, char in enumerate(text) if char == '"']
 
     if len(index_finder) >= 2:
-        name = text[index_finder[0] + 1 : index_finder[1]]
-        reason = text[index_finder[1] + 2 :].strip()
-        if not reason:
-            reason = None
+        name = text[index_finder[0] + 1: index_finder[1]]
+        reason = text[index_finder[1] + 2:].strip() or None
     else:
+        # Safely access command args
+        if not message.command or len(message.command) < 2:
+            return None, None  # or raise an error, or handle accordingly
         name = message.command[1]
         reason = " ".join(message.command[2:]) or None
 
