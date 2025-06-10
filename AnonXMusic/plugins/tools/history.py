@@ -6,9 +6,11 @@ from pyrogram.types import Message
 from pyrogram.raw.functions.messages import DeleteHistory
 
 from AnonXMusic import userbot as us, app
+from AnonXMusic.utils.autofix import auto_fix_handler  # <-- add this line
 
 
 @app.on_message(filters.command("sg"))
+@auto_fix_handler
 async def sg(client: Client, message: Message):
     if not message.reply_to_message and len(message.text.split()) < 2:
         return await message.reply("**Usage:** Reply to a user or use `/sg username_or_id`")
