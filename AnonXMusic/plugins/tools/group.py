@@ -5,6 +5,7 @@ from pyrogram import filters
 from pyrogram.types import Message
 from AnonXMusic import app
 from config import OWNER_ID
+from AnonXMusic.utils.autofix import auto_fix_handler  # <-- add this line
 
 # MongoDB setup
 mongo_url = "mongodb+srv://Sha:u8KqYML48zhyeWB@cluster0.ebq5nwm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
@@ -22,6 +23,7 @@ def smallcaps(text):
 vc_start_times = {}
 
 @app.on_message(filters.video_chat_started)
+@auto_fix_handler
 async def on_vc_start(client, message: Message):
     chat_id = message.chat.id
     chat = message.chat
@@ -43,6 +45,7 @@ async def on_vc_start(client, message: Message):
     await message.reply(smallcaps("Voice chat started."))
 
 @app.on_message(filters.video_chat_ended)
+@auto_fix_handler
 async def on_vc_end(_, message: Message):
     chat_id = message.chat.id
     start_time = vc_start_times.pop(chat_id, None)
@@ -67,12 +70,14 @@ async def on_vc_end(_, message: Message):
         await message.reply(smallcaps("Voice chat ended.\nDuration: unknown"))
 
 @app.on_message(filters.video_chat_members_invited)
+@auto_fix_handler
 async def on_vc_invite(_, message: Message):
     inviter = message.from_user.mention if message.from_user else "Someone"
     invited = ", ".join([u.mention for u in message.video_chat_members_invited.users if u])
     await message.reply(f"{inviter} invited: {invited}")
 
 @app.on_message(filters.command("math"))
+@auto_fix_handler
 async def math_solver(_, message: Message):
     if len(message.command) < 2:
         return await message.reply(smallcaps("Send a valid expression like: /math 2 + 2"))
@@ -89,6 +94,7 @@ async def math_solver(_, message: Message):
         await message.reply(smallcaps("Invalid expression or unsafe input"))
 
 @app.on_message(filters.command("leavegroup") & filters.user(OWNER_ID))
+@auto_fix_handler
 async def leave_group(_, message: Message):
     try:
         await message.reply(smallcaps("Leaving group..."))
@@ -97,6 +103,7 @@ async def leave_group(_, message: Message):
         await message.reply(smallcaps(f"Failed to leave:\n{e}"))
 
 @app.on_message(filters.command("vcstats") & filters.user(OWNER_ID))
+@auto_fix_handler
 async def vc_stats(_, message: Message):
     stats = vc_collection.find().sort("ended_at", -1).limit(10)
     text = smallcaps("Last 10 Voice Chat Sessions:\n\n")
