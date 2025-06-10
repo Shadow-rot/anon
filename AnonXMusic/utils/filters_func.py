@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from pyrogram.enums import ParseMode
 from pyrogram.types import Message, InlineKeyboardMarkup
 from AnonXMusic import app
 from AnonXMusic.utils.msg_types import button_markdown_parser
@@ -92,7 +93,19 @@ async def SendFilterMessage(message: Message, filter_name: str, content: str, te
 
     text, buttons = button_markdown_parser(text or "")
     text = NoteFillings(message, text)
-    reply_markup = InlineKeyboardMarkup(buttons) if buttons else None
+
+    # Validate buttons to avoid BUTTON_URL_INVALID
+    valid_buttons = []
+    for row in buttons:
+        filtered_row = []
+        for btn in row:
+            if hasattr(btn, "url") and btn.url and not btn.url.startswith(("http://", "https://")):
+                continue  # Skip invalid URLs
+            filtered_row.append(btn)
+        if filtered_row:
+            valid_buttons.append(filtered_row)
+
+    reply_markup = InlineKeyboardMarkup(valid_buttons) if valid_buttons else None
 
     try:
         if data_type == FilterMessageTypeMap.text.value:
@@ -113,5 +126,10 @@ async def SendFilterMessage(message: Message, filter_name: str, content: str, te
             await app.send_video(chat_id, video=content, caption=text, reply_markup=reply_markup, reply_to_message_id=reply_id)
         elif data_type == FilterMessageTypeMap.video_note.value:
             await app.send_video_note(chat_id, video_note=content, reply_markup=reply_markup, reply_to_message_id=reply_id)
+
     except Exception as e:
-        await message.reply(f"<b>Failed to send filter:</b>\n<code>{e}</code>", parse_mode="html", quote=True)
+        await message.reply(
+            f"<b>Failed to send filter:</b>\n<code>{e}</code>",
+            parse_mode=ParseMode.HTML,
+            quote=True,
+        )
