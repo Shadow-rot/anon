@@ -3,12 +3,14 @@ import httpx
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from AnonXMusic import app
+from AnonXMusic.utils.autofix import auto_fix_handler  # <-- add this line
 
 DOWNLOADING_STICKER_ID = "CAACAgEAAx0CfD7LAgACO7xmZzb83lrLUVhxtmUaanKe0_ionAAC-gADUSkNORIJSVEUKRrhHgQ"
 INSTAGRAM_REGEX = r"(https?://)?(www\.)?(instagram\.com|instagr\.am)/(reel|p|tv)/[^\s/?]+"
 ALT_API_URL = "https://insta-dl.hazex.workers.dev/?url="
 
 @app.on_message(filters.command(["ig", "insta"]) | filters.regex(INSTAGRAM_REGEX))
+@auto_fix_handler
 async def download_instagram_reel(client, message):
     url = None
 
