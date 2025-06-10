@@ -19,7 +19,6 @@ from AnonXMusic.utils.yumidb import user_admin
 
 @app.on_message(filters.command("filter") & admin_filter)
 @user_admin
-@auto_fix_handler
 async def _filter(client, message):
     chat_id = message.chat.id
 
