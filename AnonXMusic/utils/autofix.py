@@ -1,6 +1,8 @@
 import asyncio
 import traceback
 from collections import defaultdict
+from inspect import iscoroutinefunction
+
 from pyrogram.errors import (
     ButtonUrlInvalid,
     MediaEmpty,
@@ -16,23 +18,27 @@ from pyrogram.errors import (
 )
 from pyrogram.enums import ParseMode
 from AnonXMusic import app
-from config import OWNER_ID  # Make sure this is set in config
+from config import OWNER_ID
 
-# Crash counter per function
 crash_counter = defaultdict(int)
 
 def auto_fix_handler(func):
     async def wrapper(client, *args, **kwargs):
-        retries = 3  # FloodWait retry attempts
+        retries = 3
 
         while retries > 0:
             try:
-                await func(client, *args, **kwargs)
-                return  # If success, exit
+                # ✅ Check if func is a coroutine (async)
+                if iscoroutinefunction(func):
+                    await func(client, *args, **kwargs)
+                else:
+                    func(client, *args, **kwargs)  # call sync function
+                return
             except FloodWait as e:
                 print(f"[FloodWait] Sleeping for {e.x} seconds before retrying {func.__name__}")
                 await asyncio.sleep(e.x)
                 retries -= 1
+
             except (
                 ButtonUrlInvalid,
                 MediaEmpty,
@@ -57,7 +63,7 @@ def auto_fix_handler(func):
                         pass
                 else:
                     print(f"[MINOR ERROR] {func.__name__} failed with: {e}")
-                return  # exit after handling minor error
+                return
 
             except Exception as e:
                 crash_counter[func.__name__] += 1
@@ -73,11 +79,10 @@ def auto_fix_handler(func):
                         disable_web_page_preview=True,
                     )
 
-                    # Alert if this plugin crashed 5 times
                     if crash_counter[func.__name__] >= 5:
                         await client.send_message(
                             OWNER_ID,
-                            f"🚨 <b>{func.__name__}</b> has crashed <code>{crash_counter[func.__name__]}</code> times. You may want to investigate.",
+                            f"🚨 <b>{func.__name__}</b> has crashed <code>{crash_counter[func.__name__]}</code> times.",
                             parse_mode=ParseMode.HTML,
                         )
 
@@ -93,7 +98,7 @@ def auto_fix_handler(func):
                         )
                     except Exception:
                         pass
-                return  # final exit
+                return
 
     def _find_message_or_callback(args, kwargs):
         for arg in args:
