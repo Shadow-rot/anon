@@ -12,6 +12,7 @@ from pyrogram.types import (
 from AnonXMusic import app
 from AnonXMusic.utils.admin_check import admin_check
 from config import OWNER_ID
+from AnonXMusic.utils.autofix import auto_fix_handler  # <-- add this line
 
 
 # Ensure OWNER_ID is a list
@@ -38,6 +39,7 @@ def confirm_markup(cmd: str, start_id: int, user_id: int, reason: str = ""):
 # ─────────── Commands ───────────
 
 @app.on_message(filters.command("purge") & filters.group)
+@auto_fix_handler
 async def purge_request(client, message: Message):
     if message.chat.type != ChatType.SUPERGROUP:
         return await message.reply("only works in supergroups.")
@@ -57,6 +59,7 @@ async def purge_request(client, message: Message):
 
 
 @app.on_message(filters.command("spurge") & filters.group)
+@auto_fix_handler
 async def spurge_request(client, message: Message):
     if message.chat.type != ChatType.SUPERGROUP:
         return await message.reply("only works in supergroups.")
@@ -83,6 +86,7 @@ async def spurge_request(client, message: Message):
 
 
 @app.on_message(filters.command("del") & filters.group)
+@auto_fix_handler
 async def del_message(client, message: Message):
     if message.chat.type != ChatType.SUPERGROUP:
         return await message.reply("only works in supergroups.")
@@ -105,6 +109,7 @@ async def del_message(client, message: Message):
 # ─────────── Confirm Purge Logic ───────────
 
 @app.on_callback_query(filters.regex(r"^confirmpurge\|"))
+@auto_fix_handler
 async def confirm_purge(client, query: CallbackQuery):
     data = query.data.split("|")
     if len(data) < 4:
@@ -142,6 +147,7 @@ async def confirm_purge(client, query: CallbackQuery):
 
 
 @app.on_callback_query(filters.regex(r"^cancelpurge$"))
+@auto_fix_handler
 async def cancel_purge(client, query: CallbackQuery):
     await query.message.edit_text("purge cancelled.")
 
@@ -177,6 +183,7 @@ SPURGE_HELP = (
 
 
 @app.on_message(filters.command("purgehelp"))
+@auto_fix_handler
 async def purge_help_command(client, message: Message):
     await message.reply(
         "<b>choose a command to view help:</b>",
@@ -191,6 +198,7 @@ async def purge_help_command(client, message: Message):
 
 
 @app.on_callback_query(filters.regex("purge_info"))
+@auto_fix_handler
 async def show_purge_info(client, query: CallbackQuery):
     await query.message.edit_text(
         PURGE_HELP,
@@ -202,6 +210,7 @@ async def show_purge_info(client, query: CallbackQuery):
 
 
 @app.on_callback_query(filters.regex("spurge_info"))
+@auto_fix_handler
 async def show_spurge_info(client, query: CallbackQuery):
     await query.message.edit_text(
         SPURGE_HELP,
@@ -213,6 +222,7 @@ async def show_spurge_info(client, query: CallbackQuery):
 
 
 @app.on_callback_query(filters.regex("purge_main"))
+@auto_fix_handler
 async def show_main_buttons(client, query: CallbackQuery):
     await query.message.edit_text(
         "<b>choose a command to view help:</b>",
@@ -227,5 +237,6 @@ async def show_main_buttons(client, query: CallbackQuery):
 
 
 @app.on_callback_query(filters.regex("purge_close"))
+@auto_fix_handler
 async def close_help_menu(client, query: CallbackQuery):
     await query.message.delete()
