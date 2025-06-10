@@ -28,12 +28,12 @@ def auto_fix_handler(func):
 
         while retries > 0:
             try:
-                # ✅ Check if func is a coroutine (async)
-                if iscoroutinefunction(func):
-                    await func(client, *args, **kwargs)
-                else:
-                    func(client, *args, **kwargs)  # call sync function
+                # ✅ Await if it's a coroutine function
+                result = func(client, *args, **kwargs)
+                if asyncio.iscoroutine(result):
+                    await result
                 return
+
             except FloodWait as e:
                 print(f"[FloodWait] Sleeping for {e.x} seconds before retrying {func.__name__}")
                 await asyncio.sleep(e.x)
