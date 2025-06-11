@@ -8,7 +8,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 MONGO_URI = "mongodb+srv://Sha:u8KqYML48zhyeWB@cluster0.ebq5nwm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 mongo_client = AsyncIOMotorClient(MONGO_URI)
-db = mongo_client["anonxmusic"]["welcome"]
+db = mongo_client["AnonXMusic"]["welcome"]
 
 def parse_variables(text: str, user, chat):
     variables = {
