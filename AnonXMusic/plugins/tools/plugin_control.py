@@ -41,6 +41,7 @@ def unload_plugin(name):
     module = f"AnonXMusic.plugins.{name}"
     if module in sys.modules:
         del sys.modules[module]
+    if name in ALL_MODULES or name in loaded_plugins:
         disabled_plugins.add(name)
         return True
     return False
