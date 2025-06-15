@@ -17,7 +17,7 @@ def track_markup(_, videoid, user_id, channel, fplay):
         [InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data=f"forceclose {videoid}|{user_id}")],
     ]
 
-# Streaming UI with Timer (No Progress Bar, Fonts Preserved)
+# Streaming UI with Timer (No progress bar or duration line)
 def stream_markup_timer(_, chat_id, played, dur):
     return [
         [
@@ -28,9 +28,6 @@ def stream_markup_timer(_, chat_id, played, dur):
         [
             InlineKeyboardButton(text="sᴛᴏᴘ", callback_data=f"ADMIN Stop|{chat_id}"),
             InlineKeyboardButton(text="↻ ʀᴇᴘʟᴀʏ", callback_data=f"ADMIN Replay|{chat_id}"),
-        ],
-        [
-            InlineKeyboardButton(text=f"{played} / {dur}", callback_data="GetTimer"),
         ],
         [InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close")],
     ]
