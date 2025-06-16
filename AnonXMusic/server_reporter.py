@@ -14,21 +14,29 @@ def format_bytes(size):
 
 def get_report():
     cpu = psutil.cpu_percent(interval=1)
+    cores = psutil.cpu_count()
     ram = psutil.virtual_memory()
     disk = psutil.disk_usage("/")
+    net = psutil.net_io_counters()
+    load1, load5, load15 = psutil.getloadavg()
     uptime_hrs = round((time.time() - uptime.boottime()) / 3600, 2)
     boot_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(uptime.boottime()))
 
     return f"""
-<b><u>📡 ʜᴏᴜʀʟʏ sᴇʀᴠᴇʀ ʀᴇᴘᴏʀᴛ</u></b>
-
-<b>• ᴏs:</b> {platform.system()} {platform.release()}
-<b>• ᴜᴘᴛɪᴍᴇ:</b> {uptime_hrs} hrs
-<b>• ʙᴏᴏᴛ ᴛɪᴍᴇ:</b> {boot_time}
-<b>• ᴄᴘᴜ:</b> {cpu}%
-<b>• ʀᴀᴍ:</b> {format_bytes(ram.used)} / {format_bytes(ram.total)} ({ram.percent}%)
-<b>• ᴅɪsᴋ:</b> {format_bytes(disk.used)} / {format_bytes(disk.total)} ({disk.percent}%)
-<b>• ᴘʏᴛʜᴏɴ:</b> {platform.python_version()}
+<b>📡 ʜᴏᴜʀʟʏ sᴇʀᴠᴇʀ ʀᴇᴘᴏʀᴛ</b>
+━━━━━━━━━━━━━━━━━━━
+<b>• 🖥 OS:</b> {platform.system()} {platform.release()}
+<b>• 💻 Arch:</b> {platform.machine()}
+<b>• 🔧 CPU:</b> {cpu}% of {cores} cores
+<b>• 📈 Load Avg:</b> {load1:.2f}, {load5:.2f}, {load15:.2f}
+<b>• 📊 RAM:</b> {format_bytes(ram.used)} / {format_bytes(ram.total)} ({ram.percent}%)
+<b>• 💾 Disk:</b> {format_bytes(disk.used)} / {format_bytes(disk.total)} ({disk.percent}%)
+<b>• 🌐 Net IO:</b> ↑ {format_bytes(net.bytes_sent)} / ↓ {format_bytes(net.bytes_recv)}
+<b>• 🧮 Processes:</b> {len(psutil.pids())}
+<b>• ⏱ Uptime:</b> {uptime_hrs} hrs
+<b>• 🕒 Boot Time:</b> {boot_time}
+<b>• 🐍 Python:</b> {platform.python_version()}
+━━━━━━━━━━━━━━━━━━━
 """.strip()
 
 async def auto_report():
