@@ -17,6 +17,7 @@ from server_reporter import run_reporter
 
 
 async def init():
+
     setup_error_logging()
 
     if (
@@ -43,9 +44,8 @@ async def init():
 
     await app.start()
 
-    # ✅ Import all plugin modules
     for all_module in ALL_MODULES:
-        importlib.import_module("AnonXMusic.plugins." + all_module)
+        importlib.import_module("AnonXMusic.plugins" + all_module)
 
     LOGGER("AnonXMusic.plugins").info("Successfully Imported Modules...")
 
@@ -64,10 +64,10 @@ async def init():
 
     await Anony.decorators()
 
-    asyncio.create_task(run_reporter())
+    run_reporter()
 
     LOGGER("AnonXMusic").info(
-        "Alex Started Successfully.\n\nDon't forget to visit @the_losthope"
+        "\x41\x6c\x65\x78\x20\x53\x74\x61\x72\x74\x65\x64\x20\x53\x75\x63\x63\x65\x73\x73\x66\x75\x6c\x6c\x79\x2e\n\n\x44\x6f\x6e'\x74\x20\x66\x6f\x72\x67\x65\x74\x20\x74\x6f\x20\x76\x69\x73\x69\x74\x20\x40\x74\x68\x65\x5f\x6c\x6f\x73\x74\x68\x6f\x70\x65"
     )
 
     await idle()
