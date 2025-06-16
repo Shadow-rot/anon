@@ -2,7 +2,6 @@ from pyrogram import Client, filters
 import requests
 import random
 from AnonXMusic import app
-from AnonXMusic.utils.autofix import auto_fix_handler  # <-- add this line
 
 # Truth or Dare API URLs
 truth_api_url = "https://api.truthordarebot.xyz/v1/truth"
@@ -10,7 +9,6 @@ dare_api_url = "https://api.truthordarebot.xyz/v1/dare"
 
 
 @app.on_message(filters.command("truth"))
-@auto_fix_handler
 def get_truth(client, message):
     try:
         # Make a GET request to the Truth API
@@ -24,7 +22,6 @@ def get_truth(client, message):
         message.reply_text("An error occurred while fetching a truth question. Please try again later.")
 
 @app.on_message(filters.command("dare"))
-@auto_fix_handler
 def get_dare(client, message):
     try:
         # Make a GET request to the Dare API
