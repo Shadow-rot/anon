@@ -36,4 +36,3 @@ bing_image_downloader
 nekosbest
 lexica-api
 uptime
-matplotlib
