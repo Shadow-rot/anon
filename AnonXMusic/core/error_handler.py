@@ -1,3 +1,5 @@
+# error_logger.py
+
 import logging
 import traceback
 import asyncio
@@ -19,19 +21,17 @@ class TelegramErrorHandler(logging.Handler):
 
     async def send_error(self, record):
         try:
-            # Traceback string
             tb = ''.join(traceback.format_exception(
                 record.exc_info[0], record.exc_info[1], record.exc_info[2]
             )) if record.exc_info else "No traceback available."
 
-            # Timestamp, file, line, function, exception type
             time_str = datetime.datetime.utcfromtimestamp(record.created).strftime('%Y-%m-%d %H:%M:%S UTC')
             file = record.pathname.split("/")[-1]
             line = record.lineno
             func = record.funcName
             exc_type = record.exc_info[0].__name__ if record.exc_info else "UnknownError"
 
-            # Optional group + message link
+            # Group/chat info
             chat_info = ""
             msg_link = ""
             if hasattr(record, "message_obj") and isinstance(record.message_obj, Message):
@@ -39,11 +39,10 @@ class TelegramErrorHandler(logging.Handler):
                 msg_id = record.message_obj.id
                 if chat.type in ("supergroup", "channel") and chat.username:
                     chat_info = f"<b>Chat:</b> <a href='https://t.me/{chat.username}'>@{chat.username}</a>\n"
-                    msg_link = f"<b>Message Link:</b> <a href='https://t.me/{chat.username}/{msg_id}'>Click to View</a>\n"
+                    msg_link = f"<b>Message Link:</b> <a href='https://t.me/{chat.username}/{msg_id}'>Click</a>\n"
                 else:
                     chat_info = f"<b>Chat ID:</b> <code>{chat.id}</code>\n"
 
-            # Final message
             message = (
                 f"<b>⚠️ Error Logged</b>\n"
                 f"<b>Time:</b> <code>{time_str}</code>\n"
@@ -64,13 +63,12 @@ class TelegramErrorHandler(logging.Handler):
                 parse_mode=ParseMode.HTML,
                 disable_web_page_preview=True,
             )
-
         except Exception as e:
-            print(f"[Error Handler] Failed to send error notification: {e}")
+            print(f"[ErrorHandler] Failed to send error to owner: {e}")
 
 
 def setup_error_logging():
-    from AnonXMusic import app  # Import your Pyrogram app
+    from AnonXMusic import app
     handler = TelegramErrorHandler(app)
     handler.setLevel(logging.ERROR)
     logging.getLogger().addHandler(handler)
