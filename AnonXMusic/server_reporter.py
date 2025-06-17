@@ -4,10 +4,11 @@ import time
 import socket
 import psutil
 import uptime
-
-from config import OWNER_ID
+from pyrogram import filters
+from pyrogram.enums import ParseMode
+from pyrogram.types import Message
 from AnonXMusic import app
-from pyrogram.enums import ParseMode  # ✅ Required for HTML formatting
+from config import OWNER_ID
 
 
 def format_bytes(size):
@@ -40,9 +41,11 @@ def get_report():
     net = psutil.net_io_counters()
     load1, load5, load15 = psutil.getloadavg()
     users = len(psutil.users())
+
     boot_time = uptime.boottime()
-    uptime_hrs = round((time.time() - boot_time) / 3600, 2)
-    boot_time_fmt = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(boot_time))
+    uptime_secs = time.time() - boot_time.timestamp()
+    uptime_hrs = round(uptime_secs / 3600, 2)
+    boot_time_fmt = boot_time.strftime('%Y-%m-%d %H:%M:%S')
 
     try:
         temps = psutil.sensors_temperatures()
@@ -81,13 +84,8 @@ async def auto_report():
     while True:
         try:
             report, cpu, ram, disk = get_report()
-            await app.send_message(
-                chat_id=OWNER_ID,
-                text=report,
-                parse_mode=ParseMode.HTML  # ✅ Parse formatting
-            )
+            await app.send_message(chat_id=OWNER_ID, text=report, parse_mode=ParseMode.HTML)
 
-            # Alerts
             alerts = []
             if cpu > 85:
                 alerts.append(f"⚠️ <b>High CPU Usage:</b> {cpu:.1f}%")
@@ -98,17 +96,31 @@ async def auto_report():
 
             if alerts:
                 alert_text = "\n".join(alerts)
-                await app.send_message(
-                    chat_id=OWNER_ID,
-                    text=alert_text,
-                    parse_mode=ParseMode.HTML  # ✅ Required for alerts too
-                )
+                await app.send_message(chat_id=OWNER_ID, text=alert_text, parse_mode=ParseMode.HTML)
 
         except Exception as e:
             print(f"[!] Error in server report: {e}")
 
-        await asyncio.sleep(300)  # every 5 minutes
+        await asyncio.sleep(300)  # Every 5 minutes
 
 
 async def run_reporter():
     asyncio.create_task(auto_report())
+
+# ━━━━━━━━━━━━━━━━
+# ✅ Manual Commands
+# ━━━━━━━━━━━━━━━━
+
+@app.on_message(filters.command(["startreporter"]) & filters.user(OWNER_ID))
+async def start_reporter_cmd(_, message: Message):
+    await message.reply_text("✅ Server Reporter started (5-min interval)")
+    await run_reporter()
+
+
+@app.on_message(filters.command(["serverstats"]) & filters.user(OWNER_ID))
+async def manual_server_stats(_, message: Message):
+    try:
+        report, _, _, _ = get_report()
+        await message.reply_text(report, parse_mode=ParseMode.HTML)
+    except Exception as e:
+        await message.reply_text(f"❌ Failed to get server stats.\nError: {e}")
