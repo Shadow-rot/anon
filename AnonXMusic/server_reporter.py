@@ -4,6 +4,7 @@ import platform
 import psutil
 import matplotlib.pyplot as plt
 from pyrogram import filters
+from pyrogram.enums import ParseMode
 from pyrogram.types import (
     Message,
     CallbackQuery,
@@ -99,12 +100,18 @@ async def server_stats_handler(_, message: Message):
         [[InlineKeyboardButton("↻ Refresh Stats", callback_data="refresh_server_stats")]]
     )
 
-    await message.reply_photo(photo=image, caption=report, reply_markup=keyboard)
+    await message.reply_photo(
+        photo=image,
+        caption=report,
+        reply_markup=keyboard,
+        parse_mode=ParseMode.HTML
+    )
 
     if alerts:
         await message.reply_text(
             "<b>⚠ SERVER ALERTS</b>\n" + "\n".join(alerts),
-            quote=True
+            parse_mode=ParseMode.HTML,
+            quote=False
         )
 
 
@@ -120,12 +127,21 @@ async def refresh_stats_callback(_, query: CallbackQuery):
             media=InputMediaPhoto(media=image),
             reply_markup=InlineKeyboardMarkup(
                 [[InlineKeyboardButton("↻ Refresh Stats", callback_data="refresh_server_stats")]]
-            ),
+            )
         )
-        await query.message.edit_caption(caption=report)
+        await query.message.edit_caption(
+            caption=report,
+            parse_mode=ParseMode.HTML
+        )
 
         if alerts:
-            await query.message.reply_text("<b>⚠ SERVER ALERTS</b>\n" + "\n".join(alerts))
+            await query.message.reply_text(
+                "<b>⚠ SERVER ALERTS</b>\n" + "\n".join(alerts),
+                parse_mode=ParseMode.HTML
+            )
 
     except Exception as e:
-        await query.message.reply_text(f"⚠ Failed to refresh stats:\n<code>{e}</code>")
+        await query.message.reply_text(
+            f"⚠ Failed to refresh stats:\n<code>{e}</code>",
+            parse_mode=ParseMode.HTML
+        )
