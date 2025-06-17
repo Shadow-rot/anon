@@ -34,7 +34,10 @@ def get_report():
     ram = psutil.virtual_memory()
     disk = psutil.disk_usage("/")
     net = psutil.net_io_counters()
-    load1, load5, load15 = psutil.getloadavg()
+    try:
+        load1, load5, load15 = psutil.getloadavg()
+    except AttributeError:
+        load1 = load5 = load15 = 0.0  # Fallback for Windows systems
     boot_time = psutil.boot_time()
     uptime_hr = round((time.time() - boot_time) / 3600, 2)
 
@@ -104,14 +107,15 @@ async def server_stats_handler(_, message: Message):
         photo=image,
         caption=report,
         reply_markup=keyboard,
-        parse_mode=ParseMode.HTML
+        parse_mode=ParseMode.HTML,
     )
+    image.close()
 
     if alerts:
         await message.reply_text(
             "<b>⚠ SERVER ALERTS</b>\n" + "\n".join(alerts),
             parse_mode=ParseMode.HTML,
-            quote=False
+            quote=False,
         )
 
 
@@ -129,19 +133,21 @@ async def refresh_stats_callback(_, query: CallbackQuery):
                 [[InlineKeyboardButton("↻ Refresh Stats", callback_data="refresh_server_stats")]]
             )
         )
+        image.close()
+
         await query.message.edit_caption(
             caption=report,
-            parse_mode=ParseMode.HTML
+            parse_mode=ParseMode.HTML,
         )
 
         if alerts:
             await query.message.reply_text(
                 "<b>⚠ SERVER ALERTS</b>\n" + "\n".join(alerts),
-                parse_mode=ParseMode.HTML
+                parse_mode=ParseMode.HTML,
             )
 
     except Exception as e:
         await query.message.reply_text(
             f"⚠ Failed to refresh stats:\n<code>{e}</code>",
-            parse_mode=ParseMode.HTML
+            parse_mode=ParseMode.HTML,
         )
