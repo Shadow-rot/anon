@@ -101,7 +101,7 @@ async def auto_report():
         except Exception as e:
             print(f"[!] Error in server report: {e}")
 
-        await asyncio.sleep(300)  # Every 5 minutes
+        await asyncio.sleep(3600)  # Every 5 minutes
 
 
 async def run_reporter():
