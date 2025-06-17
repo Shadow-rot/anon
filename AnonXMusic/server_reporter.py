@@ -4,8 +4,10 @@ import time
 import socket
 import psutil
 import uptime
+
 from config import OWNER_ID
 from AnonXMusic import app
+from pyrogram.enums import ParseMode  # ✅ Required for HTML formatting
 
 
 def format_bytes(size):
@@ -79,9 +81,13 @@ async def auto_report():
     while True:
         try:
             report, cpu, ram, disk = get_report()
-            await app.send_message(chat_id=OWNER_ID, text=report)
+            await app.send_message(
+                chat_id=OWNER_ID,
+                text=report,
+                parse_mode=ParseMode.HTML  # ✅ Parse formatting
+            )
 
-            # Alert if any resource is over threshold
+            # Alerts
             alerts = []
             if cpu > 85:
                 alerts.append(f"⚠️ <b>High CPU Usage:</b> {cpu:.1f}%")
@@ -92,7 +98,11 @@ async def auto_report():
 
             if alerts:
                 alert_text = "\n".join(alerts)
-                await app.send_message(chat_id=OWNER_ID, text=alert_text)
+                await app.send_message(
+                    chat_id=OWNER_ID,
+                    text=alert_text,
+                    parse_mode=ParseMode.HTML  # ✅ Required for alerts too
+                )
 
         except Exception as e:
             print(f"[!] Error in server report: {e}")
