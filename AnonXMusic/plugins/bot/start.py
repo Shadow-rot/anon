@@ -1,4 +1,5 @@
 import time
+
 from pyrogram import filters
 from pyrogram.enums import ChatType, ParseMode
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
@@ -19,8 +20,18 @@ from AnonXMusic.utils.database import (
 from AnonXMusic.utils.decorators.language import LanguageStart
 from AnonXMusic.utils.formatters import get_readable_time
 from AnonXMusic.utils.inline import help_pannel, private_panel, start_panel
-from config import BANNED_USERS, START_IMG_URL
+from config import BANNED_USERS
 from strings import get_string
+
+START_MEDIA = "https://files.catbox.moe/kooj9d.mp4"
+START_CAPTION = (
+    '<a href="{media}">&#8205;</a>'
+    "\n<b>✿ 𝒀𝒐𝒌𝒐𝒔𝒐, {0}~ (≧◡≦)</b>\n"
+    "ɪ'ᴍ <b>{1}</b>, ʏᴏᴜʀ ᴋᴀᴡᴀɪɪ ᴍᴜsɪᴄ ʙᴏᴛ ♫\n"
+    "⤷ ʟɪᴠᴇ sᴛʀᴇᴀᴍs + ᴘʟᴀʏʟɪsᴛ\n"
+    "⤷ ᴀɴɪᴍᴇ ғᴇᴇʟs ✧ ᴄᴏᴍᴍᴀɴᴅs → <code>/help</code>\n"
+    "<b>⸙ ᴅᴇᴠ :</b> <a href=\"https://t.me/I_shadwoo\">sʜᴀ</a> 〜(꒪꒳꒪)〜"
+)
 
 
 @app.on_message(filters.command(["start"]) & filters.private & ~BANNED_USERS)
@@ -34,7 +45,7 @@ async def start_pm(client, message: Message, _):
         if name.startswith("help"):
             keyboard = help_pannel(_)
             return await message.reply_video(
-                video=START_IMG_URL,
+                video=START_MEDIA,
                 caption=_["help_1"].format(config.SUPPORT_CHAT),
                 reply_markup=keyboard,
                 parse_mode=ParseMode.HTML,
@@ -43,18 +54,20 @@ async def start_pm(client, message: Message, _):
         if name.startswith("sud"):
             await sudoers_list(client=client, message=message, _=_)
             if await is_on_off(2):
-                await app.send_message(
-                    config.LOGGER_ID,
-                    f"{message.from_user.mention} started the bot to check <b>sudolist</b>.\n\n"
-                    f"<b>User ID:</b> <code>{message.from_user.id}</code>\n"
-                    f"<b>Username:</b> @{message.from_user.username}",
+                return await app.send_message(
+                    chat_id=config.LOGGER_ID,
+                    text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ ᴛᴏ ᴄʜᴇᴄᴋ <b>sᴜᴅᴏʟɪsᴛ</b>.\n\n"
+                         f"<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n"
+                         f"<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
                     parse_mode=ParseMode.HTML,
                 )
             return
 
         if name.startswith("inf"):
-            m = await message.reply_text("🔎 Searching...")
-            query = f"https://www.youtube.com/watch?v={name.replace('info_', '', 1)}"
+            m = await message.reply_text("🔎")
+            query = name.replace("info_", "", 1)
+            query = f"https://www.youtube.com/watch?v={query}"
+
             results = VideosSearch(query, limit=1)
             for result in (await results.next())["result"]:
                 title = result["title"]
@@ -66,67 +79,65 @@ async def start_pm(client, message: Message, _):
                 link = result["link"]
                 published = result["publishedTime"]
 
-            caption = _["start_6"].format(title, duration, views, published, channellink, channel, app.mention)
-            markup = InlineKeyboardMarkup(
+            searched_text = _["start_6"].format(
+                title, duration, views, published, channellink, channel, app.mention
+            )
+            key = InlineKeyboardMarkup(
                 [
                     [
                         InlineKeyboardButton(text=_["S_B_8"], url=link),
                         InlineKeyboardButton(text=_["S_B_9"], url=config.SUPPORT_CHAT),
-                    ]
+                    ],
                 ]
             )
             await m.delete()
             await app.send_photo(
-                message.chat.id,
+                chat_id=message.chat.id,
                 photo=thumbnail,
-                caption=caption,
-                reply_markup=markup,
+                caption=searched_text,
+                reply_markup=key,
                 parse_mode=ParseMode.HTML,
             )
 
             if await is_on_off(2):
-                await app.send_message(
-                    config.LOGGER_ID,
-                    f"{message.from_user.mention} searched a track info.\n\n"
-                    f"<b>User ID:</b> <code>{message.from_user.id}</code>\n"
-                    f"<b>Username:</b> @{message.from_user.username}",
+                return await app.send_message(
+                    chat_id=config.LOGGER_ID,
+                    text=f"{message.from_user.mention} searched <b>Track Information</b>.\n\n"
+                         f"<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n"
+                         f"<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
                     parse_mode=ParseMode.HTML,
                 )
-            return
 
-    # Normal /start
-    markup = InlineKeyboardMarkup(private_panel(_))
-    caption = (
-        f"<b>нєу {message.from_user.mention} . . .</b>\n"
-        f"<i>ɪ'ᴍ {app.mention}, ᴅᴇsɪɢɴᴇᴅ ᴛᴏ ᴍᴀᴋᴇ ᴍᴜsɪᴄ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ ᴇᴀsʏ.</i>\n"
-        f"<a href='{START_IMG_URL}'>.</a>"
-    )
-    await message.reply_video(
-        video=START_IMG_URL,
-        caption=caption,
-        reply_markup=markup,
-        parse_mode=ParseMode.HTML,
-    )
-
-    if await is_on_off(2):
-        await app.send_message(
-            config.LOGGER_ID,
-            f"{message.from_user.mention} started the bot.\n\n"
-            f"<b>User ID:</b> <code>{message.from_user.id}</code>\n"
-            f"<b>Username:</b> @{message.from_user.username}",
+    else:
+        out = private_panel(_)
+        await message.reply(
+            text=START_CAPTION.format(message.from_user.mention, app.mention).replace(
+                "{media}", START_MEDIA
+            ),
+            reply_markup=InlineKeyboardMarkup(out),
             parse_mode=ParseMode.HTML,
+            disable_web_page_preview=True,
         )
+
+        if await is_on_off(2):
+            return await app.send_message(
+                chat_id=config.LOGGER_ID,
+                text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ.\n\n"
+                     f"<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n"
+                     f"<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
+                parse_mode=ParseMode.HTML,
+            )
 
 
 @app.on_message(filters.command(["start"]) & filters.group & ~BANNED_USERS)
 @LanguageStart
 async def start_gp(client, message: Message, _):
     out = start_panel(_)
-    uptime = get_readable_time(int(time.time() - _boot_))
-    caption = _["start_1"].format(app.mention, uptime)
+    uptime = int(time.time() - _boot_)
+
     await message.reply_video(
-        video=START_IMG_URL,
-        caption=caption,
+        video=START_MEDIA,
+        caption=_["start_1"].format(app.mention, get_readable_time(uptime)),
         reply_markup=InlineKeyboardMarkup(out),
         parse_mode=ParseMode.HTML,
     )
@@ -143,7 +154,7 @@ async def welcome(client, message: Message):
             if await is_banned_user(member.id):
                 try:
                     await message.chat.ban_member(member.id)
-                except Exception:
+                except:
                     pass
 
             if member.id == app.id:
@@ -164,19 +175,19 @@ async def welcome(client, message: Message):
                     return await app.leave_chat(message.chat.id)
 
                 out = start_panel(_)
-                caption = _["start_3"].format(
-                    message.from_user.first_name,
-                    app.mention,
-                    message.chat.title,
-                    app.mention,
-                )
                 await message.reply_video(
-                    video=START_IMG_URL,
-                    caption=caption,
+                    video=START_MEDIA,
+                    caption=_["start_3"].format(
+                        message.from_user.first_name,
+                        app.mention,
+                        message.chat.title,
+                        app.mention,
+                    ),
                     reply_markup=InlineKeyboardMarkup(out),
                     parse_mode=ParseMode.HTML,
                 )
                 await add_served_chat(message.chat.id)
                 await message.stop_propagation()
+
         except Exception as ex:
-            print(ex)
+            print(f"Error in welcome: {ex}")
