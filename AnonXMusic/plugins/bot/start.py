@@ -1,7 +1,6 @@
 import time
-
 from pyrogram import filters
-from pyrogram.enums import ChatType, ParseMode
+from pyrogram.enums import ChatType
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from youtubesearchpython.__future__ import VideosSearch
 
@@ -20,18 +19,18 @@ from AnonXMusic.utils.database import (
 from AnonXMusic.utils.decorators.language import LanguageStart
 from AnonXMusic.utils.formatters import get_readable_time
 from AnonXMusic.utils.inline import help_pannel, private_panel, start_panel
-from config import BANNED_USERS
 
-# Custom Start Media & Caption
-START_IMG_URL = "https://files.catbox.moe/kooj9d.mp4"
-START_CAPTION = (
-    "<a href=\"{media}\">&#8205;</a>"  # Forces preview in private
-    "<b>✿ 𝒀𝒐𝒌𝒐𝒔𝒐, {0}~ (≧◡≦)</b>\n"
-    "ɪ'ᴍ <b>{1}</b>, ʏᴏᴜʀ ᴋᴀᴡᴀɪɪ ᴍᴜsɪᴄ ʙᴏᴛ ♫\n"
-    "⤷ ʟɪᴠᴇ sᴛʀᴇᴀᴍs + ᴘʟᴀʏʟɪsᴛ\n"
-    "⤷ ᴀɴɪᴍᴇ ғᴇᴇʟs ✧ ᴄᴏᴍᴍᴀɴᴅs → <code>/help</code>\n"
-    "<b>⸙ ᴅᴇᴠ :</b> <a href=\"https://t.me/I_shadwoo\">sʜᴀ</a> 〜(꒪꒳꒪)〜"
-)
+START_MEDIA = "https://files.catbox.moe/kooj9d.mp4"
+
+START_CAPTION = """
+<a href="{media}">&#8205;</a>
+<b>✿ 𝒀𝒐𝒌𝒐𝒔𝒐, {mention}~ (≧◡≦)</b>
+ɪ'ᴍ <b>{bot}</b>, ʏᴏᴜʀ ᴋᴀᴡᴀɪɪ ᴍᴜsɪᴄ ʙᴏᴛ ♫  
+⤷ ʟɪᴠᴇ sᴛʀᴇᴀᴍs + ᴘʟᴀʏʟɪsᴛ  
+⤷ ᴀɴɪᴍᴇ ғᴇᴇʟs ✧ ᴄᴏᴍᴍᴀɴᴅs → <code>/help</code>
+
+<b>⸙ ᴅᴇᴠ :</b> <a href="https://t.me/I_shadwoo">sʜᴀ</a> 〜(꒪꒳꒪)〜
+"""
 
 
 @app.on_message(filters.command(["start"]) & filters.private & ~BANNED_USERS)
@@ -45,26 +44,25 @@ async def start_pm(client, message: Message, _):
         if name.startswith("help"):
             keyboard = help_pannel(_)
             return await message.reply_video(
-                video=START_IMG_URL,
+                video=START_MEDIA,
                 caption=_["help_1"].format(config.SUPPORT_CHAT),
                 reply_markup=keyboard,
             )
 
-        if name.startswith("sud"):
+        elif name.startswith("sud"):
             await sudoers_list(client=client, message=message, _=_)
             if await is_on_off(2):
                 return await app.send_message(
                     chat_id=config.LOGGER_ID,
-                    text=f"{message.from_user.mention} started the bot to check <b>sudo list</b>.\n\n"
-                         f"<b>User ID:</b> <code>{message.from_user.id}</code>\n"
-                         f"<b>Username:</b> @{message.from_user.username}",
+                    text=f"{message.from_user.mention} ᴊᴜsᴛ ᴄʜᴇᴄᴋᴇᴅ <b>sᴜᴅᴏʟɪsᴛ</b>.\n\n<b>ᴜsᴇʀ ɪᴅ:</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ:</b> @{message.from_user.username}",
                 )
             return
 
-        if name.startswith("inf"):
-            m = await message.reply_text("🔎 Searching...")
-            query = f"https://www.youtube.com/watch?v={name.replace('info_', '', 1)}"
-            results = VideosSearch(query, limit=1)
+        elif name.startswith("inf"):
+            m = await message.reply_text("🔍")
+            query = name.replace("info_", "", 1)
+            link = f"https://www.youtube.com/watch?v={query}"
+            results = VideosSearch(link, limit=1)
             for result in (await results.next())["result"]:
                 title = result["title"]
                 duration = result["duration"]
@@ -72,18 +70,16 @@ async def start_pm(client, message: Message, _):
                 thumbnail = result["thumbnails"][0]["url"].split("?")[0]
                 channellink = result["channel"]["link"]
                 channel = result["channel"]["name"]
-                link = result["link"]
                 published = result["publishedTime"]
+
             searched_text = _["start_6"].format(
                 title, duration, views, published, channellink, channel, app.mention
             )
             key = InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(text=_["S_B_8"], url=link),
-                        InlineKeyboardButton(text=_["S_B_9"], url=config.SUPPORT_CHAT),
-                    ]
-                ]
+                [[
+                    InlineKeyboardButton(text=_["S_B_8"], url=link),
+                    InlineKeyboardButton(text=_["S_B_9"], url=config.SUPPORT_CHAT),
+                ]]
             )
             await m.delete()
             await app.send_photo(
@@ -95,39 +91,31 @@ async def start_pm(client, message: Message, _):
             if await is_on_off(2):
                 return await app.send_message(
                     chat_id=config.LOGGER_ID,
-                    text=f"{message.from_user.mention} started the bot to check <b>track information</b>.\n\n"
-                         f"<b>User ID:</b> <code>{message.from_user.id}</code>\n"
-                         f"<b>Username:</b> @{message.from_user.username}",
+                    text=f"{message.from_user.mention} ᴄʜᴇᴄᴋᴇᴅ ᴀ sᴏɴɢ ɪɴғᴏ.\n<b>ᴜsᴇʀ ɪᴅ:</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ:</b> @{message.from_user.username}",
                 )
-    else:
-        out = private_panel(_)
-        await message.reply_video(
-            video=START_IMG_URL,
-            caption=START_CAPTION.format(
-                message.from_user.mention, app.mention, media=START_IMG_URL
-            ),
-            reply_markup=InlineKeyboardMarkup(out),
-            parse_mode=ParseMode.HTML,
-        )
-        if await is_on_off(2):
-            return await app.send_message(
-                chat_id=config.LOGGER_ID,
-                text=f"{message.from_user.mention} started the bot.\n\n"
-                     f"<b>User ID:</b> <code>{message.from_user.id}</code>\n"
-                     f"<b>Username:</b> @{message.from_user.username}",
-            )
 
-
-@app.on_message(filters.command(["start"]) & filters.group & ~BANNED_USERS)
-@LanguageStart
-async def start_gp(client, message: Message, _):
-    out = start_panel(_)
-    uptime = int(time.time() - _boot_)
-    await message.reply_video(
-        video=START_IMG_URL,
-        caption=_["start_1"].format(app.mention, get_readable_time(uptime)),
-        reply_markup=InlineKeyboardMarkup(out),
+    out = InlineKeyboardMarkup(private_panel(_))
+    caption = START_CAPTION.format(
+        mention=message.from_user.mention,
+        bot=app.mention,
+        media=START_MEDIA,
     )
+    await message.reply_text(caption, reply_markup=out)
+
+    if await is_on_off(2):
+        return await app.send_message(
+            chat_id=config.LOGGER_ID,
+            text=f"{message.from_user.mention} sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ.\n<b>ᴜsᴇʀ ɪᴅ:</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ:</b> @{message.from_user.username}",
+        )
+
+
+@app.on_message(filters.command("start") & filters.group & ~BANNED_USERS)
+@LanguageStart
+async def start_gp(_, message: Message, _):
+    out = InlineKeyboardMarkup(start_panel(_))
+    uptime = int(time.time() - _boot_)
+    text = _["start_1"].format(app.mention, get_readable_time(uptime))
+    await message.reply_text(text, reply_markup=out)
     return await add_served_chat(message.chat.id)
 
 
@@ -146,6 +134,7 @@ async def welcome(client, message: Message):
                 if message.chat.type != ChatType.SUPERGROUP:
                     await message.reply_text(_["start_4"])
                     return await app.leave_chat(message.chat.id)
+
                 if message.chat.id in await blacklisted_chats():
                     await message.reply_text(
                         _["start_5"].format(
@@ -157,18 +146,18 @@ async def welcome(client, message: Message):
                     )
                     return await app.leave_chat(message.chat.id)
 
-                out = start_panel(_)
+                out = InlineKeyboardMarkup(start_panel(_))
                 await message.reply_video(
-                    video=START_IMG_URL,
+                    video=START_MEDIA,
                     caption=_["start_3"].format(
                         message.from_user.first_name,
                         app.mention,
                         message.chat.title,
                         app.mention,
                     ),
-                    reply_markup=InlineKeyboardMarkup(out),
+                    reply_markup=out,
                 )
                 await add_served_chat(message.chat.id)
                 await message.stop_propagation()
-        except Exception as ex:
-            print(ex)
+        except Exception as e:
+            print(f"Error in welcome: {e}")
