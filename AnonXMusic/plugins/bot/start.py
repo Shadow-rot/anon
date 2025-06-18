@@ -22,9 +22,10 @@ from AnonXMusic.utils.formatters import get_readable_time
 from AnonXMusic.utils.inline import help_pannel, private_panel, start_panel
 from config import BANNED_USERS
 
+# Custom Start Media & Caption
 START_IMG_URL = "https://files.catbox.moe/kooj9d.mp4"
 START_CAPTION = (
-    '<a href="{media}">&#8205;</a>\n'
+    "<a href=\"{media}\">&#8205;</a>"  # Forces preview in private
     "<b>✿ 𝒀𝒐𝒌𝒐𝒔𝒐, {0}~ (≧◡≦)</b>\n"
     "ɪ'ᴍ <b>{1}</b>, ʏᴏᴜʀ ᴋᴀᴡᴀɪɪ ᴍᴜsɪᴄ ʙᴏᴛ ♫\n"
     "⤷ ʟɪᴠᴇ sᴛʀᴇᴀᴍs + ᴘʟᴀʏʟɪsᴛ\n"
@@ -37,30 +38,32 @@ START_CAPTION = (
 @LanguageStart
 async def start_pm(client, message: Message, _):
     await add_served_user(message.from_user.id)
+
     if len(message.text.split()) > 1:
         name = message.text.split(None, 1)[1]
+
         if name.startswith("help"):
             keyboard = help_pannel(_)
             return await message.reply_video(
                 video=START_IMG_URL,
                 caption=_["help_1"].format(config.SUPPORT_CHAT),
                 reply_markup=keyboard,
-                parse_mode=ParseMode.HTML,
             )
+
         if name.startswith("sud"):
             await sudoers_list(client=client, message=message, _=_)
             if await is_on_off(2):
-                await app.send_message(
+                return await app.send_message(
                     chat_id=config.LOGGER_ID,
-                    text=f"{message.from_user.mention} used <b>sudolist</b>\n"
-                         f"<b>ID:</b> <code>{message.from_user.id}</code>\n"
+                    text=f"{message.from_user.mention} started the bot to check <b>sudo list</b>.\n\n"
+                         f"<b>User ID:</b> <code>{message.from_user.id}</code>\n"
                          f"<b>Username:</b> @{message.from_user.username}",
                 )
             return
+
         if name.startswith("inf"):
-            m = await message.reply_text("🔎")
-            query = name.replace("info_", "", 1)
-            query = f"https://www.youtube.com/watch?v={query}"
+            m = await message.reply_text("🔎 Searching...")
+            query = f"https://www.youtube.com/watch?v={name.replace('info_', '', 1)}"
             results = VideosSearch(query, limit=1)
             for result in (await results.next())["result"]:
                 title = result["title"]
@@ -88,34 +91,31 @@ async def start_pm(client, message: Message, _):
                 photo=thumbnail,
                 caption=searched_text,
                 reply_markup=key,
-                parse_mode=ParseMode.HTML,
             )
             if await is_on_off(2):
-                await app.send_message(
+                return await app.send_message(
                     chat_id=config.LOGGER_ID,
-                    text=f"{message.from_user.mention} requested a track info.\n"
-                         f"<b>ID:</b> <code>{message.from_user.id}</code>\n"
+                    text=f"{message.from_user.mention} started the bot to check <b>track information</b>.\n\n"
+                         f"<b>User ID:</b> <code>{message.from_user.id}</code>\n"
                          f"<b>Username:</b> @{message.from_user.username}",
                 )
-            return
-
-    out = private_panel(_)
-    await message.reply_video(
-        video=START_IMG_URL,
-        caption=START_CAPTION.format(
-            message.from_user.mention, app.mention, media=START_IMG_URL
-        ),
-        reply_markup=InlineKeyboardMarkup(out),
-        parse_mode=ParseMode.HTML,
-        disable_web_page_preview=True,
-    )
-    if await is_on_off(2):
-        await app.send_message(
-            chat_id=config.LOGGER_ID,
-            text=f"{message.from_user.mention} started the bot.\n"
-                 f"<b>ID:</b> <code>{message.from_user.id}</code>\n"
-                 f"<b>Username:</b> @{message.from_user.username}",
+    else:
+        out = private_panel(_)
+        await message.reply_video(
+            video=START_IMG_URL,
+            caption=START_CAPTION.format(
+                message.from_user.mention, app.mention, media=START_IMG_URL
+            ),
+            reply_markup=InlineKeyboardMarkup(out),
+            parse_mode=ParseMode.HTML,
         )
+        if await is_on_off(2):
+            return await app.send_message(
+                chat_id=config.LOGGER_ID,
+                text=f"{message.from_user.mention} started the bot.\n\n"
+                     f"<b>User ID:</b> <code>{message.from_user.id}</code>\n"
+                     f"<b>Username:</b> @{message.from_user.username}",
+            )
 
 
 @app.on_message(filters.command(["start"]) & filters.group & ~BANNED_USERS)
@@ -127,8 +127,6 @@ async def start_gp(client, message: Message, _):
         video=START_IMG_URL,
         caption=_["start_1"].format(app.mention, get_readable_time(uptime)),
         reply_markup=InlineKeyboardMarkup(out),
-        parse_mode=ParseMode.HTML,
-        disable_web_page_preview=True,
     )
     return await add_served_chat(message.chat.id)
 
@@ -139,18 +137,15 @@ async def welcome(client, message: Message):
         try:
             language = await get_lang(message.chat.id)
             _ = get_string(language)
-
             if await is_banned_user(member.id):
                 try:
                     await message.chat.ban_member(member.id)
                 except:
                     pass
-
             if member.id == app.id:
                 if message.chat.type != ChatType.SUPERGROUP:
                     await message.reply_text(_["start_4"])
                     return await app.leave_chat(message.chat.id)
-
                 if message.chat.id in await blacklisted_chats():
                     await message.reply_text(
                         _["start_5"].format(
@@ -172,11 +167,8 @@ async def welcome(client, message: Message):
                         app.mention,
                     ),
                     reply_markup=InlineKeyboardMarkup(out),
-                    parse_mode=ParseMode.HTML,
-                    disable_web_page_preview=True,
                 )
                 await add_served_chat(message.chat.id)
                 await message.stop_propagation()
-
         except Exception as ex:
-            print(f"Error in welcome: {ex}")
+            print(ex)
