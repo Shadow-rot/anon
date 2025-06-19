@@ -7,7 +7,7 @@ from PIL import Image
 import tempfile
 from AnonXMusic import app
 
-BOT_USERNAME = "AnnieMusicRobot"
+BOT_USERNAME = "siyaprobot"
 
 
 def stylize_text(text):
@@ -174,7 +174,7 @@ async def pack_kang(client, message):
             )
 
         await processing_msg.edit_text(
-            stylize_text(f"Sticker pack cloned successfully!\nTotal stickers: {len(stickers)}"),
+            stylize_text(f"**Sticker pack cloned successfully!**\n**Total stickers**: {len(stickers)}"),
             reply_markup=InlineKeyboardMarkup([[
                 InlineKeyboardButton("View Pack", url=f"https://t.me/addstickers/{short_name}")
             ]])
