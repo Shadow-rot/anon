@@ -102,37 +102,40 @@ async def pack_kang(client, message):
     processing_msg = await message.reply_text(stylize_text("➣ Pʀᴏᴄᴇssɪɴɢ..."))
 
     if not message.reply_to_message or not message.reply_to_message.sticker:
-        return await processing_msg.edit_text(stylize_text('Reply to a sticker message'))
+        return await processing_msg.edit_text(stylize_text("Please reply to a sticker."))
+
+    sticker = message.reply_to_message.sticker
+
+    if not sticker.set_name:
+        return await processing_msg.edit_text(stylize_text("This sticker is not part of any sticker pack."))
 
     try:
-        sticker = message.reply_to_message.sticker
-
+        # Fetch original sticker set
         sticker_set = await client.invoke(
             functions.messages.GetStickerSet(
-                stickerset=types.InputStickerSetShortName(
-                    short_name=sticker.set_name
-                ),
+                stickerset=types.InputStickerSetShortName(short_name=sticker.set_name),
                 hash=0
             )
         )
 
+        # Pack name and short_name generation
         pack_name = (
-            f"{message.from_user.first_name}_sticker_pack_by_@{BOT_USERNAME}" 
-            if len(message.command) < 2 
+            f"{message.from_user.first_name}'s Pack by @{BOT_USERNAME}"
+            if len(message.command) < 2
             else message.text.split(maxsplit=1)[1]
         )
-        short_name = f'pack_{str(uuid4()).replace("-", "")[:8]}_by_{BOT_USERNAME}'
+        short_name = f"pack_{uuid4().hex[:8]}_by_{BOT_USERNAME}"
 
+        # Prepare sticker documents
         stickers = []
         for doc in sticker_set.documents:
             input_doc = types.InputDocument(
                 id=doc.id,
                 access_hash=doc.access_hash,
-                file_reference=doc.file_reference
+                file_reference=doc.file_reference,
             )
             emoji = next(
-                (attr.alt for attr in doc.attributes 
-                 if isinstance(attr, types.DocumentAttributeSticker)),
+                (attr.alt for attr in doc.attributes if isinstance(attr, types.DocumentAttributeSticker)),
                 "🎯"
             )
             stickers.append(
@@ -142,13 +145,13 @@ async def pack_kang(client, message):
                 )
             )
 
-        user_id = await client.resolve_peer(message.from_user.id)
+        user_peer = await client.resolve_peer(message.from_user.id)
 
-        # Detect type and use correct function
+        # Determine sticker type and create new set
         if sticker.is_animated:
             await client.invoke(
                 functions.stickers.CreateStickerSetAnimated(
-                    user_id=user_id,
+                    user_id=user_peer,
                     title=pack_name,
                     short_name=short_name,
                     stickers=stickers
@@ -157,7 +160,7 @@ async def pack_kang(client, message):
         elif sticker.is_video:
             await client.invoke(
                 functions.stickers.CreateStickerSetVideo(
-                    user_id=user_id,
+                    user_id=user_peer,
                     title=pack_name,
                     short_name=short_name,
                     stickers=stickers
@@ -166,7 +169,7 @@ async def pack_kang(client, message):
         else:
             await client.invoke(
                 functions.stickers.CreateStickerSet(
-                    user_id=user_id,
+                    user_id=user_peer,
                     title=pack_name,
                     short_name=short_name,
                     stickers=stickers
@@ -174,11 +177,11 @@ async def pack_kang(client, message):
             )
 
         await processing_msg.edit_text(
-            stylize_text(f"**Sticker pack cloned successfully!**\n**Total stickers**: {len(stickers)}"),
+            stylize_text(f"✓ Sᴛɪᴄᴋᴇʀ ᴘᴀᴄᴋ ᴄʟᴏɴᴇᴅ sᴜᴄᴄᴇssғᴜʟʟʏ!\n➥ Tᴏᴛᴀʟ sᴛɪᴄᴋᴇʀs: {len(stickers)}"),
             reply_markup=InlineKeyboardMarkup([[
-                InlineKeyboardButton("View Pack", url=f"https://t.me/addstickers/{short_name}")
+                InlineKeyboardButton("↯ Vɪᴇᴡ Pᴀᴄᴋ", url=f"https://t.me/addstickers/{short_name}")
             ]])
         )
 
     except Exception as e:
-        await processing_msg.edit_text(stylize_text(f"Error: {str(e)}"))
+        await processing_msg.edit_text(stylize_text(f"⚠️ Eʀʀᴏʀ: {str(e)}"))
