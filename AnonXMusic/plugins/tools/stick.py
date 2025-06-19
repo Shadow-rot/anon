@@ -6,6 +6,7 @@ import os
 from PIL import Image
 import tempfile
 from AnonXMusic import app
+import re
 
 BOT_USERNAME = "siyaprobot"
 
@@ -97,6 +98,11 @@ async def download_sticker(client, message):
 
 
 
+def clean_title(text: str) -> str:
+    # Remove emojis and symbols except spaces and basic characters
+    text = re.sub(r"[^\w\s]", "", text)
+    return text.strip()[:64] or "My Sticker Pack"
+
 @app.on_message(filters.command("packkang") & filters.reply)
 async def pack_kang(client, message):
     processing_msg = await message.reply_text(stylize_text("➣ Pʀᴏᴄᴇssɪɴɢ..."))
@@ -118,12 +124,13 @@ async def pack_kang(client, message):
             )
         )
 
-        # Pack name and short_name generation
-        pack_name = (
-            f"{message.from_user.first_name}'s Pack by @{BOT_USERNAME}"
+        # Generate title and short_name
+        raw_title = (
+            f"{message.from_user.first_name}'s Sticker Pack by @{BOT_USERNAME}"
             if len(message.command) < 2
             else message.text.split(maxsplit=1)[1]
         )
+        pack_name = clean_title(raw_title)
         short_name = f"pack_{uuid4().hex[:8]}_by_{BOT_USERNAME}"
 
         # Prepare sticker documents
