@@ -1,55 +1,50 @@
-import os
-import shutil
-from re import findall
-from bing_image_downloader import downloader
 from pyrogram import Client, filters
-from pyrogram.types import InputMediaPhoto, Message
+from pyrogram.types import Message, InputMediaPhoto
 from AnonXMusic import app
-from AnonXMusic.utils.autofix import auto_fix_handler  # <-- add this line
+from duckduckgo_search import DDGS
+import re
 
-@app.on_message(filters.command(["img", "image"], prefixes=["/", "!", "."]))
-@auto_fix_handler
-async def google_img_search(client: Client, message: Message):
-    chat_id = message.chat.id
-
+@app.on_message(filters.command(["img", "image", "pic", "photo"], prefixes=["/", "!", "."]))
+async def duckduckgo_img_search(client: Client, message: Message):
     try:
         query = message.text.split(None, 1)[1]
     except IndexError:
-        return await message.reply("Provide an image query to search!")
+        return await message.reply("⚠️ Please provide a search query.")
 
-    lim = findall(r"lim=\d+", query)
+    # Optional: extract lim=
+    lim_match = re.findall(r"lim=\d+", query)
+    lim = int(lim_match[0].replace("lim=", "")) if lim_match else 5
+    if lim_match:
+        query = query.replace(f"lim={lim}", "").strip()
+
+    msg = await message.reply("🔍 Scraping...")
+
+    urls = []
     try:
-        lim = int(lim[0].replace("lim=", ""))
-        query = query.replace(f"lim={lim}", "")
-    except IndexError:
-        lim = 5  # Default limit to 5 images
-
-    download_dir = "downloads"
-
-    try:
-        downloader.download(query, limit=lim, output_dir=download_dir, adult_filter_off=True, force_replace=False, timeout=60)
-        images_dir = os.path.join(download_dir, query)
-        if not os.listdir(images_dir):
-            raise Exception("No images were downloaded.")
-        lst = [os.path.join(images_dir, img) for img in os.listdir(images_dir)][:lim]  # Ensure we only take the number of images specified by lim
+        with DDGS() as ddgs:
+            results = ddgs.images(
+                query,
+                safesearch="moderate",
+                max_results=lim * 2,
+                headers={"User-Agent": "Mozilla/5.0"}  # ✅ speeds up & prevents 403
+            )
+            for r in results:
+                if r.get("image"):
+                    urls.append(r["image"])
+                if len(urls) >= lim:
+                    break
     except Exception as e:
-        return await message.reply(f"Error in downloading images: {e}")
+        return await msg.edit(f"❌ DuckDuckGo Error:\n<code>{e}</code>")
 
-    msg = await message.reply("sha Scrapping images...")
-
-    count = 0
-    for img in lst:
-        count += 1
-        await msg.edit(f"=> shaaa owo scrapped images {count}")
+    if not urls:
+        return await msg.edit("❌ No image results found.")
 
     try:
-        await app.send_media_group(
-            chat_id=chat_id,
-            media=[InputMediaPhoto(media=img) for img in lst],
+        await client.send_media_group(
+            chat_id=message.chat.id,
+            media=[InputMediaPhoto(media=url) for url in urls],
             reply_to_message_id=message.id
         )
-        shutil.rmtree(images_dir)
         await msg.delete()
     except Exception as e:
-        await msg.delete()
-        return await message.reply(f"Error in sending images: {e}")
+        await msg.edit(f"⚠️ Failed to send images:\n<code>{e}</code>")
