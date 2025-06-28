@@ -1,62 +1,54 @@
 import re
 import httpx
-from pyrogram import filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram import Client, filters
+from pyrogram.types import Message
 from AnonXMusic import app
-from AnonXMusic.utils.autofix import auto_fix_handler  # <-- add this line
 
-DOWNLOADING_STICKER_ID = "CAACAgEAAx0CfD7LAgACO7xmZzb83lrLUVhxtmUaanKe0_ionAAC-gADUSkNORIJSVEUKRrhHgQ"
-INSTAGRAM_REGEX = r"(https?://)?(www\.)?(instagram\.com|instagr\.am)/(reel|p|tv)/[^\s/?]+"
-ALT_API_URL = "https://insta-dl.hazex.workers.dev/?url="
+API_URL = "https://www.alphaapis.org/Instagram/dl/v1"
 
-@app.on_message(filters.command(["ig", "insta"]) | filters.regex(INSTAGRAM_REGEX))
-@auto_fix_handler
-async def download_instagram_reel(client, message):
-    url = None
+# Regex pattern to match Instagram URLs
+INSTAGRAM_URL_PATTERN = r"(https?://(?:www\.)?instagram\.com/[^\s]+)"
 
-    # Get URL from command or plain text
+@app.on_message(filters.command(["ig", "insta"]) | filters.regex(INSTAGRAM_URL_PATTERN))
+async def insta_download(client: Client, message: Message):
+    matched_url = None
+
     if message.command and len(message.command) > 1:
-        url = message.command[1]
+        instagram_url = message.command[1]
     else:
-        match = re.search(INSTAGRAM_REGEX, message.text)
-        if match:
-            url = match.group(0)
+        urls = re.findall(INSTAGRAM_URL_PATTERN, message.text)
+        if urls:
+            instagram_url = urls[0]
+        else:
+            return await message.reply_text("❌ Please provide a valid Instagram URL.")
 
-    if not url:
-        return await message.reply_text("❌ Please provide a valid Instagram reel or post URL.")
-
-    sticker = await message.reply_sticker(DOWNLOADING_STICKER_ID)
+    processing_message = await message.reply_text("🔄 Processing...")
 
     try:
-        async with httpx.AsyncClient() as session:
-            response = await session.get(ALT_API_URL + url)
+        async with httpx.AsyncClient(timeout=15.0) as http:
+            response = await http.get(API_URL, params={"url": instagram_url})
             response.raise_for_status()
             data = response.json()
 
-        video_url = (
-            data.get("media") or
-            data.get("video_url") or
-            data.get("result", {}).get("url")
-        )
+        results = data.get("result", [])
 
-        if not video_url or not video_url.startswith("http"):
-            return await message.reply_text("❌ Could not extract video. It may be private or broken.")
+        if not results:
+            return await processing_message.edit("⚠️ No media found. Please check the link.")
 
-        bot = await app.get_me()
-        caption = f"{bot.first_name} powered this. https://t.me/{bot.username}"
+        for item in results:
+            download_link = item.get("downloadLink")
 
-        buttons = InlineKeyboardMarkup(
-            [[InlineKeyboardButton("Open on Instagram", url=url)]]
-        )
+            if not download_link:
+                continue
 
-        if video_url.endswith((".jpg", ".jpeg", ".png")):
-            await message.reply_photo(video_url, caption=caption, reply_markup=buttons)
-        else:
-            await message.reply_video(video_url, caption=caption, reply_markup=buttons)
+            if ".mp4" in download_link:
+                await message.reply_video(download_link)
+            elif any(ext in download_link for ext in (".jpg", ".jpeg", ".png", ".webp")):
+                await message.reply_photo(download_link)
+            else:
+                await message.reply_text(f"❌ Unsupported media type: {download_link}")
 
-    except httpx.HTTPStatusError as e:
-        await message.reply_text(f"❌ Scraper error:\n{e.response.text}")
     except Exception as e:
-        await message.reply_text(f"❌ Unexpected error:\n{str(e)}")
+        await processing_message.edit(f"❌ Error: {e}")
     finally:
-        await sticker.delete()
+        await processing_message.delete()
