@@ -1,12 +1,13 @@
 from pyrogram import filters
 
 from AnonXMusic import app
-from AnonXMusic.misc import SUDOERS
+from config import OWNER_ID
 from AnonXMusic.utils.database import add_off, add_on
 from AnonXMusic.utils.decorators.language import language
 
+only_owner = filters.user(OWNER_ID)
 
-@app.on_message(filters.command(["logger"]) & SUDOERS)
+@app.on_message(filters.command(["logger"]) & only_owner)
 @language
 async def logger(client, message, _):
     usage = _["log_1"]
