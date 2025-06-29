@@ -7,7 +7,7 @@ from AnonXMusic.utils.shadwo_ban import admin_filter
 
 spam_chats = []
 
-@app.on_message(filters.command(["utag", "all", "mention", "@all"]) & filters.group & admin_filter)
+@app.on_message(filters.command(["utag", "all", "mention", "tag"], prefixes=["/", "@", "'"]) & filters.group & admin_filter)
 async def tag_all_users(client, message):
     chat_id = message.chat.id
 
@@ -60,7 +60,7 @@ async def send_batch(client, chat_id, replied, text, batch):
     except Exception as e:
         print(f"Error while tagging: {e}")
 
-@app.on_message(filters.command(["cancel", "ustop"]) & filters.group)
+@app.on_message(filters.command(["cancel", "ustop"], prefixes=["/", "@", "'"]) & filters.group)
 async def cancel_spam(client, message):
     chat_id = message.chat.id
     if chat_id not in spam_chats:
