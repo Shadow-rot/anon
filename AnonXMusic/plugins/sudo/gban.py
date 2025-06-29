@@ -32,7 +32,7 @@ async def global_ban(client, message: Message, _):
         return await message.reply_text(_["gban_1"])
     elif user.id == app.id:
         return await message.reply_text(_["gban_2"])
-    elif user.id in OWNER_ID:
+    elif user.id == OWNER_ID:
         return await message.reply_text(_["gban_3"])
     is_gbanned = await is_banned_user(user.id)
     if is_gbanned:
