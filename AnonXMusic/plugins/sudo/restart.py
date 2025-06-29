@@ -10,8 +10,9 @@ from git.exc import GitCommandError, InvalidGitRepositoryError
 from pyrogram import filters
 
 import config
+from config import OWNER_ID
 from AnonXMusic import app
-from AnonXMusic.misc import HAPP, SUDOERS, XCB
+from AnonXMusic.misc import HAPP, XCB
 from AnonXMusic.utils.database import (
     get_active_chats,
     remove_active_chat,
@@ -20,6 +21,9 @@ from AnonXMusic.utils.database import (
 from AnonXMusic.utils.decorators.language import language
 from AnonXMusic.utils.pastebin import AnonyBin
 
+
+only_owner = filters.user(OWNER_ID)
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
@@ -27,7 +31,7 @@ async def is_heroku():
     return "heroku" in socket.getfqdn()
 
 
-@app.on_message(filters.command(["getlog", "logs", "getlogs"]) & SUDOERS)
+@app.on_message(filters.command(["getlog", "logs", "getlogs"]) & only_owner)
 @language
 async def log_(client, message, _):
     try:
@@ -36,7 +40,7 @@ async def log_(client, message, _):
         await message.reply_text(_["server_1"])
 
 
-@app.on_message(filters.command(["update", "gitpull"]) & SUDOERS)
+@app.on_message(filters.command(["update", "gitpull"]) & only_owner)
 @language
 async def update_(client, message, _):
     if await is_heroku():
@@ -110,7 +114,7 @@ async def update_(client, message, _):
         exit()
 
 
-@app.on_message(filters.command(["restart"]) & SUDOERS)
+@app.on_message(filters.command(["restart"]) & only_owner)
 async def restart_(_, message):
     response = await message.reply_text("ʀᴇsᴛᴀʀᴛɪɴɢ...")
     ac_chats = await get_active_chats()
