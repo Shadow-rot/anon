@@ -2,14 +2,17 @@ from pyrogram import filters
 from pyrogram.types import Message
 
 from AnonXMusic import app
-from AnonXMusic.misc import SUDOERS
 from AnonXMusic.utils.database import add_gban_user, remove_gban_user
 from AnonXMusic.utils.decorators.language import language
 from AnonXMusic.utils.extraction import extract_user
-from config import BANNED_USERS
+from config import BANNED_USERS, OWNER_ID
 
 
-@app.on_message(filters.command(["block"]) & SUDOERS)
+
+only_owner = filters.user(OWNER_ID)
+
+
+@app.on_message(filters.command(["block"]) & only_owner)
 @language
 async def useradd(client, message: Message, _):
     if not message.reply_to_message:
@@ -37,7 +40,7 @@ async def userdel(client, message: Message, _):
     await message.reply_text(_["block_4"].format(user.mention))
 
 
-@app.on_message(filters.command(["blocked", "blockedusers", "blusers"]) & SUDOERS)
+@app.on_message(filters.command(["blocked", "blockedusers", "blusers"]) & only_owner)
 @language
 async def sudoers_list(client, message: Message, _):
     if not BANNED_USERS:
