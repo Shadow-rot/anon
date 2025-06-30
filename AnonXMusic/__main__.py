@@ -13,11 +13,9 @@ from AnonXMusic.utils.database import get_banned_users, get_gbanned
 from config import BANNED_USERS
 
 from AnonXMusic.core.error_handler import setup_error_logging
-from AnonXMusic.server_reporter import run_reporter
 
 
 async def init():
-
     setup_error_logging()
 
     if (
@@ -63,8 +61,6 @@ async def init():
         LOGGER(__name__).error(f"Error during stream call: {e}")
 
     await Anony.decorators()
-
-    await run_reporter()
 
     LOGGER("AnonXMusic").info(
         "\x41\x6c\x65\x78\x20\x53\x74\x61\x72\x74\x65\x64\x20\x53\x75\x63\x63\x65\x73\x73\x66\x75\x6c\x6c\x79\x2e\n\n\x44\x6f\x6e'\x74\x20\x66\x6f\x72\x67\x65\x74\x20\x74\x6f\x20\x76\x69\x73\x69\x74\x20\x40\x74\x68\x65\x5f\x6c\x6f\x73\x74\x68\x6f\x70\x65"
