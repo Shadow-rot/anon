@@ -2,13 +2,11 @@ from pyrogram import filters
 from pyrogram.types import Message
 
 from AnonXMusic import app
+from AnonXMusic.misc import SUDOERS
 from AnonXMusic.utils.database import autoend_off, autoend_on
-from config import OWNER_ID
 
 
-only_owner = filters.user(OWNER_ID)
-
-@app.on_message(filters.command("autoend") & only_owner)
+@app.on_message(filters.command("autoend") & SUDOERS)
 async def auto_end_stream(_, message: Message):
     usage = "<b>ᴇxᴀᴍᴘʟᴇ :</b>\n\n/autoend [ᴇɴᴀʙʟᴇ | ᴅɪsᴀʙʟᴇ]"
     if len(message.command) != 2:
