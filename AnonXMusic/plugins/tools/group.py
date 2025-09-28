@@ -1,3 +1,6 @@
+"""
+
+
 import datetime
 import ast
 from pymongo import MongoClient
@@ -114,3 +117,5 @@ async def vc_stats(_, message: Message):
             f"  - Ended: {doc['ended_at'].strftime('%Y-%m-%d %H:%M:%S')} UTC\n\n"
         )
     await message.reply(text or "No data yet.")
+
+"""
