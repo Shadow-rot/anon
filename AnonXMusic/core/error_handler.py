@@ -1,3 +1,4 @@
+"""
 # error_logger.py
 
 import logging
@@ -72,3 +73,4 @@ def setup_error_logging():
     handler = TelegramErrorHandler(app)
     handler.setLevel(logging.ERROR)
     logging.getLogger().addHandler(handler)
+"""
