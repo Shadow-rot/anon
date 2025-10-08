@@ -12,11 +12,9 @@ from AnonXMusic.plugins import ALL_MODULES
 from AnonXMusic.utils.database import get_banned_users, get_gbanned
 from config import BANNED_USERS
 
-from AnonXMusic.core.error_handler import setup_error_logging
 
 
 async def init():
-    setup_error_logging()
 
     if (
         not config.STRING1
