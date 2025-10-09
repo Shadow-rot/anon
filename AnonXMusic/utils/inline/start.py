@@ -27,6 +27,8 @@ def private_panel(_):
         [
             InlineKeyboardButton(text=_["S_B_5"], url=config.ANIMES),
             InlineKeyboardButton(text=_["S_B_2"], url=config.SUPPORT_CHAT),
+
+InlineKeyboardButton(text=_["DEV"], url=https://telegra.ph/bꜱʜᴀᴅᴡᴏ-ᴘʀᴏꜰɪᴛᴏʟᴏ-b-10-09),
         ],
         [
             InlineKeyboardButton(text=_["S_B_4"], callback_data="settings_back_helper")
