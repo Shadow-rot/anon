@@ -39,7 +39,7 @@ def private_panel(_):
         ],
         [   
             InlineKeyboardButton(
-                text=_["DEV"],
+                text=_["S_B_10"],
                 url="https://telegra.ph/bꜱʜᴀᴅᴡᴏ-ᴘʀᴏꜰɪᴛᴏʟᴏ-b-10-09"
             ),
         ],
